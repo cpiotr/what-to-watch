@@ -12,11 +12,15 @@ import java.util.stream.IntStream;
 
 
 
+
+
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+
+
 
 
 
@@ -97,7 +101,7 @@ public class EkinoScrapper {
 					url = String.format("http://www.omdbapi.com/?t=%s&y=%d", URLEncoder.encode(e.originalTitle), e.year);
 					try (InputStream inputStream = new URL(url).openStream()) {
 						json = Json.createReader(inputStream).readObject();
-						System.out.println(json);
+						System.out.println(e.originalTitle +  " " + json);
 					} catch (IOException mue) {
 						System.err.println("Cannot get  " + e.title + " " + e.year + " ");
 						System.out.println(mue.getMessage());
@@ -105,13 +109,39 @@ public class EkinoScrapper {
 					}
 					
 				}
+				if (json != null) {
+					e.imdbTitle = json.getString("Title");
+					try {
+						System.out.println("Metascore: " + new MetacriticScrapper().scoreFor(e));
+					} catch (Exception e1) {
+						System.err.println(e1.getMessage());
+					}
+				}
+				
+				
 			});
 	}
 
 	static class Film {
 		String title;
 		String originalTitle;
+		String imdbTitle;
+		String imdbId;
 		int year;
+	}
+	
+	static class Score {
+		public Score(double score, int quantity) {
+			this.value = score;
+			this.quantity = quantity;
+		}
+		double value;
+		long quantity;
+		
+		@Override
+		public String toString() {
+			return String.format("[%f, %d]", value, quantity);
+		}
 	}
 	
 	private int getYear(Element li) {
