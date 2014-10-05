@@ -111,6 +111,8 @@ public class EkinoScrapper {
 				}
 				if (json != null) {
 					e.imdbTitle = json.getString("Title");
+					Score score = new Score(Double.valueOf(json.getString("imdbRating")) / 10.0, Integer.valueOf(json.getString("imdbVotes")));
+					System.out.println("IMDBScore: " + score);
 					try {
 						System.out.println("Metascore: " + new MetacriticScrapper().scoreFor(e));
 					} catch (Exception e1) {
