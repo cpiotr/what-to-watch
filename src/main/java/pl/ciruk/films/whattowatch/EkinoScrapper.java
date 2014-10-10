@@ -6,16 +6,21 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.stream.JsonGenerator;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -32,18 +37,20 @@ public class EkinoScrapper {
 	
 	@GET
 	@Produces("application/json")
-	public List<Film> listOfFilms() {
+	public Response listOfFilms() {
+		List<Film> films = new ArrayList<>();
 		try {
 			Document document = getPage(0);
 			
 			int numberOfPages = Integer.valueOf(document.select("ul.pagination li").last().text());
-			return IntStream.range(0, numberOfPages)
+			
+			films = IntStream.range(0, 10)
 					.parallel()
 					.mapToObj(i -> {
 						try {
 							return process(getPage(i));
 						} catch (Exception e) {
-							System.err.println("Cannot download page number: " + i);
+							//System.err.println("Cannot download page number: " + i);
 							throw new RuntimeException(e);
 						}
 					})
@@ -54,6 +61,8 @@ public class EkinoScrapper {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		
+		return Response.ok(films).build();
 	}
 	
 	Document getPage(int pageNumber) throws IOException {
@@ -89,7 +98,7 @@ public class EkinoScrapper {
 				try (InputStream inputStream = new URL(url).openStream()) {
 					json = Json.createReader(inputStream).readObject();
 					if (json.getString("Response").equalsIgnoreCase("true")) {
-						System.out.println(json);
+						//System.out.println(json);
 					}
 				} catch (IOException mue) {
 					System.err.println("Cannot get  " + e.title + " " + e.year + " ");
@@ -101,7 +110,7 @@ public class EkinoScrapper {
 					url = String.format("http://www.omdbapi.com/?t=%s&y=%d", URLEncoder.encode(e.originalTitle), e.year);
 					try (InputStream inputStream = new URL(url).openStream()) {
 						json = Json.createReader(inputStream).readObject();
-						System.out.println(e.originalTitle +  " " + json);
+						//System.out.println(e.originalTitle +  " " + json);
 					} catch (IOException mue) {
 						System.err.println("Cannot get  " + e.title + " " + e.year + " ");
 						System.out.println(mue.getMessage());
