@@ -2,30 +2,24 @@ package pl.ciruk.films.whattowatch;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
-
-
-
-import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-
-
-
-
+import javax.ws.rs.Produces;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jsoup.Jsoup;
-import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -34,25 +28,31 @@ import org.jsoup.select.Elements;
 public class EkinoScrapper {
 	static ExecutorService executorService = Executors.newCachedThreadPool();
 	
+	MetacriticScrapper metacriticScrapper = new MetacriticScrapper();
+	
 	@GET
-	public void listOfFilms() {
+	@Produces("application/json")
+	public List<Film> listOfFilms() {
 		try {
 			Document document = getPage(0);
 			
 			int numberOfPages = Integer.valueOf(document.select("ul.pagination li").last().text());
-			IntStream.range(0, 1)
+			return IntStream.range(0, numberOfPages)
 					.parallel()
-					.forEach(i -> {
+					.mapToObj(i -> {
 						try {
-							process(getPage(i));
+							return process(getPage(i));
 						} catch (Exception e) {
 							System.err.println("Cannot download page number: " + i);
-							System.err.println(e.getMessage());
-							e.printStackTrace();
+							throw new RuntimeException(e);
 						}
-					});
+					})
+					.reduce(new ArrayList<Film>(), (result, partial) -> {
+						result.addAll(partial);
+						return new ArrayList<>(result);
+					}); 
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -68,9 +68,9 @@ public class EkinoScrapper {
 		return document;
 	}
 	
-	void process(Document page) {
+	List<Film> process(Document page) {
 		Elements elements = page.select("ul.movies li");
-		elements.stream()
+		return elements.stream()
 			.map(li -> {
 				String polishTitle = li.select(".title h2 a").first().text();
 				String originalTitle = li.select(".title h3 a").first().text();
@@ -83,7 +83,7 @@ public class EkinoScrapper {
 				return film;
 			})
 			.parallel()
-			.forEach(e -> {
+			.peek(e -> {
 				String url = String.format("http://www.omdbapi.com/?t=%s&y=%d", URLEncoder.encode(e.title), e.year);
 				JsonObject json = null;
 				try (InputStream inputStream = new URL(url).openStream()) {
@@ -110,34 +110,57 @@ public class EkinoScrapper {
 					
 				}
 				if (json != null) {
-					e.imdbTitle = json.getString("Title");
-					Score score = new Score(Double.valueOf(json.getString("imdbRating")) / 10.0, Integer.valueOf(json.getString("imdbVotes")));
-					System.out.println("IMDBScore: " + score);
-					try {
-						System.out.println("Metascore: " + new MetacriticScrapper().scoreFor(e));
-					} catch (Exception e1) {
-						System.err.println(e1.getMessage());
+					if (json.containsKey("Title") && json.containsKey("imdbRating")) {
+						e.imdbTitle = json.getString("Title");
+						String rating = json.getString("imdbRating");
+						if (rating.matches("-?[0-9]+[.]?[0-9]+")) {
+							Score score = new Score(Double.valueOf(rating) / 10.0, Integer.valueOf(json.getString("imdbVotes").replaceAll("[^0-9]", "")));
+							e.scores.add(score);
+							try {
+								e.scores.add(metacriticScrapper.scoreFor(e));
+							} catch (Exception e1) {
+								System.err.println(e1.getMessage());
+							}
+						}
+					} else {
+						System.out.println("Brak: " + e.title);
 					}
 				}
-				
-				
-			});
+			})
+			.filter(f -> f.scores.size() == 2)
+			.collect(Collectors.toList());
 	}
 
+	@XmlRootElement
 	static class Film {
+		@XmlElement
 		String title;
+		@XmlElement
 		String originalTitle;
+		@XmlElement
 		String imdbTitle;
 		String imdbId;
+		@XmlElement
 		int year;
+		
+		@XmlElement
+		List<Score> scores = new ArrayList<>();
 	}
 	
+	@XmlRootElement
 	static class Score {
+		
+		public Score() {
+			// TODO Auto-generated constructor stub
+		}
+		
 		public Score(double score, int quantity) {
 			this.value = score;
 			this.quantity = quantity;
 		}
+		@XmlElement
 		double value;
+		@XmlElement
 		long quantity;
 		
 		@Override
