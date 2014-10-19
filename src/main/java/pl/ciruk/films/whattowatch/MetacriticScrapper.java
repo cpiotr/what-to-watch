@@ -49,6 +49,11 @@ public class MetacriticScrapper {
 	}
 	
 
+	public void finalize() throws Throwable {
+		super.finalize();
+		System.out.println("I'm done");
+	}
+	
 	Document searchFor(String title) throws IOException {
 		Document document = Jsoup.connect(String.format("http://www.metacritic.com/search/all/%s/results", title))
 				.timeout(60 * 1000)
