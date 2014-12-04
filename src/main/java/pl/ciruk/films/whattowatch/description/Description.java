@@ -10,10 +10,12 @@ public class Description {
 		this.filmTitle = t;
 	}
 
-	public Object getTitle() {
+	public String getTitle() {
 		// TODO Auto-generated method stub
-		return filmTitle.title();
+		return filmTitle.getOriginalTitle();
 	}
 	
-	
+	public int getYear() {
+		return filmTitle.getYear();
+	}
 }

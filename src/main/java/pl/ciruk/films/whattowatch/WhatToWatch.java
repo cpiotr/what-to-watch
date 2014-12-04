@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -40,11 +41,11 @@ public class WhatToWatch {
 		titles = i -> {
 			return Arrays.asList("Name of the rose", "Zodiac", "Gone girl", "Argo")
 					.parallelStream()
-					.map(s -> new Title(s));
+					.map(s -> new Title(s, null, 2007));
 		};
 		
 		descriptions = t -> {
-			return new Description(t);
+			return Optional.of(new Description(t));
 		};
 		
 		scores = new ArrayList<ScoresProvider>();
@@ -74,6 +75,8 @@ public class WhatToWatch {
 			Stream<Title> streamOfTitles = titles.streamOfTitles(i);
 			
 			return streamOfTitles.map(title -> descriptions.descriptionOf(title))
+					.filter(Optional::isPresent)
+					.map(optional -> optional.get())
 					.map(description -> {
 						Film film = new Film(description);
 						scores.stream()
