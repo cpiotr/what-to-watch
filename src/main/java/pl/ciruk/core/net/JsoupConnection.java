@@ -6,7 +6,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 public class JsoupConnection {
-	public static Connection connectTo(String url) {
+	public Connection to(String url) {
 		return Jsoup.connect(url)
 				.timeout(60 * 1000)
 				.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0")

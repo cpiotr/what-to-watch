@@ -1,21 +1,22 @@
 package pl.ciruk.films.whattowatch.score;
 
-import static pl.ciruk.core.net.JsoupConnection.connectTo;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.stream.Stream;
 
+import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.films.whattowatch.description.Description;
 
 public class GoogleScores implements ScoresProvider {
+	private JsoupConnection connection;
 
 	private String sourcePage;
 
-	public GoogleScores(String sourcePage) {
+	public GoogleScores(JsoupConnection connection, String sourcePage) {
+		this.connection = connection;
 		this.sourcePage = sourcePage;
 	}
 	
@@ -32,7 +33,7 @@ public class GoogleScores implements ScoresProvider {
 
 	private String retrieveScoreFrom(String url) {
 		try {
-			return connectTo(url).get()
+			return connection.to(url).get()
 					.select("ol#rso li.g div.slp")
 					.stream()
 					.map(e -> e.text())
