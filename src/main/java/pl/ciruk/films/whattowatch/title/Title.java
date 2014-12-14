@@ -1,5 +1,10 @@
 package pl.ciruk.films.whattowatch.title;
 
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@ToString
 public class Title {
 	private String originalTitle;
 	
@@ -11,19 +16,5 @@ public class Title {
 		this.title = title;
 		this.originalTitle = originalTitle;
 		this.year = year;
-	}
-
-	// TODO: Use Lombok instead 
-	public String getTitle() {
-		return title;
-	}
-
-	public String getOriginalTitle() {
-		// TODO Auto-generated method stub
-		return originalTitle;
-	}
-
-	public int getYear() {
-		return year;
 	}
 }

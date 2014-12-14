@@ -1,5 +1,7 @@
 package pl.ciruk.core.text;
 
+import com.google.common.base.Strings;
+
 public class NumberToken {
 	private String value;
 
@@ -9,6 +11,10 @@ public class NumberToken {
 	}
 	
 	public double asNormalizedDouble() {
+		if (Strings.isNullOrEmpty(value)) {
+			return 0.0;
+		}
+		
 		if (isPercentage()) {
 			return Double.valueOf(value.substring(0, value.length()-1)) / 100.0;
 		} else if (isFraction()) {
@@ -25,5 +31,9 @@ public class NumberToken {
 
 	private boolean isPercentage() {
 		return value.matches("[0-9]+%");
+	}
+	
+	public boolean isEmpty() {
+		return Strings.isNullOrEmpty(value);
 	}
 }

@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.NumberTokenizer;
@@ -23,23 +25,26 @@ public class GoogleScores implements ScoresProvider {
 	@Override
 	public Stream<Score> scoresOf(Description description) {
 		String url = formatUrlBasedOn(description);
-		String scoreAsText = retrieveScoreFrom(url);
-		
-		NumberTokenizer numberTokenizer = new NumberTokenizer(scoreAsText);
-		double score = numberTokenizer.nextToken().asNormalizedDouble();
-		int quantity = (int) numberTokenizer.nextToken().asNormalizedDouble();
-		return Stream.of(new Score(score, quantity));
+		return retrieveScoreFrom(url)
+				.map(NumberTokenizer::new)
+				.map(numberTokenizer -> {
+					double rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
+					int quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asNormalizedDouble() : -1;
+					System.out.println("\t" + description.getTitle() + "," + rating + ", " + quantity);
+					return new Score(rating, quantity);
+				})
+				.map(Stream::of)
+				.orElse(Stream.empty());
 	}
 
-	private String retrieveScoreFrom(String url) {
+	private Optional<String> retrieveScoreFrom(String url) {
 		try {
 			return connection.to(url).get()
 					.select("ol#rso li.g div.slp")
 					.stream()
 					.map(e -> e.text())
 					.filter(s -> !s.isEmpty())
-					.findFirst()
-					.get();
+					.findFirst();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

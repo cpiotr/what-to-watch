@@ -1,36 +1,21 @@
 package pl.ciruk.films.whattowatch;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import pl.ciruk.films.whattowatch.description.Description;
+import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;
-import pl.ciruk.films.whattowatch.score.Score;
+import pl.ciruk.films.whattowatch.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.films.whattowatch.score.IMDBScores;
+import pl.ciruk.films.whattowatch.score.MetacriticScores;
 import pl.ciruk.films.whattowatch.score.ScoresProvider;
 import pl.ciruk.films.whattowatch.title.Title;
 import pl.ciruk.films.whattowatch.title.TitleProvider;
+import pl.ciruk.films.whattowatch.title.ekino.EkinoTitles;
 
 public class WhatToWatch {
-	SecureRandom random;
-	
-	{
-		try {
-			random = SecureRandom.getInstanceStrong();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 	TitleProvider titles;
 	
 	DescriptionProvider descriptions;
@@ -38,36 +23,13 @@ public class WhatToWatch {
 	List<ScoresProvider> scores;
 	
 	public WhatToWatch() {
-		titles = i -> {
-			return Arrays.asList("Name of the rose", "Zodiac", "Gone girl", "Argo")
-					.parallelStream()
-					.map(s -> new Title(s, null, 2007));
-		};
+		titles = new EkinoTitles(new JsoupConnection());
 		
-		descriptions = t -> {
-			return Optional.of(new Description(t));
-		};
+		descriptions = new FilmwebDescriptions(new JsoupConnection());
 		
 		scores = new ArrayList<ScoresProvider>();
-		scores.add(d -> {
-			return Stream.of(
-					new Score(random.nextDouble(), random.nextInt(10_000)),
-					new Score(random.nextDouble(), random.nextInt(10_000)),
-					new Score(random.nextDouble(), random.nextInt(10_000))
-			);
-		});
-		
-		scores.add(d -> {
-			return Stream.of(
-					new Score(random.nextDouble(), random.nextInt(10_000))
-			);
-		});
-		
-		scores.add(d -> {
-			return Stream.of(
-					new Score(random.nextDouble(), random.nextInt(10_000))
-			);
-		});
+		scores.add(new IMDBScores());
+		scores.add(new MetacriticScores());
 	}
 	
 	public void get() {

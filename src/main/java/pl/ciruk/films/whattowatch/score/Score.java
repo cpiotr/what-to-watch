@@ -1,5 +1,10 @@
 package pl.ciruk.films.whattowatch.score;
 
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@ToString
 public class Score {
 
 	private double score;
@@ -7,15 +12,6 @@ public class Score {
 
 	public Score(double nextDouble, int nextInt) {
 		this.score = nextDouble;
-		// TODO Auto-generated constructor stub
 		this.quantity = nextInt;
-	}
-
-	public double getScore() {
-		return score;
-	}
-	
-	public int getQuantity() {
-		return quantity;
 	}
 }

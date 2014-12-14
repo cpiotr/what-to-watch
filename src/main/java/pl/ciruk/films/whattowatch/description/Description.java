@@ -1,7 +1,13 @@
 package pl.ciruk.films.whattowatch.description;
 
+import java.util.Optional;
+
+import com.google.common.base.Strings;
+
+import lombok.ToString;
 import pl.ciruk.films.whattowatch.title.Title;
 
+@ToString
 public class Description {
 	
 	private Title filmTitle;
@@ -11,8 +17,9 @@ public class Description {
 	}
 
 	public String getTitle() {
-		// TODO Auto-generated method stub
-		return filmTitle.getOriginalTitle();
+		return Optional.ofNullable(filmTitle.getOriginalTitle())
+				.filter(t -> !Strings.isNullOrEmpty(t))
+				.orElse(filmTitle.getTitle());
 	}
 	
 	public int getYear() {
