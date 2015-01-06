@@ -22,7 +22,7 @@ public class Film {
 
 	@Override
 	public String toString() {
-		double avgScore = scores.stream().mapToDouble(Score::getScore).average().getAsDouble();
+		double avgScore = scores.stream().mapToDouble(Score::getScore).average().orElse(0.0);
 		int totalQuantity = scores.stream().mapToInt(Score::getQuantity).sum();
 		return String.format("Title: %s. Scores: %d. AvgScore: %f; TotalQuantity: %d.", description.getTitle(), scores.size(), avgScore, totalQuantity);
 	}
