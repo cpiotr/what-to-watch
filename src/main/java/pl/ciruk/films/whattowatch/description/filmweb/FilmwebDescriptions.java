@@ -38,7 +38,6 @@ public class FilmwebDescriptions implements DescriptionProvider {
 		return page.select("ul.resultsList li .hitDesc .hitDescWrapper h3 a")
 				.stream()
 				.parallel()
-				.peek(d -> System.out.println(d))
 				.map(d -> getPageWithFilmDetailsFor(d))
 				.map(details -> {
 					String localTitle = FilmwebSelector.LOCAL_TITLE.extractFrom(details);

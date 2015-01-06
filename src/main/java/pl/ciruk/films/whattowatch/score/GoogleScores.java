@@ -30,7 +30,6 @@ public class GoogleScores implements ScoresProvider {
 				.map(numberTokenizer -> {
 					double rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
 					int quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asNormalizedDouble() : -1;
-					System.out.println("\t" + description.getTitle() + "," + rating + ", " + quantity);
 					return new Score(rating, quantity);
 				})
 				.map(Stream::of)
