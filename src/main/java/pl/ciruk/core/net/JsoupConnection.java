@@ -10,6 +10,7 @@ public class JsoupConnection {
 		return Jsoup.connect(url)
 				.timeout(60 * 1000)
 				.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0")
+				.header("Accept-Language", "pl")
 				.referrer(rootDomainFor(url));
 	}
 	
