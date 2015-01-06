@@ -81,7 +81,7 @@ public class MetacriticScores implements ScoresProvider {
 	private Optional<Document> downloadPage(String url) {
 		Optional<Document> document = Optional.empty();
 		try {
-			document = Optional.of(Jsoup.parse(reviews));//Optional.of(connection.to(url).get());
+			document = Optional.of(connection.to(url).get());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -100,8 +100,7 @@ public class MetacriticScores implements ScoresProvider {
 		}
 		
 		try {
-			return //connection.to(searchUrl).get()
-					Jsoup.parse(html)
+			return connection.to(searchUrl).get()
 					.select("div.body .search_results .result")
 					.stream()
 					.filter(e -> e.select(".release_date .data").text().endsWith(String.valueOf(year)))

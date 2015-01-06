@@ -20,16 +20,16 @@ public class WhatToWatch {
 	
 	DescriptionProvider descriptions;
 	
-	List<ScoresProvider> scores;
+	List<ScoresProvider> scoresProviders;
 	
 	public WhatToWatch() {
 		titles = new EkinoTitles(new JsoupConnection());
 		
 		descriptions = new FilmwebDescriptions(new JsoupConnection());
 		
-		scores = new ArrayList<ScoresProvider>();
-		scores.add(new IMDBScores());
-		scores.add(new MetacriticScores());
+		scoresProviders = new ArrayList<ScoresProvider>();
+		scoresProviders.add(new IMDBScores());
+		scoresProviders.add(new MetacriticScores(new JsoupConnection()));
 	}
 	
 	public void get() {
@@ -41,7 +41,8 @@ public class WhatToWatch {
 					.map(optional -> optional.get())
 					.map(description -> {
 						Film film = new Film(description);
-						scores.stream()
+						scoresProviders.stream()
+								.parallel()
 								.flatMap(scoreProvider -> scoreProvider.scoresOf(description))
 								.forEach(score -> film.add(score));
 						return film;
