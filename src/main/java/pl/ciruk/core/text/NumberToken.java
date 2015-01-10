@@ -24,6 +24,10 @@ public class NumberToken {
 		return Double.valueOf(value);
 	}
 
+	public String asString() {
+		return value;
+	}
+
 	private boolean isFraction() {
 		String number = "\\d+(\\.\\d+)?";
 		return value.matches(number+"/"+number);

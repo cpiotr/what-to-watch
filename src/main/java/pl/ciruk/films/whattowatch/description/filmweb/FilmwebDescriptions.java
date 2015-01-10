@@ -6,14 +6,16 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;
 import pl.ciruk.films.whattowatch.title.Title;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class FilmwebDescriptions implements DescriptionProvider {
 	
@@ -27,7 +29,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	@Override
 	public Optional<Description> descriptionOf(Title title) {
 		return Stream.of(title.getTitle(), title.getOriginalTitle())
-				.filter(t -> t != null && !t.isEmpty())
+				.filter(t -> !isNullOrEmpty(t))
 				.parallel()
 				.flatMap(t -> filmsForTitle(t, title.getYear()))
 				.findFirst();
@@ -38,21 +40,29 @@ public class FilmwebDescriptions implements DescriptionProvider {
 		return page.select("ul.resultsList li .hitDesc .hitDescWrapper h3 a")
 				.stream()
 				.parallel()
-				.map(d -> getPageWithFilmDetailsFor(d))
+				.map(this::getPageWithFilmDetailsFor)
 				.map(details -> {
-					String localTitle = FilmwebSelector.LOCAL_TITLE.extractFrom(details);
-					String originalTitle = FilmwebSelector.ORIGINAL_TITLE.extractFrom(details);
-					int extractedYear = parseYear(
-							FilmwebSelector.YEAR.extractFrom(details));
+					String localTitle = FilmwebSelector.LOCAL_TITLE.extractFrom(details)
+							.orElse("");
+					String originalTitle = FilmwebSelector.ORIGINAL_TITLE.extractFrom(details)
+							.orElse("");
+					int extractedYear = extractYearFrom(details);
+
 					Title titles = new Title(localTitle, originalTitle, extractedYear);
-					
+
 					Description film = new Description(titles);
-					
+
 					return film;
 				});
 	}
 
-	private int parseYear(String extractFrom) {
+	private Integer extractYearFrom(Document details) {
+		return FilmwebSelector.YEAR.extractFrom(details)
+                .map(this::parseYear)
+                .orElseThrow(() -> new MissingValueException());
+	}
+
+	private Integer parseYear(String extractFrom) {
 		return Integer.valueOf(extractFrom);
 	}
 
