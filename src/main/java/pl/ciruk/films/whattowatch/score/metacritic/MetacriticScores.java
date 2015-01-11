@@ -110,6 +110,7 @@ public class MetacriticScores implements ScoresProvider {
 							)
 							.findFirst());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return Optional.empty();
 		}
 	}

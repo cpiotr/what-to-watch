@@ -22,6 +22,6 @@ public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
 
     @Override
     public Stream<Element> extractFrom(Element element) {
-        return Stream.empty();
+        return extractor.apply(element);
     }
 }
