@@ -24,6 +24,11 @@ public class Film {
 	public String toString() {
 		double avgScore = scores.stream().mapToDouble(Score::getScore).average().orElse(0.0);
 		int totalQuantity = scores.stream().mapToInt(Score::getQuantity).sum();
-		return String.format("Title: %s. Scores: %d. AvgScore: %f; TotalQuantity: %d.", description.getTitle(), scores.size(), avgScore, totalQuantity);
+		return String.format("Title: %s. Year: %d. Scores: %d. AvgScore: %f; TotalQuantity: %d.",
+				description.getTitle(),
+				description.getYear(),
+				scores.size(),
+				avgScore,
+				totalQuantity);
 	}
 }
