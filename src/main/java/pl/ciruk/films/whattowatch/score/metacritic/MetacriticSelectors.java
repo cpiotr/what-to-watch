@@ -2,17 +2,14 @@ package pl.ciruk.films.whattowatch.score.metacritic;
 
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.Extractable;
-import pl.ciruk.core.net.JsoupNodes;
-import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.core.text.NumberToken;
 import pl.ciruk.core.text.NumberTokenizer;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
-public enum MetacriticSelector implements Extractable {
-	LINK_TO_DETAILS(details -> details.select("product_title a")
+public enum MetacriticSelectors implements Extractable<Optional<String>> {
+	LINK_TO_DETAILS(details -> details.select(".product_title a")
 			.stream()
 			.map(link -> link.attr("href"))
 			.findFirst()),
@@ -33,10 +30,22 @@ public enum MetacriticSelector implements Extractable {
 			.filter(review -> review.select(".source").text().equalsIgnoreCase("The New York Times"))
 			.map(review -> review.select(".review_grade").text())
 			.findFirst()),
+	LINK_TO_CRITIC_REVIEWS(details -> details.select(".critic_reviews_module .module_title a")
+			.stream()
+			.map(link -> link.attr("href"))
+			.findFirst()),
+	TITLE(details -> details.select(".product_title")
+			.stream()
+			.map(Element::text)
+			.findFirst()),
+	RELEASE_DATE(details -> details.select(".release_date .data")
+			.stream()
+			.map(Element::text)
+			.findFirst()),
 	;
 	private Function<Element, Optional<String>> extractor;
 
-	private MetacriticSelector(Function<Element, Optional<String>> extractor) {
+	private MetacriticSelectors(Function<Element, Optional<String>> extractor) {
 		this.extractor = extractor;
 	}
 

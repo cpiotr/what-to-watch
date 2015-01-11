@@ -25,10 +25,11 @@ public class EkinoTitles implements TitleProvider {
 	public Stream<Title> streamOfTitles(int numberOfTitles) {
 		try {
 			Document document = getPage(0);
+
+			int numberOfPages = Integer.valueOf(
+					EkinoSelector.NUMBER_OF_PAGES.extractFrom(document));
 			
-			int numberOfPages = Integer.valueOf(document.select("ul.pagination li").last().text());
-			
-			return IntStream.range(0, 2)
+			return IntStream.range(0, 4)
 					.parallel()
 					.mapToObj(i -> i)
 					.flatMap(i -> {

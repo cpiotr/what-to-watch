@@ -42,9 +42,9 @@ public class FilmwebDescriptions implements DescriptionProvider {
 				.parallel()
 				.map(this::getPageWithFilmDetailsFor)
 				.map(details -> {
-					String localTitle = FilmwebSelector.LOCAL_TITLE.extractFrom(details)
+					String localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(details)
 							.orElse("");
-					String originalTitle = FilmwebSelector.ORIGINAL_TITLE.extractFrom(details)
+					String originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(details)
 							.orElse("");
 					int extractedYear = extractYearFrom(details);
 
@@ -57,7 +57,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	}
 
 	private Integer extractYearFrom(Document details) {
-		return FilmwebSelector.YEAR.extractFrom(details)
+		return FilmwebSelectors.YEAR.extractFrom(details)
                 .map(this::parseYear)
                 .orElseThrow(() -> new MissingValueException());
 	}

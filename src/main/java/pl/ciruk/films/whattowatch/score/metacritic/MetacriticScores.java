@@ -34,42 +34,44 @@ public class MetacriticScores implements ScoresProvider {
 	
 	@Override
 	public Stream<Score> scoresOf(Description description) {
-		
+
 		Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle(), description.getYear())
-				.map(MetacriticSelector.LINK_TO_DETAILS::extractFrom)
-				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href + "/critic-reviews"))
+				.flatMap(MetacriticSelectors.LINK_TO_DETAILS::extractFrom)
+				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
+				.flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
+				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
 				.map(page -> page.select("#main").first());
-		
+
 		Stream<Score> averageScoreStream = htmlWithScores
 				.map(htmlContent -> new Score(averageGradeFrom(htmlContent), numberOfReviewsFrom(htmlContent)))
 				.map(Stream::of).orElseGet(Stream::empty);
-		
+
 		Stream<Score> nytScoreStream = htmlWithScores
 				.flatMap(htmlContent -> nytScoreFrom(htmlContent))
 				.map(Stream::of).orElseGet(Stream::empty);
-		
+
 		return Stream.concat(
 				averageScoreStream,
 				nytScoreStream
 		);
-		
+
 	}
 
 	double averageGradeFrom(Element htmlWithScores) {
-		return MetacriticSelector.AVERAGE_GRADE.extractFrom(htmlWithScores)
+		return MetacriticSelectors.AVERAGE_GRADE.extractFrom(htmlWithScores)
 				.map(Double::valueOf)
 				.map(d -> d / 100.0)
 				.orElseThrow(MissingValueException::new);
 	}
 	
 	int numberOfReviewsFrom(Element htmlWithScores) {
-		return MetacriticSelector.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
+		return MetacriticSelectors.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
 				.map(Integer::valueOf)
 				.orElseThrow(MissingValueException::new);
 	}
 	
 	Optional<Score> nytScoreFrom(Element htmlWithScores) {
-		return MetacriticSelector.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
+		return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
 				.map(grade -> (Double.valueOf(grade) / 100.0))
 				.map(percentage -> new Score(percentage, 1));
 	}
@@ -96,11 +98,17 @@ public class MetacriticScores implements ScoresProvider {
 		}
 		
 		try {
-			return connection.to(searchUrl).get()
-					.select("div.body .search_results .result")
-					.stream()
-					.filter(e -> e.select(".release_date .data").text().endsWith(String.valueOf(year)))
-					.findFirst();
+			return downloadPage(searchUrl)
+					.flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
+							.filter(e -> MetacriticSelectors.TITLE.extractFrom(e)
+											.filter(t -> t.equalsIgnoreCase(title))
+											.isPresent()
+							)
+							.filter(e -> MetacriticSelectors.RELEASE_DATE.extractFrom(e)
+											.filter(date -> date.endsWith(String.valueOf(year)))
+											.isPresent()
+							)
+							.findFirst());
 		} catch (Exception e) {
 			return Optional.empty();
 		}
@@ -111,7 +119,7 @@ public class MetacriticScores implements ScoresProvider {
 		
 		MetacriticScores scores = new MetacriticScores(new JsoupConnection());
 		
-		Description description = new Description(new Title("Zodiac", "Zodiac", 2007));
+		Description description = new Description(new Title("Identity Thief", "Identity Thief", 2013));
 		scores.scoresOf(description).forEach(System.out::println);
 	}
 }

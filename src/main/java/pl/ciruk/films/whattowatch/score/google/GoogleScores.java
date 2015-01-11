@@ -6,7 +6,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.NumberTokenizer;
@@ -40,7 +39,7 @@ public class GoogleScores implements ScoresProvider {
 
 	private Optional<String> retrieveScoreFrom(String url) {
 		try {
-			return GoogleSelector.SCORE.extractFrom(connection.to(url).get());
+			return GoogleSelectors.SCORE.extractFrom(connection.to(url).get());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

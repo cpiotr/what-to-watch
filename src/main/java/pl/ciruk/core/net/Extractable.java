@@ -3,7 +3,8 @@ package pl.ciruk.core.net;
 import org.jsoup.nodes.Element;
 
 import java.util.Optional;
+import java.util.function.Function;
 
-public interface Extractable {
-    Optional<String> extractFrom(Element element);
+public interface Extractable<T> {
+    T extractFrom(Element element);
 }
