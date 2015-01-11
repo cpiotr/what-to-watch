@@ -9,7 +9,7 @@ public class JsoupConnection {
 	public Connection to(String url) {
 		return Jsoup.connect(url)
 				.timeout(60 * 1000)
-				.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0")
+				.userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
 				.header("Accept-Language", "pl")
 				.referrer(rootDomainFor(url));
 	}
