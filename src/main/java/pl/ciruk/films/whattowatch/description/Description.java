@@ -2,6 +2,7 @@ package pl.ciruk.films.whattowatch.description;
 
 import java.util.Optional;
 
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Builder;
@@ -20,6 +21,7 @@ public class Description {
 
 	public String titleAsText() {
 		return Optional.ofNullable(title.getOriginalTitle())
+				.filter(t -> !Strings.isNullOrEmpty(t))
 				.orElse(title.getTitle());
 	}
 	
