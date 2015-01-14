@@ -43,7 +43,8 @@ public class MetacriticScores implements ScoresProvider {
 				.map(page -> page.select("#main").first());
 
 		Stream<Score> averageScoreStream = htmlWithScores
-				.map(htmlContent -> new Score(averageGradeFrom(htmlContent), numberOfReviewsFrom(htmlContent)))
+				.flatMap(htmlContent -> averageGradeFrom(htmlContent)
+						.map(grade -> new Score(grade, numberOfReviewsFrom(htmlContent))))
 				.map(Stream::of).orElseGet(Stream::empty);
 
 		Stream<Score> nytScoreStream = htmlWithScores
@@ -57,17 +58,16 @@ public class MetacriticScores implements ScoresProvider {
 
 	}
 
-	double averageGradeFrom(Element htmlWithScores) {
+	Optional<Double> averageGradeFrom(Element htmlWithScores) {
 		return MetacriticSelectors.AVERAGE_GRADE.extractFrom(htmlWithScores)
 				.map(Double::valueOf)
-				.map(d -> d / 100.0)
-				.orElseThrow(MissingValueException::new);
+				.map(d -> d / 100.0);
 	}
 	
 	int numberOfReviewsFrom(Element htmlWithScores) {
 		return MetacriticSelectors.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
 				.map(Integer::valueOf)
-				.orElseThrow(MissingValueException::new);
+				.orElseThrow(() -> new MissingValueException(htmlWithScores.text()));
 	}
 	
 	Optional<Score> nytScoreFrom(Element htmlWithScores) {
