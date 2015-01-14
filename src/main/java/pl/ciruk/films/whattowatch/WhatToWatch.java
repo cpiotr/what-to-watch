@@ -36,12 +36,13 @@ public class WhatToWatch {
 	}
 	
 	public void get() {
-		FilmSuggestionProvider provider = i -> {
-			Stream<Title> streamOfTitles = titles.streamOfTitles(i);
+		FilmSuggestionProvider provider = numberOfFilms -> {
+			Stream<Title> streamOfTitles = titles.streamOfTitles()
+					.limit(numberOfFilms);
 			
 			return streamOfTitles
 					.parallel()
-					.map(title -> descriptions.descriptionOf(title))
+					.map(descriptions::descriptionOf)
 					.filter(Optional::isPresent)
 					.map(optional -> optional.get())
 					.map(description -> {
@@ -51,12 +52,11 @@ public class WhatToWatch {
 								.flatMap(scoreProvider -> scoreProvider.scoresOf(description))
 								.forEach(score -> film.add(score));
 						return film;
-					}
-			);
+					})
+					.filter(film -> film.scores.stream().mapToDouble(Score::getScore).average().orElse(0.0) > 0.6);
 		};
-		
-		provider.suggestNumberOfFilms(12)
-				.filter(film -> film.scores.stream().mapToDouble(Score::getScore).average().orElse(0.0) > 0.6)
+
+		provider.suggestNumberOfFilms(20)
 				.forEach((Film x) -> {
 					System.out.println(titles.urlFor(x.foundFor()) + " " + x + " " + x.scores + " " + x.poster());
 				});
