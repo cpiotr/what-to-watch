@@ -35,7 +35,7 @@ public class MetacriticScores implements ScoresProvider {
 	@Override
 	public Stream<Score> scoresOf(Description description) {
 
-		Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle(), description.getYear())
+		Optional<Element> htmlWithScores = metacriticSummaryOf(description.titleAsText(), description.getYear())
 				.flatMap(MetacriticSelectors.LINK_TO_DETAILS::extractFrom)
 				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
 				.flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
@@ -120,7 +120,9 @@ public class MetacriticScores implements ScoresProvider {
 		
 		MetacriticScores scores = new MetacriticScores(new JsoupConnection());
 		
-		Description description = new Description(new Title("Identity Thief", "Identity Thief", 2013));
+		Description description = Description.builder()
+				.title(Title.builder().title("Identity Thief").originalTitle("Identity Thief").year(2013).build())
+				.build();
 		scores.scoresOf(description).forEach(System.out::println);
 	}
 }

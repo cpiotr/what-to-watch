@@ -1,44 +1,42 @@
 package pl.ciruk.films.whattowatch.title.ekino;
 
-import static pl.ciruk.core.net.JsoupNodes.emptyTextElement;
-
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.jsoup.nodes.Element;
+import pl.ciruk.core.net.Extractable;
 
-public enum EkinoSelector {
+public enum EkinoSelectors implements Extractable<Optional<String>> {
 	YEAR(details -> details.select(".title p.a a")
 			.stream()
 			.filter(a -> a.attr("href").contains("year"))
-			.findFirst()
-			.orElse(emptyTextElement())
-			.text()
-			.replaceAll("[^0-9]", "")),
+			.map(Element::text)
+			.map(t -> t.replaceAll("[^0-9]", ""))
+			.findFirst()),
 	LOCAL_TITLE(details -> details.select(".title h2 a")
 			.stream()
-			.findFirst()
-			.orElse(emptyTextElement())
-			.text()),
+			.map(Element::text)
+			.findFirst()),
 	ORIGINAL_TITLE(details -> details.select(".title h3 a")
 			.stream()
-			.findFirst()
-			.orElse(emptyTextElement())
-			.text()),
+			.map(Element::text)
+			.findFirst()),
 	NUMBER_OF_PAGES(results -> {
 		Element last = results.select("ul.pagination li").last();
 		return Optional.ofNullable(last)
-				.orElse(emptyTextElement())
-				.text();
+				.map(Element::text);
 	}),
-	;
-	private Function<Element, String> extractor;
+	LINK_TO_FILM(details -> details.select(".title h2 a")
+			.stream()
+			.map(e -> e.attr("href"))
+			.findFirst());
+	private Function<Element, Optional<String>> extractor;
 	
-	private EkinoSelector(Function<Element, String> extractor) {
+	private EkinoSelectors(Function<Element, Optional<String>> extractor) {
 		this.extractor = extractor;
 	}
 
-	public String extractFrom(Element element) {
+	public Optional<String> extractFrom(Element element) {
 		return extractor.apply(element);
 	}
 }

@@ -20,7 +20,14 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
 			.stream()
 			.map(Element::text)
 			.findFirst()),
+	POSTER(details -> details.select(".filmHeader .filmPosterBox .posterLightbox img")
+			.stream()
+			.map(e -> e.attr("src"))
+			.findFirst()),
 	;
+
+	public static final String ROOT_URL = "http://filmweb.pl";
+
 	private Function<Element, Optional<String>> extractor;
 	
 	private FilmwebSelectors(Function<Element, Optional<String>> extractor) {

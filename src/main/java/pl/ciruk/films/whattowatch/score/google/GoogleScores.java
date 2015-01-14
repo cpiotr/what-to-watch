@@ -49,7 +49,7 @@ public class GoogleScores implements ScoresProvider {
 		try {
 			return String.format(
 					"https://www.google.com/search?q=%s+%d+%s", 
-					URLEncoder.encode(description.getTitle(), Charset.defaultCharset().name()), 
+					URLEncoder.encode(description.titleAsText(), Charset.defaultCharset().name()),
 					description.getYear(),
 					URLEncoder.encode(sourcePage, Charset.defaultCharset().name()));
 		} catch (UnsupportedEncodingException e) {

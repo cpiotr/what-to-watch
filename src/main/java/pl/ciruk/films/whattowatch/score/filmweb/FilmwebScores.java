@@ -20,7 +20,10 @@ public class FilmwebScores implements ScoresProvider {
 
 	public static void main(String[] args) {
 		FilmwebScores scores = new FilmwebScores();
-		scores.scoresOf(new Description(new Title("Rambo III", "Rambo III", 1988)))
+		scores.scoresOf(
+				Description.builder()
+						.title(Title.builder().title("Rambo III").originalTitle("Rambo III").year(1988).build())
+						.build())
 				.forEach(System.out::println);
 	}
 }
