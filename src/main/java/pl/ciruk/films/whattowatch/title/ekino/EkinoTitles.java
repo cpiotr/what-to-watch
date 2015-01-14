@@ -3,12 +3,13 @@ package pl.ciruk.films.whattowatch.title.ekino;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
 
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.films.whattowatch.title.Title;
@@ -25,30 +26,21 @@ public class EkinoTitles implements TitleProvider {
 		this.urls = new HashMap<>();
 	}
 
-
-
 	@Override
-	public Stream<Title> streamOfTitles(int numberOfTitles) {
-		try {
-			Document document = getPage(0);
+	public Stream<Title> streamOfTitles() {
+		int numberOfPages = getFilmsPageOfNumber(0)
+				.flatMap(EkinoSelectors.NUMBER_OF_PAGES::extractFrom)
+                .map(Integer::valueOf)
+                .orElse(1);
+		//TODO: Logger
+		System.out.println("Number of pages: " + numberOfPages);
 
-			int numberOfPages = Integer.valueOf(
-					EkinoSelectors.NUMBER_OF_PAGES.extractFrom(document).orElse("10"));
-			
-			return IntStream.range(0, 10)
-					.parallel()
-					.mapToObj(i -> i)
-					.flatMap(i -> {
-						try {
-							return process(getPage(i));
-						} catch (Exception e) {
-							//System.err.println("Cannot download page number: " + i);
-							throw new RuntimeException(e);
-						}
-					}); 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		return IntStream.range(0, numberOfPages)
+                .parallel()
+                .mapToObj(i -> i)
+                .flatMap(i -> getFilmsPageOfNumber(i)
+						.map(page -> retrieveTitlesFrom(page))
+						.orElse(Stream.empty()));
 	}
 
 	@Override
@@ -57,34 +49,40 @@ public class EkinoTitles implements TitleProvider {
 		return ROOT_URL + urls.getOrDefault(key, "");
 	}
 
-	Document getPage(int pageNumber) throws IOException {
-		Document document = connection.to(String.format(ROOT_URL + "kategorie,%d,dubbing-lektor-napisy-polskie,,2008-2014,,.html", pageNumber))
-				.data("sort_field", "data-dodania")
-				.data("sort_method", "desc")
-				.get();
-		
-		return document;
+	Optional<Document> getFilmsPageOfNumber(int pageNumber) {
+		Document document = null;
+		try {
+			document = connection.to(String.format(ROOT_URL + "kategorie,%d,dubbing-lektor-napisy-polskie,,2008-2014,,.html", pageNumber))
+                    .data("sort_field", "data-dodania")
+                    .data("sort_method", "desc")
+                    .get();
+		} catch (IOException e) {
+			// TODO: Logger
+			e.printStackTrace();
+		}
+
+		return Optional.ofNullable(document);
 	}
 	
-	Stream<Title> process(Document page) {
-		Elements elements = page.select("ul.movies li");
-		return elements.stream()
-			.map(li -> {
-				String polishTitle = EkinoSelectors.LOCAL_TITLE.extractFrom(li).orElse("");
-				String originalTitle = EkinoSelectors.ORIGINAL_TITLE.extractFrom(li).orElse("");
-				int year = Integer.valueOf(
-						EkinoSelectors.YEAR.extractFrom(li).orElse("0"));
-				Title title = Title.builder()
-						.title(polishTitle)
-						.originalTitle(originalTitle)
-						.year(year)
-						.build();
+	Stream<Title> retrieveTitlesFrom(Document filmListPage) {
+		return EkinoStreamSelectors.FILMS.extractFrom(filmListPage)
+				.map(this::titleFrom);
+	}
 
-				urls.putIfAbsent(computeKeyFrom(title), EkinoSelectors.LINK_TO_FILM.extractFrom(li).orElse(""));
+	Title titleFrom(Element filmAsHtml) {
+		String polishTitle = EkinoSelectors.LOCAL_TITLE.extractFrom(filmAsHtml).orElse("");
+		String originalTitle = EkinoSelectors.ORIGINAL_TITLE.extractFrom(filmAsHtml).orElse("");
+		int year = Integer.valueOf(
+                EkinoSelectors.YEAR.extractFrom(filmAsHtml).orElse("0"));
+		Title title = Title.builder()
+                .title(polishTitle)
+                .originalTitle(originalTitle)
+                .year(year)
+                .build();
 
-				return title;
+		urls.putIfAbsent(computeKeyFrom(title), EkinoSelectors.LINK_TO_FILM.extractFrom(filmAsHtml).orElse(""));
 
-			});
+		return title;
 	}
 
 	private String computeKeyFrom(Title title) {
