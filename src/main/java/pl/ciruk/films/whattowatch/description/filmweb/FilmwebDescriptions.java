@@ -48,7 +48,6 @@ public class FilmwebDescriptions implements DescriptionProvider {
 					String originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(details)
 							.orElse("");
 					int extractedYear = extractYearFrom(details);
-					String url;
 
 					Title retirevedTitle = Title.builder()
 							.title(localTitle)
@@ -59,6 +58,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 					return Description.builder()
 							.title(retirevedTitle)
 							.poster(FilmwebSelectors.POSTER.extractFrom(details).orElse(""))
+							.plot(FilmwebSelectors.PLOT.extractFrom(details).orElse(""))
 							.build();
 				});
 	}

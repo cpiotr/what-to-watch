@@ -19,6 +19,8 @@ public class Description {
 
 	private String poster;
 
+	private String plot;
+
 	public String titleAsText() {
 		return Optional.ofNullable(title.getOriginalTitle())
 				.filter(t -> !Strings.isNullOrEmpty(t))

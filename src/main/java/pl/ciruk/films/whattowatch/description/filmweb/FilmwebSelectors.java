@@ -24,6 +24,10 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
 			.stream()
 			.map(e -> e.attr("src"))
 			.findFirst()),
+	PLOT(details -> details.select(".filmMainHeader .filmPlot")
+			.stream()
+			.map(Element::text)
+			.findFirst()),
 	;
 
 	public static final String ROOT_URL = "http://filmweb.pl";

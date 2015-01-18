@@ -9,9 +9,10 @@ import java.util.function.Function;
 public enum GoogleSelectors implements Extractable<Optional<String>> {
 	SCORE(details -> details.select("ol#rso li.g div.slp")
 			.stream()
+			.findFirst()
+			.filter(e -> !e.select("g-reviewstars").isEmpty())
 			.map(Element::text)
-			.filter(s -> !s.isEmpty())
-			.findFirst())
+			.filter(s -> !s.isEmpty()))
 	;
 	private Function<Element, Optional<String>> extractor;
 
