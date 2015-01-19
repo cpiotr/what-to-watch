@@ -7,11 +7,11 @@ import lombok.ToString;
 @ToString
 public class Score {
 
-	private double score;
+	private double grade;
 	private int quantity;
 
-	public Score(double nextDouble, int nextInt) {
-		this.score = nextDouble;
-		this.quantity = nextInt;
+	public Score(double grade, int quantity) {
+		this.grade = grade;
+		this.quantity = quantity;
 	}
 }

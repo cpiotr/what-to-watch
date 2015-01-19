@@ -16,11 +16,11 @@ public class Film {
 	@Getter
 	@Setter
 	private String link;
-	
+
 	List<Score> scores = new ArrayList<>();
 
 	private Description description;
-	
+
 	public Film(Description description) {
 		this.description = description;
 	}
@@ -35,7 +35,7 @@ public class Film {
 
 	@Override
 	public String toString() {
-		double avgScore = scores.stream().mapToDouble(Score::getScore).average().orElse(0.0);
+		double avgScore = scores.stream().mapToDouble(Score::getGrade).average().orElse(0.0);
 		int totalQuantity = scores.stream().mapToInt(Score::getQuantity).sum();
 		return String.format("Title: %s. Year: %d. Scores: %d. AvgScore: %f; TotalQuantity: %d.",
 				description.titleAsText(),
@@ -55,7 +55,7 @@ public class Film {
 
 	public Double score() {
 		return scores.stream()
-				.mapToDouble(Score::getScore)
+				.mapToDouble(Score::getGrade)
 				.average()
 				.orElse(0.0);
 	}
@@ -78,5 +78,9 @@ public class Film {
 
 	public Integer year() {
 		return description.getYear();
+	}
+
+	public List<String> genres() {
+		return description.getGenres();
 	}
 }

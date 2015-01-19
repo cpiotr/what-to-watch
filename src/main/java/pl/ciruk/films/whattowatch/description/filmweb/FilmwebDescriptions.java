@@ -16,6 +16,7 @@ import pl.ciruk.films.whattowatch.description.DescriptionProvider;
 import pl.ciruk.films.whattowatch.title.Title;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.stream.Collectors.toList;
 
 public class FilmwebDescriptions implements DescriptionProvider {
 
@@ -59,6 +60,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 							.title(retirevedTitle)
 							.poster(FilmwebSelectors.POSTER.extractFrom(details).orElse(""))
 							.plot(FilmwebSelectors.PLOT.extractFrom(details).orElse(""))
+							.genres(FilmwebStreamSelectors.GENRES.extractFrom(details).collect(toList()))
 							.build();
 				});
 	}

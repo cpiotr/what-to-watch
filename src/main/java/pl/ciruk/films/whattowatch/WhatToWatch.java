@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static pl.ciruk.core.math.WilsonScore.confidenceIntervalLowerBound;
 
 public class WhatToWatch {
 	TitleProvider titles;
@@ -56,7 +55,7 @@ public class WhatToWatch {
 								.forEach(score -> film.add(score));
 						return film;
 					})
-					.filter(film -> film.scores.stream().mapToDouble(Score::getScore).average().orElse(0.0) > 0.6)
+					.filter(film -> film.scores.stream().mapToDouble(Score::getGrade).average().orElse(0.0) > 0.6)
 					.filter(film -> film.numberOfScores() > 1)
 					.sorted((first, second) -> {
 						return second.normalizedScore().compareTo(first.normalizedScore());

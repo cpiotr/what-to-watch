@@ -1,5 +1,6 @@
 package pl.ciruk.films.whattowatch.description;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.google.common.base.Strings;
@@ -20,6 +21,8 @@ public class Description {
 	private String poster;
 
 	private String plot;
+
+	private List<String> genres;
 
 	public String titleAsText() {
 		return Optional.ofNullable(title.getOriginalTitle())
