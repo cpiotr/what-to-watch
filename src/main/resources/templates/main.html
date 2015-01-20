@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.2.0/css/bootstrap.min.css}"
+          rel="stylesheet" media="screen"/>
+
+    <script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.1/jquery.min.js"
+            th:src="@{/webjars/jquery/2.1.1/jquery.min.js}"></script>
+</head>
+<body>
+<p th:text="'Number of films: ' + ${numberOfFilms} + '!'"/>
+<div class="container">
+    <div role="main">
+        <div class="row" th:each="row : ${films}">
+            <div class="col-sm-6 col-md-4" th:each="film : ${row}">
+                <div class="thumbnail">
+                    <img th:src="${film.poster()}" alt="..."/>
+                    <div class="caption">
+                        <h3>
+                            <a th:href="${film.getLink()}" th:text="|${film.title()} (${film.year()})|"/>
+                        </h3>
+                        <p th:text="${film.plot()}"/>
+                        <p>
+                            <div class="btn btn-primary" role="button">
+                                <span class="glyphicon glyphicon-star" aria-hidden="true"/>
+                                <spam class="badge" th:text="${#numbers.formatDecimal(film.score(), 1, 2)}"/>
+                            </div>
+                            <div class="btn btn-primary" role="button"># of sources: <spam class="badge" th:text="${film.numberOfScores()}"/></div>
+                        </p>
+
+                        <p class="genres">
+                            <span class="label label-info" th:each="genre: ${film.genres()}" th:text="${genre}"/>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
