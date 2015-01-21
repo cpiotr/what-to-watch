@@ -27,7 +27,6 @@ public class JsoupConnection {
 		Optional<Element> document = Optional.ofNullable(cache.opsForValue().get(url))
 				.map(Jsoup::parse);
 		if (document.isPresent()) {
-			System.out.println("Cache hit");
 			return document;
 		} else {
 			Element content = null;

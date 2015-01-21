@@ -22,6 +22,6 @@ public class FIlmsController {
         model.addAttribute("numberOfFilms", numberOfFilms);
         List<Film> films = w2w.get(numberOfFilms);
         model.addAttribute("films", Lists.partition(films, 3));
-        return "main";
+        return "films";
     }
 }

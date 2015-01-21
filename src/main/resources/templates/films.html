@@ -17,7 +17,9 @@
         <div class="row" th:each="row : ${films}">
             <div class="col-sm-6 col-md-4" th:each="film : ${row}">
                 <div class="thumbnail">
-                    <img th:src="${film.poster()}" alt="..."/>
+                    <a th:href="${film.getLink()}">
+                        <img th:src="${film.poster()}" alt="${film.title}}"/>
+                    </a>
                     <div class="caption">
                         <h3>
                             <a th:href="${film.getLink()}" th:text="|${film.title()} (${film.year()})|"/>
