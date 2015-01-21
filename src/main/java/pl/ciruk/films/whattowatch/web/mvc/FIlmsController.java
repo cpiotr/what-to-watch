@@ -13,7 +13,7 @@ import java.util.List;
 
 @Controller
 @org.springframework.boot.autoconfigure.EnableAutoConfiguration
-public class FIlmsController {
+public class FilmsController {
     @Autowired
     WhatToWatch w2w;
 
