@@ -1,6 +1,7 @@
 package pl.ciruk.films.whattowatch.web.mvc;
 
 import com.google.common.collect.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +12,10 @@ import pl.ciruk.films.whattowatch.WhatToWatch;
 import java.util.List;
 
 @Controller
+@org.springframework.boot.autoconfigure.EnableAutoConfiguration
 public class FIlmsController {
-    WhatToWatch w2w = new WhatToWatch();
+    @Autowired
+    WhatToWatch w2w;
 
     @RequestMapping("/films")
     public String suggestFilms(@RequestParam(value="numberOfFilms", required=false, defaultValue="20") Integer numberOfFilms, Model model) {

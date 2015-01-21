@@ -11,15 +11,19 @@ import pl.ciruk.films.whattowatch.title.Title;
 
 public class IMDBScores implements ScoresProvider {
 
-	ScoresProvider dataSource = new GoogleScores(new JsoupConnection(), "imdb");
-	
+	ScoresProvider dataSource;
+
+	public IMDBScores(JsoupConnection jsoupConnection) {
+		dataSource = new GoogleScores(jsoupConnection, "imdb");
+	}
+
 	@Override
 	public Stream<Score> scoresOf(Description description) {
 		return dataSource.scoresOf(description);
 	}
 
 	public static void main(String[] args) {
-		IMDBScores scores = new IMDBScores();
+		IMDBScores scores = new IMDBScores(null);
 		scores.scoresOf(
 				Description.builder()
 						.title(Title.builder().title("Rambo III").originalTitle("Rambo III").year(1988).build())

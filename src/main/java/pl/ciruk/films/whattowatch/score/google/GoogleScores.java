@@ -38,11 +38,7 @@ public class GoogleScores implements ScoresProvider {
 	}
 
 	private Optional<String> retrieveScoreFrom(String url) {
-		try {
-			return GoogleSelectors.SCORE.extractFrom(connection.to(url).get());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		return GoogleSelectors.SCORE.extractFrom(connection.connectToAndGet(url).get());
 	}
 
 	private String formatUrlBasedOn(Description description) {

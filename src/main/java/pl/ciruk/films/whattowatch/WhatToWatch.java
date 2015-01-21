@@ -1,5 +1,12 @@
 package pl.ciruk.films.whattowatch;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;
 import pl.ciruk.films.whattowatch.description.filmweb.FilmwebDescriptions;
@@ -12,36 +19,49 @@ import pl.ciruk.films.whattowatch.title.Title;
 import pl.ciruk.films.whattowatch.title.TitleProvider;
 import pl.ciruk.films.whattowatch.title.ekino.EkinoTitles;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+@Service
 public class WhatToWatch {
 	TitleProvider titles;
-	
+
 	DescriptionProvider descriptions;
-	
+
 	List<ScoresProvider> scoresProviders;
+
+	@Autowired
+	private StringRedisTemplate redis;
 	
 	public WhatToWatch() {
-		titles = new EkinoTitles(new JsoupConnection());
-		
-		descriptions = new FilmwebDescriptions(new JsoupConnection());
+	}
+
+	public void initDependencies() {
+		titles = new EkinoTitles(new JsoupConnection(redis));
+
+		descriptions = new FilmwebDescriptions(new JsoupConnection(redis));
 
 		scoresProviders = new ArrayList<>();
-		scoresProviders.add(new IMDBScores());
-		scoresProviders.add(new MetacriticScores(new JsoupConnection()));
-		scoresProviders.add(new FilmwebScores());
+		scoresProviders.add(new IMDBScores(new JsoupConnection(redis)));
+		scoresProviders.add(new MetacriticScores(new JsoupConnection(redis)));
+		scoresProviders.add(new FilmwebScores(new JsoupConnection(redis)));
 	}
-	
+
 	public List<Film> get(int numberOfFilms) {
+		if (titles == null) {
+			initDependencies();
+		}
+
 		FilmSuggestionProvider provider = i -> {
 			Stream<Title> streamOfTitles = titles.streamOfTitles()
 					.limit(i);
-			
+
 			return streamOfTitles
 					.parallel()
 					.map(descriptions::descriptionOf)
@@ -70,7 +90,7 @@ public class WhatToWatch {
 						titles.urlFor(f.foundFor())))
 				.collect(toList());
 	}
-	
+
 	public static void main(String[] args) {
 		WhatToWatch w2w = new WhatToWatch();
 		w2w.get(50);

@@ -77,15 +77,8 @@ public class MetacriticScores implements ScoresProvider {
 				.map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT));
 	}
 	
-	private Optional<Document> downloadPage(String url) {
-		Optional<Document> document = Optional.empty();
-		try {
-			document = Optional.of(connection.to(url).get());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return document;
+	private Optional<Element> downloadPage(String url) {
+		return connection.connectToAndGet(url);
 	}
 
 	Optional<Element> metacriticSummaryOf(String title, int year) {
