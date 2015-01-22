@@ -1,28 +1,31 @@
 package pl.ciruk.films.whattowatch.description.filmweb;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
-import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.cache.CacheProvider;
+import pl.ciruk.films.whattowatch.net.JsoupCachedConnection;
+import pl.ciruk.films.whattowatch.net.JsoupConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;
 import pl.ciruk.films.whattowatch.title.Title;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.toList;
 
+@Named
 public class FilmwebDescriptions implements DescriptionProvider {
 
 
 	private JsoupConnection connection;
 
+	@Inject
 	public FilmwebDescriptions(JsoupConnection connection) {
 		this.connection = connection;
 	}
@@ -101,7 +104,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	}
 	
 	public static void main(String[] args) {
-		FilmwebDescriptions descriptions=new FilmwebDescriptions(new JsoupConnection());
+		FilmwebDescriptions descriptions=new FilmwebDescriptions(new JsoupCachedConnection(CacheProvider.empty()));
 		Description paramObject = descriptions.descriptionOf(Title.builder().title("Rambo").year(1988).build()).get();
 		System.out.println(paramObject);
 	}

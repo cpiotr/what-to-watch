@@ -1,13 +1,13 @@
 package pl.ciruk.films.whattowatch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.score.Score;
 import pl.ciruk.films.whattowatch.title.Title;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static pl.ciruk.core.math.WilsonScore.confidenceIntervalLowerBound;
 
@@ -17,6 +17,7 @@ public class Film {
 	@Setter
 	private String link;
 
+	@Getter
 	List<Score> scores = new ArrayList<>();
 
 	private Description description;

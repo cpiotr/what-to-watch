@@ -1,38 +1,38 @@
-package pl.ciruk.core.net;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
+package pl.ciruk.films.whattowatch.net;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import pl.ciruk.core.cache.CacheProvider;
 
-public class JsoupConnection {
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
 
-	private StringRedisTemplate cache;
+@Named
+public class JsoupCachedConnection implements JsoupConnection {
 
-	public JsoupConnection() {
-	}
+	private CacheProvider<String> cache;
 
-	public JsoupConnection(StringRedisTemplate cache) {
+	@Inject
+	public JsoupCachedConnection(CacheProvider<String> cache) {
 		this.cache = cache;
 	}
 
+	@Override
 	public Optional<Element> connectToAndGet(String url) {
-		Optional<Element> document = Optional.ofNullable(cache.opsForValue().get(url))
+		Optional<Element> document = cache.get(url)
 				.map(Jsoup::parse);
+
 		if (document.isPresent()) {
 			return document;
 		} else {
 			Element content = null;
 			try {
 				content = to(url).get();
-				cache.opsForValue().set(url, content.html());
+				cache.put(url, content.html());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -40,6 +40,7 @@ public class JsoupConnection {
 		}
 	}
 
+	@Override
 	public Connection to(String url) {
 		return Jsoup.connect(url)
 				.timeout(60 * 1000)

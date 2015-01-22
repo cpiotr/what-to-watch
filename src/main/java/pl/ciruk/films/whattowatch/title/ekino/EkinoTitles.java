@@ -1,5 +1,14 @@
 package pl.ciruk.films.whattowatch.title.ekino;
 
+import com.google.common.base.Strings;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import pl.ciruk.films.whattowatch.net.JsoupConnection;
+import pl.ciruk.films.whattowatch.title.Title;
+import pl.ciruk.films.whattowatch.title.TitleProvider;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,20 +16,15 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.google.common.base.Strings;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import pl.ciruk.core.net.JsoupConnection;
-import pl.ciruk.films.whattowatch.title.Title;
-import pl.ciruk.films.whattowatch.title.TitleProvider;
-
+@Named
 public class EkinoTitles implements TitleProvider {
 	private static final String ROOT_URL = "http://www.ekino.tv/";
+
 	private JsoupConnection connection;
 
 	Map<String, String> urls;
 
+	@Inject
 	public EkinoTitles(JsoupConnection connection) {
 		this.connection = connection;
 		this.urls = new HashMap<>();

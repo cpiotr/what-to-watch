@@ -1,9 +1,8 @@
 package pl.ciruk.films.whattowatch.score.metacritic;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.Extractable;
+import pl.ciruk.films.whattowatch.net.Extractable;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
