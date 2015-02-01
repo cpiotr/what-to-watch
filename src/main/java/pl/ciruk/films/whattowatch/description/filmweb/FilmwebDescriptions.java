@@ -71,7 +71,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	private Integer extractYearFrom(Element details) {
 		return FilmwebSelectors.YEAR.extractFrom(details)
                 .map(this::parseYear)
-                .orElseThrow(() -> new MissingValueException());
+                .orElseThrow(MissingValueException::new);
 	}
 
 	private Integer parseYear(String extractFrom) {
