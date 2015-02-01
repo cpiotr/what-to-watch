@@ -53,9 +53,7 @@ public class DefaultSuggestions implements FilmSuggestionProvider {
                 .filter(film -> film.normalizedScore() > 0.6)
                 .filter(film -> film.numberOfScores() > 1)
                 .limit(numberOfFilms)
-                .sorted((first, second) -> {
-                    return second.normalizedScore().compareTo(first.normalizedScore());
-                })
+                .sorted(Film.Compare.BY_NORMALIZED_SCORE)
                 .peek(f -> f.setLink(
                         titles.urlFor(f.foundFor())));
     }

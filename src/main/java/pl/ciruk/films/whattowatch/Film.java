@@ -7,11 +7,16 @@ import pl.ciruk.films.whattowatch.score.Score;
 import pl.ciruk.films.whattowatch.title.Title;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static pl.ciruk.core.math.WilsonScore.confidenceIntervalLowerBound;
 
 public class Film {
+	public static class Compare {
+		public static Comparator<Film> BY_NORMALIZED_SCORE = (
+				first, second) -> second.normalizedScore().compareTo(first.normalizedScore());
+	}
 
 	@Getter
 	@Setter
