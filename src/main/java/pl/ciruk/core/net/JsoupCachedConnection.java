@@ -1,4 +1,4 @@
-package pl.ciruk.films.whattowatch.net;
+package pl.ciruk.core.net;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;

@@ -6,7 +6,7 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import pl.ciruk.films.whattowatch.net.JsoupConnection;
+import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.score.Score;

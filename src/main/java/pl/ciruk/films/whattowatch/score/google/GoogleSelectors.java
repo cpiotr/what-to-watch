@@ -1,7 +1,7 @@
 package pl.ciruk.films.whattowatch.score.google;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.films.whattowatch.net.Extractable;
+import pl.ciruk.core.net.Extractable;
 
 import java.util.Optional;
 import java.util.function.Function;

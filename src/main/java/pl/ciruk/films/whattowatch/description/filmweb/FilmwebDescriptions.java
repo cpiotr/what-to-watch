@@ -2,8 +2,8 @@ package pl.ciruk.films.whattowatch.description.filmweb;
 
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
-import pl.ciruk.films.whattowatch.net.JsoupCachedConnection;
-import pl.ciruk.films.whattowatch.net.JsoupConnection;
+import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;

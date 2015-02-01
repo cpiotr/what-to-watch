@@ -1,6 +1,6 @@
 package pl.ciruk.films.whattowatch.score.filmweb;
 
-import pl.ciruk.films.whattowatch.net.JsoupConnection;
+import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.score.Score;
 import pl.ciruk.films.whattowatch.score.ScoresProvider;

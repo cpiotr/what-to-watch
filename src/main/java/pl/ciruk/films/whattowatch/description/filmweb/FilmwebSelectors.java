@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.films.whattowatch.net.Extractable;
+import pl.ciruk.core.net.Extractable;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
 	YEAR(details -> details.select(".filmMainHeader .hdr span.halfSize")

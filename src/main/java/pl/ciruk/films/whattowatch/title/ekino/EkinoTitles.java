@@ -3,7 +3,7 @@ package pl.ciruk.films.whattowatch.title.ekino;
 import com.google.common.base.Strings;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import pl.ciruk.films.whattowatch.net.JsoupConnection;
+import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.films.whattowatch.title.Title;
 import pl.ciruk.films.whattowatch.title.TitleProvider;
 

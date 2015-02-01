@@ -1,7 +1,7 @@
 package pl.ciruk.films.whattowatch.score.metacritic;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.films.whattowatch.net.Extractable;
+import pl.ciruk.core.net.Extractable;
 import pl.ciruk.core.text.NumberToken;
 import pl.ciruk.core.text.NumberTokenizer;
 
