@@ -1,10 +1,11 @@
 package pl.ciruk.films.whattowatch.suggest;
 
+import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.films.whattowatch.Film;
 import pl.ciruk.films.whattowatch.cache.RedisCache;
+import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;
 import pl.ciruk.films.whattowatch.score.ScoresProvider;
-import pl.ciruk.films.whattowatch.title.Title;
 import pl.ciruk.films.whattowatch.title.TitleProvider;
 
 import javax.inject.Inject;
@@ -45,28 +46,30 @@ public class DefaultSuggestions implements FilmSuggestionProvider {
 
     @Override
     public Stream<Film> suggestNumberOfFilms(int numberOfFilms) {
-        Stream<Title> streamOfTitles = titles.streamOfTitles()
-                .limit(numberOfFilms);
-
-        return streamOfTitles
+        return titles.streamOfTitles()
                 .parallel()
                 .map(descriptions::descriptionOf)
-                .filter(Optional::isPresent)
-                .map(optional -> optional.get())
-                .map(description -> {
-                    Film film = new Film(description);
-                    scoresProviders.stream()
-                            .parallel()
-                            .flatMap(scoreProvider -> scoreProvider.scoresOf(description))
-                            .forEach(score -> film.add(score));
-                    return film;
-                })
+                .flatMap(this::filmFor)
                 .filter(film -> film.normalizedScore() > 0.6)
                 .filter(film -> film.numberOfScores() > 1)
+                .limit(numberOfFilms)
                 .sorted((first, second) -> {
                     return second.normalizedScore().compareTo(first.normalizedScore());
                 })
                 .peek(f -> f.setLink(
                         titles.urlFor(f.foundFor())));
+    }
+
+    Stream<Film> filmFor(Optional<Description> description) {
+        return Optionals.asStream(
+                description.map(d -> {
+                    Film film = new Film(d);
+                    scoresProviders.stream()
+                            .parallel()
+                            .flatMap(scoreProvider -> scoreProvider.scoresOf(d))
+                            .forEach(score -> film.add(score));
+                    return film;
+                })
+        );
     }
 }
