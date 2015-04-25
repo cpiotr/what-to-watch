@@ -10,7 +10,7 @@ public enum GoogleSelectors implements Extractable<Optional<String>> {
 	SCORE(details -> details.select("ol#rso li.g div.slp")
 			.stream()
 			.findFirst()
-			.filter(e -> !e.select("g-reviewstars").isEmpty())
+			.filter(e -> !e.select("g-review-stars").isEmpty())
 			.map(Element::text)
 			.filter(s -> !s.isEmpty()))
 	;
