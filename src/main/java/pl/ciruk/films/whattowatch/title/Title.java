@@ -1,9 +1,8 @@
 package pl.ciruk.films.whattowatch.title;
 
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.experimental.Builder;
 
 @Getter
 @ToString

@@ -1,13 +1,13 @@
 package pl.ciruk.films.whattowatch.description;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.google.common.base.Strings;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.experimental.Builder;
 import pl.ciruk.films.whattowatch.title.Title;
+
+import java.util.List;
+import java.util.Optional;
 
 @ToString
 @Getter
