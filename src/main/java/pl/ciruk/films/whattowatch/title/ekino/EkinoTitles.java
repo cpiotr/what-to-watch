@@ -1,6 +1,7 @@
 package pl.ciruk.films.whattowatch.title.ekino;
 
 import com.google.common.base.Strings;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.JsoupConnection;
@@ -17,6 +18,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Named
+@Slf4j
 public class EkinoTitles implements TitleProvider {
 	private static final String ROOT_URL = "http://www.ekino.tv/";
 
@@ -36,12 +38,11 @@ public class EkinoTitles implements TitleProvider {
 				.flatMap(EkinoSelectors.NUMBER_OF_PAGES::extractFrom)
                 .map(Integer::valueOf)
                 .orElse(1);
-		//TODO: Logger
-		System.out.println("Number of pages: " + numberOfPages);
+		log.debug("Number of pages: {}", numberOfPages);
 
-		return IntStream.range(0, numberOfPages)
+		return IntStream.range(0, 10)
                 .parallel()
-                .mapToObj(i -> i)
+                .boxed()
                 .flatMap(i -> getFilmsPageOfNumber(i)
 						.map(page -> retrieveTitlesFrom(page))
 						.orElse(Stream.empty()));
@@ -61,8 +62,7 @@ public class EkinoTitles implements TitleProvider {
                     .data("sort_method", "desc")
                     .get();
 		} catch (IOException e) {
-			// TODO: Logger
-			e.printStackTrace();
+			log.warn("Cannot get films for page number {}", pageNumber);
 		}
 
 		return Optional.ofNullable(document);

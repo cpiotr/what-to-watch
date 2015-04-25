@@ -119,7 +119,7 @@ public class MetacriticScores implements ScoresProvider {
 		MetacriticScores scores = new MetacriticScores(new JsoupCachedConnection(CacheProvider.empty()));
 		
 		Description description = Description.builder()
-				.title(Title.builder().title("Identity Thief").originalTitle("Identity Thief").year(2013).build())
+				.title(Title.builder().title("Citizenfour").originalTitle("Citizenfour").year(2014).build())
 				.build();
 		scores.scoresOf(description).forEach(System.out::println);
 	}

@@ -1,5 +1,7 @@
 package pl.ciruk.films.whattowatch.score.imdb;
 
+import pl.ciruk.core.cache.CacheProvider;
+import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.score.Score;
@@ -27,10 +29,10 @@ public class IMDBScores implements ScoresProvider {
 	}
 
 	public static void main(String[] args) {
-		IMDBScores scores = new IMDBScores(null);
+		IMDBScores scores = new IMDBScores(new JsoupCachedConnection(CacheProvider.empty()));
 		scores.scoresOf(
 				Description.builder()
-						.title(Title.builder().title("Rambo III").originalTitle("Rambo III").year(1988).build())
+						.title(Title.builder().title("Citizenfour").originalTitle("Citizenfour").year(2014).build())
 						.build())
 				.forEach(System.out::println);
 	}

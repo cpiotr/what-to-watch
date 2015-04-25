@@ -1,8 +1,9 @@
 package pl.ciruk.films.whattowatch.suggest;
 
+import lombok.extern.slf4j.Slf4j;
+import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.films.whattowatch.Film;
-import pl.ciruk.films.whattowatch.cache.RedisCache;
 import pl.ciruk.films.whattowatch.description.Description;
 import pl.ciruk.films.whattowatch.description.DescriptionProvider;
 import pl.ciruk.films.whattowatch.score.ScoresProvider;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Named
+@Slf4j
 public class DefaultSuggestions implements FilmSuggestionProvider {
     private TitleProvider titles;
 
@@ -23,13 +25,13 @@ public class DefaultSuggestions implements FilmSuggestionProvider {
 
     private List<ScoresProvider> scoresProviders;
 
-    private RedisCache redis;
+    private CacheProvider<String> redis;
 
     @Inject
     public DefaultSuggestions(TitleProvider titles,
                        DescriptionProvider descriptions,
                        List<ScoresProvider> scoresProviders,
-                       RedisCache redis,
+                       CacheProvider<String> redis,
                        @Named("IMDB") ScoresProvider imdbScores,
                        @Named("Metacritic") ScoresProvider metacriticScores,
                        @Named("Filmweb") ScoresProvider filmwebScores) {
@@ -37,6 +39,8 @@ public class DefaultSuggestions implements FilmSuggestionProvider {
         this.descriptions = descriptions;
         this.scoresProviders = scoresProviders;
         this.redis = redis;
+
+        log.info("CacheProvider: {}", redis);
 
         scoresProviders = new ArrayList<>();
         scoresProviders.add(imdbScores);
@@ -52,7 +56,6 @@ public class DefaultSuggestions implements FilmSuggestionProvider {
                 .flatMap(this::filmFor)
                 .filter(film -> film.normalizedScore() > 0.6)
                 .filter(film -> film.numberOfScores() > 1)
-                .limit(numberOfFilms)
                 .sorted(Film.Compare.BY_NORMALIZED_SCORE)
                 .peek(f -> f.setLink(
                         titles.urlFor(f.foundFor())));
