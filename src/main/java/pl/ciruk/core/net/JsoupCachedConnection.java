@@ -1,5 +1,6 @@
 package pl.ciruk.core.net;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -12,6 +13,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @Named
+@Slf4j
 public class JsoupCachedConnection implements JsoupConnection {
 
 	private CacheProvider<String> cache;
@@ -34,7 +36,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 				content = to(url).get();
 				cache.put(url, content.html());
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.warn("connectToAndGet - Cannot fetch " + url, e);
 			}
 			return Optional.ofNullable(content);
 		}
@@ -45,6 +47,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 		return Jsoup.connect(url)
 				.timeout(60 * 1000)
 				.userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
+				.userAgent("Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko")
 				.header("Accept-Language", "pl")
 				.referrer(rootDomainFor(url));
 	}
