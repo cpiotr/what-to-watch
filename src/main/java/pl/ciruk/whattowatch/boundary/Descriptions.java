@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.boundary;
 
 import org.springframework.stereotype.Component;
+import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.title.Title;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Component
 @Path("/descriptions")
 public class Descriptions {
-	FilmwebDescriptions filmwebDescriptions;
+	DescriptionProvider filmwebDescriptions;
 
 	@Inject
 	public Descriptions(FilmwebDescriptions filmwebDescriptions) {
