@@ -1,5 +1,6 @@
 package pl.ciruk.core.net;
 
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -10,7 +11,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Named
 @Slf4j
@@ -18,9 +21,12 @@ public class JsoupCachedConnection implements JsoupConnection {
 
 	private CacheProvider<String> cache;
 
+	private Map<String, String> cookies;
+
 	@Inject
 	public JsoupCachedConnection(CacheProvider<String> cache) {
 		this.cache = cache;
+		cookies = Maps.newHashMap();
 	}
 
 	@Override
@@ -33,7 +39,9 @@ public class JsoupCachedConnection implements JsoupConnection {
 		} else {
 			Element content = null;
 			try {
-				content = to(url).get();
+				Connection.Response response = to(url).cookies(cookies).execute();
+				cookies.putAll(response.cookies());
+				content = response.parse();
 				cache.put(url, content.html());
 			} catch (IOException e) {
 				log.warn("connectToAndGet - Cannot fetch " + url, e);
@@ -42,8 +50,19 @@ public class JsoupCachedConnection implements JsoupConnection {
 		}
 	}
 
-	@Override
-	public Connection to(String url) {
+	public Optional<Element> connectToAndConsume(String url, Consumer<Connection> action) {
+		Connection connection = to(url);
+		action.accept(connection);
+		try {
+			Connection.Response response = connection.followRedirects(true).execute();
+			cookies.putAll(response.cookies());
+			return Optional.ofNullable(response.parse());
+		} catch (IOException e) {
+			throw new RuntimeException("Cannot process request to " + url, e);
+		}
+	}
+
+	Connection to(String url) {
 		return Jsoup.connect(url)
 				.timeout(60 * 1000)
 				.userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
