@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.title.zalukaj;
 
+import org.jsoup.Connection;
 import org.springframework.beans.factory.annotation.Value;
 import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.stream.Optionals;
@@ -25,14 +26,31 @@ public class ZalukajTitles implements TitleProvider {
 		this.connection = connection;
 	}
 
+	@Value("${zalukaj-login-url}")
+	String loginPage;
+
+	@Value("${zalukaj-login}")
+	String login;
+
+	@Value("${zalukaj-password}")
+	String password;
+
 	@Value("#{'${titles.zalukaj.url-patterns}'.split(';')}")
 	List<String> urls;
 
 	@Override
 	public Stream<Title> streamOfTitles() {
-		return urls.stream()
+		connection.connectToAndConsume(
+				loginPage,
+				c -> c.data("login", login)
+						.data("password", password)
+						.method(Connection.Method.POST)
+		);
+
+		return urls.stream().parallel()
 				.flatMap(pattern -> generateFivePages(pattern))
 				.map(connection::connectToAndGet)
+				.peek(System.out::println)
 				.flatMap(Optionals::asStream)
 				.flatMap(ZalukajSelectors.TITLES::extractFrom)
 				.map(this::parseToTitle);

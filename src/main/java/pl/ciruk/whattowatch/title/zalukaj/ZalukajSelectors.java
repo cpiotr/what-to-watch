@@ -9,7 +9,8 @@ import java.util.stream.Stream;
 public enum ZalukajSelectors implements Extractable<Stream<String>> {
 	TITLES(description -> description.select(".tivief4 .rmk23m4 h3 a")
 			.stream()
-			.map(Element::text)
+			.map(element -> element.attr("title"))
+			.map(ZalukajSelectors::onlyTitleAndYear)
 	),;
 
 	private Function<Element, Stream<String>> extractor;
@@ -21,5 +22,10 @@ public enum ZalukajSelectors implements Extractable<Stream<String>> {
 	@Override
 	public Stream<String> extractFrom(Element element) {
 		return extractor.apply(element);
+	}
+
+	private static String onlyTitleAndYear(String wholeDescriptionInTitle) {
+		int endOfFirstPart = wholeDescriptionInTitle.indexOf('|');
+		return wholeDescriptionInTitle.substring(0, endOfFirstPart).trim();
 	}
 }
