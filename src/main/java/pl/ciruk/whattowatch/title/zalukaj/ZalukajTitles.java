@@ -50,7 +50,6 @@ public class ZalukajTitles implements TitleProvider {
 		return urls.stream().parallel()
 				.flatMap(pattern -> generateFivePages(pattern))
 				.map(connection::connectToAndGet)
-				.peek(System.out::println)
 				.flatMap(Optionals::asStream)
 				.flatMap(ZalukajSelectors.TITLES::extractFrom)
 				.map(this::parseToTitle);
