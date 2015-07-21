@@ -44,8 +44,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 		} else {
 			Element content = null;
 			try {
-				Request.Builder requestBuilder = new Request.Builder().url(url);
-				Response response = execute(requestBuilder);
+				Response response = execute(to(url));
 				content = Jsoup.parse(response.body().string());
 				cache.put(url, content.html());
 			} catch (IOException e) {
@@ -58,8 +57,8 @@ public class JsoupCachedConnection implements JsoupConnection {
 	private Response execute(Request.Builder requestBuilder) throws IOException {
 		cookies.stream()
 				.forEach(cookie -> requestBuilder.addHeader("Cookie", cookie));
-		Response response = httpClient.newCall(requestBuilder.build()).execute();
-
+		Request build = requestBuilder.build();
+		Response response = httpClient.newCall(build).execute();
 		cookies.addAll(
 				response.headers("Set-Cookie")
 
@@ -82,10 +81,10 @@ public class JsoupCachedConnection implements JsoupConnection {
 	Request.Builder to(String url) {
 		return new Request.Builder()
 				.url(url)
-				.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
+				.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
 //				.header("User-Agent", "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko")
-				.header("Accept-Language", "pl")
-				.header("Referer", rootDomainFor(url));
+				.addHeader("Accept-Language", "pl")
+				.addHeader("Referer", rootDomainFor(url));
 	}
 
 	private static String rootDomainFor(String url) {
