@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.description.filmweb;
 
+import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
@@ -110,7 +111,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	}
 	
 	public static void main(String[] args) {
-		FilmwebDescriptions descriptions=new FilmwebDescriptions(new JsoupCachedConnection(CacheProvider.empty()));
+		FilmwebDescriptions descriptions=new FilmwebDescriptions(new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient()));
 		Description paramObject = descriptions.descriptionOf(Title.builder().title("Rambo").year(1988).build()).get();
 		System.out.println(paramObject);
 	}

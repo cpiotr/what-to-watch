@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.score.imdb;
 
+import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.net.JsoupCachedConnection;
@@ -33,7 +34,7 @@ public class IMDBScores implements ScoresProvider {
 	}
 
 	public static void main(String[] args) {
-		IMDBScores scores = new IMDBScores(new JsoupCachedConnection(CacheProvider.empty()));
+		IMDBScores scores = new IMDBScores(new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient()));
 		scores.scoresOf(
 				Description.builder()
 						.title(Title.builder().title("Citizenfour").originalTitle("Citizenfour").year(2014).build())

@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
 import com.google.common.base.Charsets;
+import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
@@ -119,7 +120,7 @@ public class MetacriticScores implements ScoresProvider {
 	public static void main(String[] args) {
 		
 		
-		MetacriticScores scores = new MetacriticScores(new JsoupCachedConnection(CacheProvider.empty()));
+		MetacriticScores scores = new MetacriticScores(new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient()));
 		
 		Description description = Description.builder()
 				.title(Title.builder().title("Citizenfour").originalTitle("Citizenfour").year(2014).build())

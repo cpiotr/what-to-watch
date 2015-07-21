@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.title.zalukaj;
 
-import org.jsoup.Connection;
+import com.squareup.okhttp.FormEncodingBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.stream.Optionals;
@@ -42,9 +42,12 @@ public class ZalukajTitles implements TitleProvider {
 	public Stream<Title> streamOfTitles() {
 		connection.connectToAndConsume(
 				loginPage,
-				c -> c.data("login", login)
-						.data("password", password)
-						.method(Connection.Method.POST)
+				request -> request.post(
+						new FormEncodingBuilder()
+								.add("login", login)
+								.add("password", password)
+								.build()
+				)
 		);
 
 		return urls.stream().parallel()

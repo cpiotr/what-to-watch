@@ -1,8 +1,9 @@
 package pl.ciruk.core.net;
 
-import com.google.common.collect.Maps;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
@@ -11,8 +12,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Named
@@ -21,12 +23,15 @@ public class JsoupCachedConnection implements JsoupConnection {
 
 	private CacheProvider<String> cache;
 
-	private Map<String, String> cookies;
+	private Set<String> cookies;
+
+	private OkHttpClient httpClient;
 
 	@Inject
-	public JsoupCachedConnection(CacheProvider<String> cache) {
+	public JsoupCachedConnection(CacheProvider<String> cache, OkHttpClient httpClient) {
 		this.cache = cache;
-		cookies = Maps.newHashMap();
+		this.httpClient = httpClient;
+		cookies = new HashSet<>();
 	}
 
 	@Override
@@ -39,9 +44,9 @@ public class JsoupCachedConnection implements JsoupConnection {
 		} else {
 			Element content = null;
 			try {
-				Connection.Response response = to(url).cookies(cookies).execute();
-				cookies.putAll(response.cookies());
-				content = response.parse();
+				Request.Builder requestBuilder = new Request.Builder().url(url);
+				Response response = execute(requestBuilder);
+				content = Jsoup.parse(response.body().string());
 				cache.put(url, content.html());
 			} catch (IOException e) {
 				log.warn("connectToAndGet - Cannot fetch " + url, e);
@@ -50,25 +55,37 @@ public class JsoupCachedConnection implements JsoupConnection {
 		}
 	}
 
-	public Optional<Element> connectToAndConsume(String url, Consumer<Connection> action) {
-		Connection connection = to(url);
-		action.accept(connection);
+	private Response execute(Request.Builder requestBuilder) throws IOException {
+		cookies.stream()
+				.forEach(cookie -> requestBuilder.addHeader("Cookie", cookie));
+		Response response = httpClient.newCall(requestBuilder.build()).execute();
+
+		cookies.addAll(
+				response.headers("Set-Cookie")
+
+		);
+		return response;
+	}
+
+	public Optional<Element> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+		Request.Builder builder = to(url);
+
+		action.accept(builder);
 		try {
-			Connection.Response response = connection.followRedirects(true).execute();
-			cookies.putAll(response.cookies());
-			return Optional.ofNullable(response.parse());
+			Response response = execute(builder);
+			return Optional.ofNullable(Jsoup.parse(response.body().string()));
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot process request to " + url, e);
 		}
 	}
 
-	Connection to(String url) {
-		return Jsoup.connect(url)
-				.timeout(60 * 1000)
-				.userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
-				.userAgent("Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko")
+	Request.Builder to(String url) {
+		return new Request.Builder()
+				.url(url)
+				.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
+//				.header("User-Agent", "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko")
 				.header("Accept-Language", "pl")
-				.referrer(rootDomainFor(url));
+				.header("Referer", rootDomainFor(url));
 	}
 
 	private static String rootDomainFor(String url) {
