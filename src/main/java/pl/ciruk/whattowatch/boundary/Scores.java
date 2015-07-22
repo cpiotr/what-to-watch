@@ -3,8 +3,8 @@ package pl.ciruk.whattowatch.boundary;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ManagedAsync;
 import org.springframework.stereotype.Component;
-import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.description.Description;
+import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 
@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
@@ -62,23 +63,19 @@ public class Scores {
                 .title(titleObj)
                 .build();
 
-		Function<ScoresProvider, CompletableFuture<Boolean>> toScoresOfAsync =
-				scoresProvider -> scoresProvider.scoresOfAsync(description)
-						.thenApply(scores -> scores.collect(toList()))
-						.thenApply(asyncResponse::resume)
-						.exceptionally(
-								e -> asyncResponse.resume(
-										Response.status(INTERNAL_SERVER_ERROR).entity(e).build()
-								)
-						);
-		CompletableFutures.allOf(
-				scoresProviders.stream()
-						.map(toScoresOfAsync)
-						.collect(Collectors.toList())
-		);
+		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
+				scoresProvider -> scoresProvider.scoresOfAsync(description);
 
-        asyncResponse.setTimeout(1000, TimeUnit.MILLISECONDS);
+        scoresProviders.stream()
+                .map(toScoresOfAsync)
+                .reduce(completedFuture(Stream.empty()), (cf1, cf2) -> cf1.thenCombine(cf2, Stream::concat))
+                .thenApply(stream -> stream.collect(toList()))
+                .thenApply(asyncResponse::resume)
+                .exceptionally(e ->
+                        asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build()));
+
+        asyncResponse.setTimeout(10_000, TimeUnit.MILLISECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(
-				Response.status(SERVICE_UNAVAILABLE).entity("Request 11timed out").build()));
+                Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
     }
 }

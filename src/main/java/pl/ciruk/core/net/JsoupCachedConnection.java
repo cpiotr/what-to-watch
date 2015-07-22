@@ -8,13 +8,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
 
 @Named
@@ -31,11 +32,26 @@ public class JsoupCachedConnection implements JsoupConnection {
 	public JsoupCachedConnection(CacheProvider<String> cache, OkHttpClient httpClient) {
 		this.cache = cache;
 		this.httpClient = httpClient;
-		cookies = new HashSet<>();
+		cookies = new ConcurrentSkipListSet<>();
+	}
+
+	@PostConstruct
+	void init() {
+		httpClient.interceptors().add(chain -> {
+			Request.Builder request = chain.request().newBuilder();
+			cookies.stream()
+					.forEach(cookie -> request.addHeader("Cookie", cookie));
+			Response response = chain.proceed(request.build());
+			cookies.addAll(response.headers("Set-Cookie"));
+			return response;
+		});
 	}
 
 	@Override
 	public Optional<Element> connectToAndGet(String url) {
+		log.debug("connectToAndGet- Url: {}", url);
+		log.debug("connectToAndGet - Cookies: {}", cookies);
+
 		Optional<Element> document = cache.get(url)
 				.map(Jsoup::parse);
 
@@ -46,6 +62,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 			try {
 				Response response = execute(to(url));
 				content = Jsoup.parse(response.body().string());
+				log.debug("connectToAndGet - Response: {}", content);
 				cache.put(url, content.html());
 			} catch (IOException e) {
 				log.warn("connectToAndGet - Cannot fetch " + url, e);
@@ -54,28 +71,25 @@ public class JsoupCachedConnection implements JsoupConnection {
 		}
 	}
 
-	private Response execute(Request.Builder requestBuilder) throws IOException {
-		cookies.stream()
-				.forEach(cookie -> requestBuilder.addHeader("Cookie", cookie));
-		Request build = requestBuilder.build();
-		Response response = httpClient.newCall(build).execute();
-		cookies.addAll(
-				response.headers("Set-Cookie")
-
-		);
-		return response;
-	}
-
 	public Optional<Element> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+		log.debug("connectToAndConsume - Url: {}", url);
 		Request.Builder builder = to(url);
 
 		action.accept(builder);
 		try {
 			Response response = execute(builder);
-			return Optional.ofNullable(Jsoup.parse(response.body().string()));
+			String content = response.body().string();
+			log.debug("connectToAndConsume - Response: {}", content);
+			return Optional.ofNullable(Jsoup.parse(content));
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot process request to " + url, e);
 		}
+	}
+
+	private Response execute(Request.Builder requestBuilder) throws IOException {
+		Request build = requestBuilder.build();
+		Response response = httpClient.newCall(build).execute();
+		return response;
 	}
 
 	Request.Builder to(String url) {

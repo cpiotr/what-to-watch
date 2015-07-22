@@ -1,21 +1,26 @@
 package pl.ciruk.whattowatch.title.zalukaj;
 
 import com.squareup.okhttp.FormEncodingBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Named
+@Slf4j
 public class ZalukajTitles implements TitleProvider {
 	public static final Pattern YEAR = Pattern.compile(".*\\(([12][0-9]{3})\\)$");
 	public static final Pattern ORIGINAL_TITLE = Pattern.compile("(.*)\\((.*)\\)$");
@@ -38,8 +43,14 @@ public class ZalukajTitles implements TitleProvider {
 	@Value("#{'${titles.zalukaj.url-patterns}'.split(';')}")
 	List<String> urls;
 
+	@PostConstruct
+	void init() {
+		log.debug("init - Login URL: {}. Credentials: {}", loginPage, login);
+	}
+
 	@Override
-	public Stream<Title> streamOfTitles() {
+	public Stream<CompletableFuture<Stream<Title>>> streamOfTitles() {
+		log.info("streamOfTitles");
 		connection.connectToAndConsume(
 				loginPage,
 				request -> request.post(
@@ -50,11 +61,16 @@ public class ZalukajTitles implements TitleProvider {
 				)
 		);
 
-		return urls.stream().parallel()
+		return urls.stream()
 				.flatMap(pattern -> generateFivePages(pattern))
-				.map(connection::connectToAndGet)
-				.flatMap(Optionals::asStream)
-				.flatMap(ZalukajSelectors.TITLES::extractFrom)
+				.map(url -> CompletableFuture.supplyAsync(() -> connection.connectToAndGet(url))
+								.thenApply(Optionals::asStream)
+								.thenApply(this::extractAndMapToTitles)
+				);
+	}
+
+	private Stream<Title> extractAndMapToTitles(Stream<Element> element) {
+		return element.flatMap(ZalukajSelectors.TITLES::extractFrom)
 				.map(this::parseToTitle);
 	}
 
