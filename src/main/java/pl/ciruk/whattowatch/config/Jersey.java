@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boundary.Descriptions;
 import pl.ciruk.whattowatch.boundary.Scores;
 import pl.ciruk.whattowatch.boundary.Titles;
+import pl.ciruk.whattowatch.suggest.Suggestions;
 
 import javax.ws.rs.ApplicationPath;
 
@@ -15,5 +16,6 @@ public class Jersey extends ResourceConfig {
 		register(Descriptions.class);
 		register(Scores.class);
 		register(Titles.class);
+		register(Suggestions.class);
 	}
 }

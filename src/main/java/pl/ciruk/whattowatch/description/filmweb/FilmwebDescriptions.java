@@ -34,8 +34,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 
 	@Override
 	public Optional<Description> descriptionOf(Title title) {
-		log.info("descriptionOf");
-		log.debug("descriptionOf - Title: {}", title);
+		log.info("descriptionOf - Title: {}", title);
 
 		return Stream.of(title.getTitle(), title.getOriginalTitle())
 				.filter(t -> !isNullOrEmpty(t))
