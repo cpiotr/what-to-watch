@@ -1,5 +1,6 @@
 package pl.ciruk.core.net;
 
+import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -12,7 +13,10 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -36,15 +40,11 @@ public class JsoupCachedConnection implements JsoupConnection {
 	}
 
 	@PostConstruct
-	void init() {
-		httpClient.interceptors().add(chain -> {
-			Request.Builder request = chain.request().newBuilder();
-			cookies.stream()
-					.forEach(cookie -> request.addHeader("Cookie", cookie));
-			Response response = chain.proceed(request.build());
-			cookies.addAll(response.headers("Set-Cookie"));
-			return response;
-		});
+	public void init() {
+		log.info("init");
+		httpClient.interceptors().add(this::handleCookies);
+		httpClient.interceptors().add(this::log);
+		acceptAllCookies();
 	}
 
 	@Override
@@ -62,7 +62,6 @@ public class JsoupCachedConnection implements JsoupConnection {
 			try {
 				Response response = execute(to(url));
 				content = Jsoup.parse(response.body().string());
-				log.debug("connectToAndGet - Response: {}", content);
 				cache.put(url, content.html());
 			} catch (IOException e) {
 				log.warn("connectToAndGet - Cannot fetch " + url, e);
@@ -78,9 +77,8 @@ public class JsoupCachedConnection implements JsoupConnection {
 		action.accept(builder);
 		try {
 			Response response = execute(builder);
-			String content = response.body().string();
-			log.debug("connectToAndConsume - Response: {}", content);
-			return Optional.ofNullable(Jsoup.parse(content));
+			return Optional.ofNullable(response.body().string())
+					.map(Jsoup::parse);
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot process request to " + url, e);
 		}
@@ -96,9 +94,42 @@ public class JsoupCachedConnection implements JsoupConnection {
 		return new Request.Builder()
 				.url(url)
 				.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
-//				.header("User-Agent", "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko")
 				.addHeader("Accept-Language", "pl")
 				.addHeader("Referer", rootDomainFor(url));
+	}
+
+	private Response log(Interceptor.Chain chain) throws IOException {
+		Request request = chain.request();
+		log.debug("Request: {}", request);
+		Response response = chain.proceed(request);
+		log.debug("Response: {}", response);
+		return response;
+	}
+
+	private void acceptAllCookies() {
+		CookieManager cookieManager = new CookieManager();
+		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+		httpClient.setCookieHandler(cookieManager);
+	}
+
+	private Response handleCookies(Interceptor.Chain chain) throws IOException {
+		Request.Builder request = chain.request().newBuilder();
+		attachCookiesTo(request);
+
+		Response response = chain.proceed(request.build());
+		readCookiesFrom(response);
+		return response;
+	}
+
+	private void readCookiesFrom(Response response) {
+		List<String> cookiesFromResponse = response.headers("Set-Cookie");
+		cookies.addAll(cookiesFromResponse);
+		log.debug("HTTP interceptor - Received cookies: {}", cookiesFromResponse);
+	}
+
+	private void attachCookiesTo(Request.Builder request) {
+		cookies.stream()
+				.forEach(cookie -> request.addHeader("Cookie", cookie));
 	}
 
 	private static String rootDomainFor(String url) {
