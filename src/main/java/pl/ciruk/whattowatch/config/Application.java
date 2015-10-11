@@ -9,19 +9,21 @@ import pl.ciruk.core.net.JsoupConnection;
 
 @Configuration
 public class Application {
+
 	@Bean
-	<T> CacheProvider<T> provideCacheProvider() {
+	<T> CacheProvider<T> cacheProvider() {
 		return CacheProvider.empty();
 	}
 
 	@Bean
-	OkHttpClient provideHttpClient() {
+	OkHttpClient httpClient() {
 		return new OkHttpClient();
 	}
 
 	@Bean
-	<T> JsoupConnection provideJsoupConnection(CacheProvider<T> cacheProvider, OkHttpClient httpClient) {
+	<T> JsoupConnection jsoupConnection(CacheProvider<T> cacheProvider, OkHttpClient httpClient) {
 		return new JsoupCachedConnection(CacheProvider.<String>empty(), httpClient);
 	}
+
 }
 
