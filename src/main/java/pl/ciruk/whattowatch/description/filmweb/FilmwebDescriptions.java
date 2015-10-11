@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -46,11 +47,19 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	Stream<Description> filmsForTitle(String title, int year) {
 		Optional<Element> optionalResult = searchFor(title, year);
 
-		return optionalResult.map(page -> page.select("ul.resultsList li .hitDesc .hitDescWrapper h3 a")
-				.stream()
-				.map(this::getPageWithFilmDetailsFor)
-				.map(this::extractDescriptionFrom)
-		).orElse(Stream.empty());
+		return optionalResult
+				.map(page -> page.select("ul.resultsList li .hitDesc .hitDescWrapper h3 a")
+								.stream()
+								.map(this::getPageWithFilmDetailsFor)
+								.map(pageWithDetails -> {
+									try {
+										return extractDescriptionFrom(pageWithDetails);
+									} catch (MissingValueException e) {
+										log.warn("filmsForTitle - Could not get description for {} ({})", title, year);
+										return null;
+									}
+								}).filter(Objects::nonNull))
+				.orElse(Stream.empty());
 	}
 
 	private Description extractDescriptionFrom(Element pageWithDetails) {
