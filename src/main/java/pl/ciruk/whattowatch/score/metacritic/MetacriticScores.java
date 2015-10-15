@@ -1,18 +1,14 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
 import com.google.common.base.Charsets;
-import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.cache.CacheProvider;
-import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.google.GoogleScores;
-import pl.ciruk.whattowatch.title.Title;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -115,16 +111,5 @@ public class MetacriticScores implements ScoresProvider {
 			e.printStackTrace();
 			return Optional.empty();
 		}
-	}
-	
-	public static void main(String[] args) {
-		
-		
-		MetacriticScores scores = new MetacriticScores(new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient()));
-		
-		Description description = Description.builder()
-				.title(Title.builder().title("Citizenfour").originalTitle("Citizenfour").year(2014).build())
-				.build();
-		scores.scoresOf(description).forEach(System.out::println);
 	}
 }

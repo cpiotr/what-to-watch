@@ -6,7 +6,6 @@ import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.google.GoogleScores;
-import pl.ciruk.whattowatch.title.Title;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,14 +27,5 @@ public class FilmwebScores implements ScoresProvider {
 		log.info("scoresOf - Description: {}", description);
 
 		return dataSource.scoresOf(description);
-	}
-
-	public static void main(String[] args) {
-		FilmwebScores scores = new FilmwebScores(null);
-		scores.scoresOf(
-				Description.builder()
-						.title(Title.builder().title("Rambo III").originalTitle("Rambo III").year(1988).build())
-						.build())
-				.forEach(System.out::println);
 	}
 }
