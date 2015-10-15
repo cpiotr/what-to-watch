@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum GoogleSelectors implements Extractable<Optional<String>> {
-	SCORE(details -> details.select("ol#rso li.g div.slp")
+	SCORE(details -> details.select("ol#rso .g .slp")
 			.stream()
 			.findFirst()
 			.filter(e -> !e.select("g-review-stars").isEmpty())
