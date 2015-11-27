@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.title.zalukaj;
 import com.squareup.okhttp.FormEncodingBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.stream.Optionals;
@@ -27,7 +28,7 @@ public class ZalukajTitles implements TitleProvider {
 	private JsoupCachedConnection connection;
 
 	@Inject
-	public ZalukajTitles(JsoupCachedConnection connection) {
+	public ZalukajTitles(@Qualifier("allCookies") JsoupCachedConnection connection) {
 		this.connection = connection;
 	}
 
@@ -79,7 +80,7 @@ public class ZalukajTitles implements TitleProvider {
 			AtomicInteger i = new AtomicInteger(1);
 			return Stream.generate(
 					() -> String.format(pattern, i.incrementAndGet()))
-					.limit(5);
+					.limit(1);
 		} else {
 			return Stream.of(pattern);
 		}

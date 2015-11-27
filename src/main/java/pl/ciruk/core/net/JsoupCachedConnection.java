@@ -13,10 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -42,9 +39,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 	@PostConstruct
 	public void init() {
 		log.info("init");
-		httpClient.interceptors().add(this::handleCookies);
 		httpClient.interceptors().add(this::log);
-		acceptAllCookies();
 	}
 
 	@Override
@@ -84,6 +79,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 		}
 	}
 
+
 	private Response execute(Request.Builder requestBuilder) throws IOException {
 		Request build = requestBuilder.build();
 		Response response = httpClient.newCall(build).execute();
@@ -93,9 +89,9 @@ public class JsoupCachedConnection implements JsoupConnection {
 	Request.Builder to(String url) {
 		return new Request.Builder()
 				.url(url)
-				.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
+				.addHeader("User-Agent", UserAgents.next())
 				.addHeader("Accept-Language", "pl")
-				.addHeader("Referer", rootDomainFor(url));
+				.addHeader("Referrer", rootDomainFor(url));
 	}
 
 	private Response log(Interceptor.Chain chain) throws IOException {
@@ -104,32 +100,6 @@ public class JsoupCachedConnection implements JsoupConnection {
 		Response response = chain.proceed(request);
 		log.debug("Response: {}", response);
 		return response;
-	}
-
-	private void acceptAllCookies() {
-		CookieManager cookieManager = new CookieManager();
-		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-		httpClient.setCookieHandler(cookieManager);
-	}
-
-	private Response handleCookies(Interceptor.Chain chain) throws IOException {
-		Request.Builder request = chain.request().newBuilder();
-		attachCookiesTo(request);
-
-		Response response = chain.proceed(request.build());
-		readCookiesFrom(response);
-		return response;
-	}
-
-	private void readCookiesFrom(Response response) {
-		List<String> cookiesFromResponse = response.headers("Set-Cookie");
-		cookies.addAll(cookiesFromResponse);
-		log.debug("HTTP interceptor - Received cookies: {}", cookiesFromResponse);
-	}
-
-	private void attachCookiesTo(Request.Builder request) {
-		cookies.stream()
-				.forEach(cookie -> request.addHeader("Cookie", cookie));
 	}
 
 	private static String rootDomainFor(String url) {
