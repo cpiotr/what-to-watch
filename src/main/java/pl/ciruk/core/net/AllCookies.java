@@ -8,13 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.CookieManager;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Slf4j
 public class AllCookies implements CookiePolicy {
 
-	private Set<String> cookies;
+	private Set<String> cookies = new HashSet<>();
 
 	@Override
 	public void applyTo(OkHttpClient client) {
