@@ -72,7 +72,10 @@ public class JsoupCachedConnection implements JsoupConnection {
 		action.accept(builder);
 		try {
 			Response response = execute(builder);
-			return Optional.ofNullable(response.body().string())
+			log.debug("Headers: {}", response.headers());
+			String body = response.body().string();
+			log.debug("Body: {}", body);
+			return Optional.ofNullable(body)
 					.map(Jsoup::parse);
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot process request to " + url, e);

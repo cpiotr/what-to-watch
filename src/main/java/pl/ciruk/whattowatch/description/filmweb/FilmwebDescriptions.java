@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.description.filmweb;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Qualifier;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.core.net.JsoupConnection;
@@ -29,7 +30,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	private JsoupConnection connection;
 
 	@Inject
-	public FilmwebDescriptions(JsoupConnection connection) {
+	public FilmwebDescriptions(@Qualifier("allCookies") JsoupConnection connection) {
 		this.connection = connection;
 	}
 

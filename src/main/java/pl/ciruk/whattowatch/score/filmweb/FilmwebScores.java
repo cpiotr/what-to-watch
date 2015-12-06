@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -18,7 +19,7 @@ public class FilmwebScores implements ScoresProvider {
 	ScoresProvider dataSource;
 
 	@Inject
-	public FilmwebScores(JsoupConnection jsoupConnection) {
+	public FilmwebScores(@Qualifier("allCookies")JsoupConnection jsoupConnection) {
 		dataSource = new GoogleScores(jsoupConnection, "filmweb");
 	}
 

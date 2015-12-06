@@ -1,10 +1,8 @@
 package pl.ciruk.whattowatch.score.google;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.NumberTokenizer;
-import pl.ciruk.whattowatch.description.Description;
-import pl.ciruk.whattowatch.score.Score;
-import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
@@ -20,7 +18,7 @@ public class GoogleScores implements ScoresProvider {
 
 	private String sourcePage;
 
-	public GoogleScores(JsoupConnection connection, String sourcePage) {
+	public GoogleScores(@Qualifier("allCookies")JsoupConnection connection, String sourcePage) {
 		this.connection = connection;
 		this.sourcePage = sourcePage;
 	}

@@ -13,11 +13,6 @@ import pl.ciruk.core.net.JsoupConnection;
 public class Application {
 
 	@Bean
-	<T> CacheProvider<T> cacheProvider() {
-		return CacheProvider.empty();
-	}
-
-	@Bean
 	OkHttpClient httpClient() {
 		OkHttpClient httpClient = new OkHttpClient();
 		return httpClient;
@@ -25,14 +20,14 @@ public class Application {
 
 	@Bean
 	@Qualifier("allCookies")
-	<T> JsoupConnection jsoupConnectionAllCookies(CacheProvider<T> cacheProvider, OkHttpClient httpClient) {
+	<T> JsoupConnection jsoupConnectionAllCookies(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
 		new AllCookies().applyTo(httpClient);
-		return new JsoupCachedConnection(CacheProvider.<String>empty(), httpClient);
+		return new JsoupCachedConnection(cacheProvider, httpClient);
 	}
 
 	@Bean
-	<T> JsoupConnection jsoupConnection(CacheProvider<T> cacheProvider, OkHttpClient httpClient) {
-		return new JsoupCachedConnection(CacheProvider.<String>empty(), httpClient);
+	<T> JsoupConnection jsoupConnection(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
+		return new JsoupCachedConnection(cacheProvider, httpClient);
 	}
 
 }

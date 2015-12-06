@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.score.metacritic;
 import com.google.common.base.Charsets;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Qualifier;
 import pl.ciruk.core.net.JsoupConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
@@ -31,7 +32,7 @@ public class MetacriticScores implements ScoresProvider {
 	private JsoupConnection connection;
 
 	@Inject
-	public MetacriticScores(JsoupConnection connection) {
+	public MetacriticScores(@Qualifier("allCookies") JsoupConnection connection) {
 		this.connection = connection;
 		dataSource = new GoogleScores(connection,  "metacritic");
 	}

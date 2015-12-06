@@ -4,8 +4,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Optional;
 
+@Named
 public class RedisCache implements CacheProvider<String> {
 
     private StringRedisTemplate cache;
