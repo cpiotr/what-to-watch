@@ -1,0 +1,38 @@
+plugins {
+    id 'org.unbroken-dome.test-sets' version '1.2.0'
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+apply plugin: 'io.spring.dependency-management'
+
+jar {
+    baseName = 'what-to-watch-boot'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+testSets {
+    integrationTest
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-jersey")
+    compile("org.springframework.boot:spring-boot-starter-redis")
+    compile("org.springframework.boot:spring-boot-starter-websocket")
+    compile("org.projectlombok:lombok:1.16.4")
+    compile("com.google.guava:guava:18.0")
+    compile("org.jsoup:jsoup:1.7.1")
+    compile project(":what-to-watch-core")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}

@@ -5,9 +5,6 @@ import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
-import pl.ciruk.whattowatch.description.Description;
-import pl.ciruk.whattowatch.score.Score;
-import pl.ciruk.whattowatch.score.ScoresProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

@@ -1,10 +1,10 @@
 package pl.ciruk.core.net;
 
+import pl.ciruk.core.cache.CacheProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.cache.CacheProvider;
 
 import javax.inject.Inject;
 import javax.inject.Named;
