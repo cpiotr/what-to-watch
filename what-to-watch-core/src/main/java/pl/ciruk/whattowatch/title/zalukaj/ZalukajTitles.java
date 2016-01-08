@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.title.zalukaj;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.FormEncodingBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,24 @@ public class ZalukajTitles implements TitleProvider {
 	@Override
 	public Stream<CompletableFuture<Stream<Title>>> streamOfTitles() {
 		log.info("streamOfTitles");
+		if (areCredentialsPresent()) {
+			authenticate();
+		}
+
+		return urls.stream()
+				.flatMap(pattern -> generateFivePages(pattern))
+				.map(url -> CompletableFuture.supplyAsync(() -> connection.connectToAndGet(url))
+								.thenApply(Optionals::asStream)
+								.thenApply(this::extractAndMapToTitles)
+				);
+	}
+
+	private boolean areCredentialsPresent() {
+		return !Strings.isNullOrEmpty(login)
+				&& !Strings.isNullOrEmpty(password);
+	}
+
+	private void authenticate() {
 		connection.connectToAndConsume(
 				loginPage,
 				request -> request.post(
@@ -71,13 +90,6 @@ public class ZalukajTitles implements TitleProvider {
 								.build()
 				)
 		);
-
-		return urls.stream()
-				.flatMap(pattern -> generateFivePages(pattern))
-				.map(url -> CompletableFuture.supplyAsync(() -> connection.connectToAndGet(url))
-								.thenApply(Optionals::asStream)
-								.thenApply(this::extractAndMapToTitles)
-				);
 	}
 
 	private Stream<Title> extractAndMapToTitles(Stream<Element> element) {
