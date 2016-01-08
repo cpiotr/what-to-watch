@@ -22,7 +22,8 @@ public class AllCookies implements CookiePolicy {
 		CookieManager cookieManager = new CookieManager();
 		cookieManager.setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL);
 		client.setCookieHandler(cookieManager);
-		client.interceptors().add(this::handleCookies);
+		client.networkInterceptors().add(this::handleCookies);
+		client.setFollowRedirects(true);
 	}
 
 	public Response handleCookies(Interceptor.Chain chain) throws IOException {

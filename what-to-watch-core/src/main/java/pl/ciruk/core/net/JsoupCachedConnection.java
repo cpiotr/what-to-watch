@@ -15,8 +15,6 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
 
 @Named
@@ -25,15 +23,12 @@ public class JsoupCachedConnection implements JsoupConnection {
 
 	private CacheProvider<String> cache;
 
-	private Set<String> cookies;
-
 	private OkHttpClient httpClient;
 
 	@Inject
 	public JsoupCachedConnection(CacheProvider<String> cache, OkHttpClient httpClient) {
 		this.cache = cache;
 		this.httpClient = httpClient;
-		cookies = new ConcurrentSkipListSet<>();
 	}
 
 	@PostConstruct
@@ -45,7 +40,6 @@ public class JsoupCachedConnection implements JsoupConnection {
 	@Override
 	public Optional<Element> connectToAndGet(String url) {
 		log.debug("connectToAndGet- Url: {}", url);
-		log.debug("connectToAndGet - Cookies: {}", cookies);
 
 		Optional<Element> document = cache.get(url)
 				.map(Jsoup::parse);
