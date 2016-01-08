@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.title.zalukaj;
 
+import com.google.common.collect.Lists;
 import com.squareup.okhttp.FormEncodingBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
@@ -30,13 +31,28 @@ public class ZalukajTitles implements TitleProvider {
 		this.connection = connection;
 	}
 
-	String loginPage;
+
+	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, String login, String password) {
+		this.connection = connection;
+		this.login = login;
+		this.password = password;
+	}
+
+	String loginPage = "http://zalukaj.tv/account.php";
 
 	String login;
 
 	String password;
 
-	List<String> urls;
+	List<String> urls = Lists.newArrayList(
+			"http://zalukaj.tv/gatunek,14/ostatnio-dodane,wszystkie,strona-%d",
+			"http://zalukaj.tv/gatunek,13/ostatnio-dodane,wszystkie,strona-%d",
+			"http://zalukaj.tv/gatunek,10/ostatnio-dodane,wszystkie,strona-%d",
+			"http://zalukaj.tv/gatunek,20/ostatnio-dodane,wszystkie,strona-%d",
+			"http://zalukaj.tv/gatunek,22/ostatnio-dodane,wszystkie,strona-%d",
+			"http://zalukaj.tv/gatunek,8/ostatnio-dodane,wszystkie,strona-%d",
+			"http://zalukaj.tv/gatunek,4/ostatnio-dodane,wszystkie,strona-%d"
+	);
 
 	@PostConstruct
 	void init() {
