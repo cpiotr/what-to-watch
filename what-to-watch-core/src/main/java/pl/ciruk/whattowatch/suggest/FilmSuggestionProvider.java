@@ -1,7 +1,9 @@
 package pl.ciruk.whattowatch.suggest;
 
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface FilmSuggestionProvider {
-	Stream<Film> suggestNumberOfFilms(int numberOfFilms);
+	CompletableFuture<List<Film>> suggestFilms();
+
 }
