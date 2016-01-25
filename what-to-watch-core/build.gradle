@@ -18,6 +18,13 @@ testSets {
     integrationTest
 }
 
+// Hack to make gradle copy int-test resources
+sourceSets {
+    test {
+        resources.srcDirs += file('src/integrationTest/resources')
+    }
+}
+
 dependencies {
     compile("org.projectlombok:lombok:1.16.4")
     compile("com.google.guava:guava:18.0")
