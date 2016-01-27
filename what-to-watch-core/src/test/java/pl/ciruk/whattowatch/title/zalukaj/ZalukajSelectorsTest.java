@@ -37,8 +37,6 @@ public class ZalukajSelectorsTest {
 		JsoupCachedConnection connection = mock(JsoupCachedConnection.class);
 		document = Jsoup.parse(searchResultsHTML);
 		when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
-
-
 	}
 
 	@Test
