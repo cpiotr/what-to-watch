@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.title.zalukaj;
+package pl.ciruk.whattowatch.score.google;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -11,20 +11,15 @@ import pl.ciruk.core.net.JsoupCachedConnection;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.everyItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ZalukajSelectorsTest {
+public class GoogleSelectorsTest {
 
 	private Document document;
 
@@ -33,40 +28,32 @@ public class ZalukajSelectorsTest {
 		String searchResultsHTML = new String(
 				Files.readAllBytes(
 						Paths.get(
-								getClass().getClassLoader().getResource("zalukaj-search-results.html").toURI())));
+								getClass().getClassLoader().getResource("google-search-results.html").toURI())));
 		JsoupCachedConnection connection = mock(JsoupCachedConnection.class);
 		document = Jsoup.parse(searchResultsHTML);
 		when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
-
-
 	}
 
 	@Test
-	public void shouldExtractTitlesFromPage() throws Exception {
-		List<String> titles = ZalukajSelectors.TITLES.extractFrom(document)
-				.collect(toList());
+	public void shouldExtractScoreDescription() throws Exception {
+		String scoreDescription = GoogleSelectors.SCORE
+				.extractFrom(document)
+				.orElseThrow(AssertionError::new);
 
-		assertThat(titles, everyItem(not(equalTo(""))));
+		assertThat(scoreDescription, containsNumericScore());
+
 	}
 
-	@Test
-	public void titlesShouldNotContainUnrelatedInformation() throws Exception {
-		List<String> titles = ZalukajSelectors.TITLES.extractFrom(document)
-				.collect(toList());
-
-		assertThat(titles, everyItem(containsOnlyTitleAndYear()));
-	}
-
-	private Matcher<String> containsOnlyTitleAndYear() {
+	private Matcher<? super String> containsNumericScore() {
 		return new TypeSafeMatcher<String>() {
 			@Override
 			protected boolean matchesSafely(String item) {
-				return Pattern.matches(".+\\(\\d{4}\\)$", item);
+				return Pattern.matches(".*[0-9],[0-9]+/10.*", item);
 			}
 
 			@Override
 			public void describeTo(Description description) {
-				description.appendText(" contains only title and year");
+				description.appendText("contains score which matches format: X,X/10");
 			}
 		};
 	}
