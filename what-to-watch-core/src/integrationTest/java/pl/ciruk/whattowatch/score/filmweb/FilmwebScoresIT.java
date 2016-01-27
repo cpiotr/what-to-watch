@@ -9,6 +9,7 @@ import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertThat;
@@ -23,7 +24,7 @@ public class FilmwebScoresIT {
 	public void setUp() throws Exception {
 		connection = new JsoupCachedConnection(CacheProvider.<String>empty(), new OkHttpClient());
 		connection.init();
-		scores = new FilmwebScores(connection);
+		scores = new FilmwebScores(connection, Executors.newSingleThreadExecutor());
 	}
 
 	@Test

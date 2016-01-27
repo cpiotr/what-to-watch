@@ -8,9 +8,5 @@ import java.util.stream.Stream;
 public interface ScoresProvider {
 	Stream<Score> scoresOf(Description description);
 
-	default CompletableFuture<Stream<Score>> scoresOfAsync(Description description) {
-		return CompletableFuture.supplyAsync(
-				() -> scoresOf(description)
-		);
-	}
+	CompletableFuture<Stream<Score>> scoresOfAsync(Description description);
 }

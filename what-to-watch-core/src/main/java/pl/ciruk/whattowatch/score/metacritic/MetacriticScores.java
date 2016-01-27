@@ -15,6 +15,8 @@ import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 @Named("Metacritic")
@@ -28,12 +30,22 @@ public class MetacriticScores implements ScoresProvider {
 	private static final int NYT_SCORE_WEIGHT = 1_000;
 
 	ScoresProvider dataSource;
-	private JsoupConnection connection;
+	private final JsoupConnection connection;
+	private final ExecutorService executorService;
 
 	@Inject
-	public MetacriticScores(@Named("allCookies") JsoupConnection connection) {
+	public MetacriticScores(@Named("allCookies") JsoupConnection connection, ExecutorService executorService) {
 		this.connection = connection;
-		dataSource = new GoogleScores(connection,  "metacritic");
+		this.executorService = executorService;
+		dataSource = new GoogleScores(connection, executorService, "metacritic");
+	}
+
+	@Override
+	public CompletableFuture<Stream<Score>> scoresOfAsync(Description description) {
+		return CompletableFuture.supplyAsync(
+				() -> scoresOf(description),
+				executorService
+		);
 	}
 	
 	@Override

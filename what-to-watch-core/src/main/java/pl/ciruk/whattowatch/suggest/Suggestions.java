@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -40,11 +42,18 @@ public class Suggestions implements FilmSuggestionProvider {
 
 	List<ScoresProvider> scoresProviders;
 
+	final ExecutorService executorService;
+
 	@Inject
-	public Suggestions(TitleProvider titles, DescriptionProvider descriptions, List<ScoresProvider> scoresProviders) {
+	public Suggestions(
+			TitleProvider titles,
+			DescriptionProvider descriptions,
+			List<ScoresProvider> scoresProviders,
+			ExecutorService executorService) {
 		this.titles = titles;
 		this.descriptions = descriptions;
 		this.scoresProviders = scoresProviders;
+		this.executorService = executorService;
 	}
 
 	@Override
@@ -61,16 +70,19 @@ public class Suggestions implements FilmSuggestionProvider {
 	}
 
 	CompletableFuture<Stream<Film>> getPage(CompletableFuture<Stream<Title>> titlesFromPage) {
-		return titlesFromPage.thenCompose(titleStream -> {
-					return CompletableFutures.getAllOf(titleStream.map(this::forTitle).collect(toList()));
-				}
-		);
+		return titlesFromPage.thenCompose(
+				titleStream -> CompletableFutures.getAllOf(
+						titleStream
+								.map(this::forTitle)
+								.collect(toList())));
 	}
 
 	CompletableFuture<Film> forTitle(Title title) {
 		CompletableFuture<Optional<Description>> descriptionOfAsync = descriptions.descriptionOfAsync(title);
 		return descriptionOfAsync.thenCompose(
-				optionalDescription -> optionalDescription.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())));
+				optionalDescription -> optionalDescription
+						.map(this::descriptionToFilm)
+						.orElse(completedFuture(Film.empty())));
 	}
 
 	private CompletableFuture<Film> descriptionToFilm(Description description) {
@@ -98,22 +110,26 @@ public class Suggestions implements FilmSuggestionProvider {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		ExecutorService executorService = Executors.newFixedThreadPool(32);
 
 		ZalukajTitles titles = new ZalukajTitles(
 				keepCookiesConnection,
-				properties.getProperty("zalukaj-login"),
+				executorService, properties.getProperty("zalukaj-login"),
 				properties.getProperty("zalukaj-password"));
 
 		Suggestions suggestions = new Suggestions(
 				titles,
-				new FilmwebDescriptions(connection),
-				Lists.newArrayList()
-		);
+				new FilmwebDescriptions(connection, executorService),
+				Lists.newArrayList(),
+				executorService);
 
 		Stopwatch started = Stopwatch.createStarted();
 		try {
 			List<Film> films = suggestions.suggestFilms().get();
 			started.stop();
+
+			executorService.shutdown();
+			executorService.awaitTermination(10, TimeUnit.SECONDS);
 
 			System.out.println("Found films: " + films.size() + " in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
 		} catch (InterruptedException | ExecutionException e) {

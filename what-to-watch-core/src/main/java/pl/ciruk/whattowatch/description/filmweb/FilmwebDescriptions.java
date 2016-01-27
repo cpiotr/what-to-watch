@@ -17,6 +17,9 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -26,11 +29,22 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class FilmwebDescriptions implements DescriptionProvider {
 
-	private JsoupConnection connection;
+	private final JsoupConnection connection;
+
+	private final ExecutorService executorService;
 
 	@Inject
-	public FilmwebDescriptions(@Named("allCookies") JsoupConnection connection) {
+	public FilmwebDescriptions(@Named("allCookies") JsoupConnection connection, ExecutorService executorService) {
 		this.connection = connection;
+		this.executorService = executorService;
+	}
+
+	@Override
+	public CompletableFuture<Optional<Description>> descriptionOfAsync(Title title) {
+		return CompletableFuture.supplyAsync(
+				() -> descriptionOf(title),
+				executorService
+		);
 	}
 
 	@Override
@@ -119,7 +133,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	}
 	
 	public static void main(String[] args) {
-		FilmwebDescriptions descriptions=new FilmwebDescriptions(new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient()));
+		FilmwebDescriptions descriptions=new FilmwebDescriptions(new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient()), Executors.newFixedThreadPool(8));
 		Description paramObject = descriptions.descriptionOf(Title.builder().title("Rambo").year(1988).build()).get();
 		System.out.println(paramObject);
 	}

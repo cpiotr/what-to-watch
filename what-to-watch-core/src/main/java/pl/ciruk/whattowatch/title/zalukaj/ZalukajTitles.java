@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,16 +26,19 @@ import java.util.stream.Stream;
 public class ZalukajTitles implements TitleProvider {
 	public static final Pattern YEAR = Pattern.compile(".*\\(([12][0-9]{3})\\)$");
 	public static final Pattern ORIGINAL_TITLE = Pattern.compile("(.*)\\((.*)\\)$");
-	private JsoupCachedConnection connection;
+	private final JsoupCachedConnection connection;
+	private final ExecutorService executorService;
 
 	@Inject
-	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection) {
+	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, ExecutorService executorService) {
 		this.connection = connection;
+		this.executorService = executorService;
 	}
 
 
-	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, String login, String password) {
+	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, ExecutorService executorService, String login, String password) {
 		this.connection = connection;
+		this.executorService = executorService;
 		this.login = login;
 		this.password = password;
 	}
@@ -69,7 +73,7 @@ public class ZalukajTitles implements TitleProvider {
 
 		return urls.stream()
 				.flatMap(pattern -> generateFivePages(pattern))
-				.map(url -> CompletableFuture.supplyAsync(() -> connection.connectToAndGet(url))
+				.map(url -> CompletableFuture.supplyAsync(() -> connection.connectToAndGet(url), this.executorService)
 								.thenApply(Optionals::asStream)
 								.thenApply(this::extractAndMapToTitles)
 				);
@@ -124,10 +128,5 @@ public class ZalukajTitles implements TitleProvider {
 		}
 
 		return builder.build();
-	}
-
-	@Override
-	public String urlFor(Title title) {
-		return null;
 	}
 }

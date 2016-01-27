@@ -11,18 +11,31 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 public class GoogleScores implements ScoresProvider {
-	private JsoupConnection connection;
+	private final JsoupConnection connection;
+
+	private final ExecutorService executorService;
 
 	private String sourcePage;
 
-	public GoogleScores(@Named("allCookies")JsoupConnection connection, String sourcePage) {
+	public GoogleScores(@Named("allCookies") JsoupConnection connection, ExecutorService executorService, String sourcePage) {
 		this.connection = connection;
+		this.executorService = executorService;
 		this.sourcePage = sourcePage;
 	}
-	
+
+	@Override
+	public CompletableFuture<Stream<Score>> scoresOfAsync(Description description) {
+		return CompletableFuture.supplyAsync(
+				() -> scoresOf(description),
+				executorService
+		);
+	}
+
 	@Override
 	public Stream<Score> scoresOf(Description description) {
 		String url = formatUrlBasedOn(description);
