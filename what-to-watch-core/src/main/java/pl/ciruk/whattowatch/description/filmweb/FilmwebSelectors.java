@@ -34,7 +34,7 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
 
 	private Function<Element, Optional<String>> extractor;
 	
-	private FilmwebSelectors(Function<Element, Optional<String>> extractor) {
+	FilmwebSelectors(Function<Element, Optional<String>> extractor) {
 		this.extractor = extractor;
 	}
 

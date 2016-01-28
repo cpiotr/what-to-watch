@@ -13,6 +13,8 @@ import java.util.Optional;
 @Getter
 @Builder
 public class Description {
+	private static final Description EMPTY = Description.builder().build();
+
 	private Title title;
 
 	private Title foundFor;
@@ -35,5 +37,13 @@ public class Description {
 
 	public void foundFor(Title title) {
 		foundFor = title;
+	}
+
+	public boolean isEmpty() {
+		return this == EMPTY;
+	}
+
+	public static Description empty() {
+		return Description.EMPTY;
 	}
 }
