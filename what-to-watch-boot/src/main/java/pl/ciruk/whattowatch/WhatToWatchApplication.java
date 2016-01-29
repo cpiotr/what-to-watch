@@ -49,6 +49,10 @@ public class WhatToWatchApplication {
 			List<Film> films = suggestions.suggestFilms().get();
 			started.stop();
 
+			films.stream()
+					.filter(Film::isWorthWatching)
+					.forEach(System.out::println);
+
 			executorService.shutdown();
 			executorService.awaitTermination(10, TimeUnit.SECONDS);
 

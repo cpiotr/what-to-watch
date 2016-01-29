@@ -52,9 +52,13 @@ public class Suggestions implements FilmSuggestionProvider {
 
 		return titles.streamOfTitles()
 				.map(this::titlesToFilms)
-				.reduce(completedFuture(Stream.<Film>empty()),
+				.reduce(
+						completedFuture(Stream.<Film>empty()),
 						combineUsing(Stream::concat))
-				.thenApply(stream -> stream.collect(toList()));
+				.thenApply(
+						stream -> stream.filter(Film::isNotEmpty)
+								.collect(toList())
+				);
 	}
 
 	CompletableFuture<Stream<Film>> titlesToFilms(CompletableFuture<Stream<Title>> titlesFromPage) {
