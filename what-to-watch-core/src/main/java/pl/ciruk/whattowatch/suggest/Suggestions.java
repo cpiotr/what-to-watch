@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
 @Named
 @Slf4j
@@ -51,14 +52,14 @@ public class Suggestions implements FilmSuggestionProvider {
 
 		return titles.streamOfTitles()
 				.map(this::titlesToFilms)
-				.reduce(
-						completedFuture(Stream.<Film>empty()),
-						(cf1, cf2) -> cf1.thenCombine(cf2, Stream::concat)
-				)
+				.reduce(completedFuture(Stream.<Film>empty()),
+						combineUsing(Stream::concat))
 				.thenApply(stream -> stream.collect(toList()));
 	}
 
 	CompletableFuture<Stream<Film>> titlesToFilms(CompletableFuture<Stream<Title>> titlesFromPage) {
+		log.debug("titlesToFilms");
+		
 		return titlesFromPage.thenCompose(
 				titleStream -> CompletableFutures.getAllOf(
 						titleStream
@@ -75,14 +76,18 @@ public class Suggestions implements FilmSuggestionProvider {
 	}
 
 	private CompletableFuture<Film> descriptionToFilm(Description description) {
-		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
+		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toAsyncScores =
 				scoresProvider -> scoresProvider.scoresOfAsync(description);
 
 		CompletableFuture<Film> future = scoresProviders.stream()
-				.map(toScoresOfAsync)
-				.reduce(completedFuture(Stream.empty()), (cf1, cf2) -> cf1.thenCombine(cf2, Stream::concat))
+				.map(toAsyncScores)
+				.reduce(completedFuture(Stream.empty()),
+						combineUsing(Stream::concat))
 				.thenApply(stream -> stream.collect(toList()))
-				.thenApply(list -> Film.builder().description(description).scores(list).build());
+				.thenApply(list -> Film.builder()
+						.description(description)
+						.scores(list)
+						.build());
 		return future;
 	}
 }

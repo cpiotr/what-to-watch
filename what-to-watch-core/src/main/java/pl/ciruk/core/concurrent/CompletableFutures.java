@@ -3,6 +3,8 @@ package pl.ciruk.core.concurrent;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
 public class CompletableFutures {
@@ -27,5 +29,9 @@ public class CompletableFutures {
 										throw new RuntimeException(e);
 									}
 								}));
+	}
+
+	public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(BiFunction<T, T, T> combinator) {
+		return (cf1, cf2) -> cf1.thenCombine(cf2, combinator);
 	}
 }
