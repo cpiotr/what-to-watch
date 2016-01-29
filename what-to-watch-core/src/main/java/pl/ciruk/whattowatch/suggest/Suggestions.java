@@ -1,33 +1,21 @@
 package pl.ciruk.whattowatch.suggest;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
-import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
-import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
-import pl.ciruk.core.net.AllCookies;
-import pl.ciruk.core.net.JsoupCachedConnection;
 import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
-import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
-import pl.ciruk.whattowatch.title.zalukaj.ZalukajTitles;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -62,7 +50,7 @@ public class Suggestions implements FilmSuggestionProvider {
 		log.info("suggestFilms");
 
 		return titles.streamOfTitles()
-				.map(this::getPage)
+				.map(this::titlesToFilms)
 				.reduce(
 						completedFuture(Stream.<Film>empty()),
 						(cf1, cf2) -> cf1.thenCombine(cf2, Stream::concat)
@@ -70,7 +58,7 @@ public class Suggestions implements FilmSuggestionProvider {
 				.thenApply(stream -> stream.collect(toList()));
 	}
 
-	CompletableFuture<Stream<Film>> getPage(CompletableFuture<Stream<Title>> titlesFromPage) {
+	CompletableFuture<Stream<Film>> titlesToFilms(CompletableFuture<Stream<Title>> titlesFromPage) {
 		return titlesFromPage.thenCompose(
 				titleStream -> CompletableFutures.getAllOf(
 						titleStream
@@ -96,46 +84,5 @@ public class Suggestions implements FilmSuggestionProvider {
 				.thenApply(stream -> stream.collect(toList()))
 				.thenApply(list -> Film.builder().description(description).scores(list).build());
 		return future;
-	}
-
-	public static void main(String[] args) {
-		JsoupCachedConnection connection = new JsoupCachedConnection(CacheProvider.empty(), new OkHttpClient());
-
-		OkHttpClient httpClient = new OkHttpClient();
-		new AllCookies().applyTo(httpClient);
-		JsoupCachedConnection keepCookiesConnection = new JsoupCachedConnection(CacheProvider.empty(), httpClient);
-
-		Properties properties = new Properties();
-		try {
-			properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		ExecutorService executorService = Executors.newFixedThreadPool(32);
-
-		ZalukajTitles titles = new ZalukajTitles(
-				keepCookiesConnection,
-				executorService, properties.getProperty("zalukaj-login"),
-				properties.getProperty("zalukaj-password"));
-
-		Suggestions suggestions = new Suggestions(
-				titles,
-				new FilmwebDescriptions(connection, executorService),
-				Lists.newArrayList(),
-				executorService);
-
-		Stopwatch started = Stopwatch.createStarted();
-		try {
-			List<Film> films = suggestions.suggestFilms().get();
-			started.stop();
-
-			executorService.shutdown();
-			executorService.awaitTermination(10, TimeUnit.SECONDS);
-
-			System.out.println("Found films: " + films.size() + " in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
-
 	}
 }

@@ -9,9 +9,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ciruk.whattowatch.config.Application;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = WhatToWatchApplication.class)
-@ContextConfiguration(classes = WhatToWatchApplicationTests.TestConfig.class)
-public class WhatToWatchApplicationTests {
+@SpringApplicationConfiguration(classes = WhatToWatchBoot.class)
+@ContextConfiguration(classes = WhatToWatchBootTests.TestConfig.class)
+public class WhatToWatchBootTests {
 
 	@Test
 	public void contextLoads() {
