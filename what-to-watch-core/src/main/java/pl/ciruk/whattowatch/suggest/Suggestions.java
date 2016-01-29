@@ -59,7 +59,7 @@ public class Suggestions implements FilmSuggestionProvider {
 
 	CompletableFuture<Stream<Film>> titlesToFilms(CompletableFuture<Stream<Title>> titlesFromPage) {
 		log.debug("titlesToFilms");
-		
+
 		return titlesFromPage.thenCompose(
 				titleStream -> CompletableFutures.getAllOf(
 						titleStream
