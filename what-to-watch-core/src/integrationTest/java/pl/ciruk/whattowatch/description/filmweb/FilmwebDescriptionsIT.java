@@ -25,7 +25,7 @@ public class FilmwebDescriptionsIT {
 	}
 
 	@Test
-	public void shouldDescriptionOf() throws Exception {
+	public void shouldResolveRamboTitleToFirstBlood() throws Exception {
 		Title rambo = Title.builder().title("Rambo").year(1982).build();
 
 		Description description = descriptions.descriptionOf(rambo)
