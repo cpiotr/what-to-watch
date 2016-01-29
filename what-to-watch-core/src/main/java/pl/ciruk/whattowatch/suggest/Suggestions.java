@@ -8,6 +8,7 @@ import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.core.net.AllCookies;
 import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;

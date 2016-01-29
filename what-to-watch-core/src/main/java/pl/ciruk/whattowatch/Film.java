@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.suggest;
+package pl.ciruk.whattowatch;
 
 import lombok.Builder;
 import lombok.Data;
