@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.boundary;
 
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ManagedAsync;
+import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
 
 import javax.inject.Inject;
@@ -14,6 +15,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
@@ -35,6 +37,7 @@ public class Suggestions {
 		log.info("get");
 
 		suggestions.suggestFilms()
+				.thenApply(s -> s.filter(Film::isWorthWatching).collect(toList()))
 				.thenApply(asyncResponse::resume)
 				.exceptionally(e -> {
 					log.error("get - Could not get suggestions", e);

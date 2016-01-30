@@ -19,7 +19,6 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -46,17 +45,16 @@ public class WhatToWatchApplication {
 
 		Stopwatch started = Stopwatch.createStarted();
 		try {
-			List<Film> films = suggestions.suggestFilms().get();
+			suggestions.suggestFilms()
+					.thenApply(s -> s.filter(Film::isWorthWatching))
+					.thenAccept(s -> s.forEach(System.out::println))
+					.get();
 			started.stop();
-
-			films.stream()
-					.filter(Film::isWorthWatching)
-					.forEach(System.out::println);
 
 			executorService.shutdown();
 			executorService.awaitTermination(10, TimeUnit.SECONDS);
 
-			System.out.println("Found films: " + films.size() + " in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
+			System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("main - Processing error", e);
 		} finally {

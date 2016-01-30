@@ -47,7 +47,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 	}
 
 	@Override
-	public CompletableFuture<List<Film>> suggestFilms() {
+	public CompletableFuture<Stream<Film>> suggestFilms() {
 		log.info("suggestFilms");
 
 		return titles.streamOfTitles()
@@ -55,10 +55,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 				.reduce(
 						completedFuture(Stream.<Film>empty()),
 						combineUsing(Stream::concat))
-				.thenApply(
-						stream -> stream.filter(Film::isNotEmpty)
-								.collect(toList())
-				);
+				.thenApply(stream -> stream.filter(Film::isNotEmpty));
 	}
 
 	CompletableFuture<Stream<Film>> titlesToFilms(CompletableFuture<Stream<Title>> titlesFromPage) {
