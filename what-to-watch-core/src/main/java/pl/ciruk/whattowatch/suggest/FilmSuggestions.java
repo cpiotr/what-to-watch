@@ -25,7 +25,7 @@ import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
 @Named
 @Slf4j
-public class Suggestions implements FilmSuggestionProvider {
+public class FilmSuggestions implements FilmSuggestionProvider {
 	TitleProvider titles;
 
 	DescriptionProvider descriptions;
@@ -35,7 +35,7 @@ public class Suggestions implements FilmSuggestionProvider {
 	final ExecutorService executorService;
 
 	@Inject
-	public Suggestions(
+	public FilmSuggestions(
 			TitleProvider titles,
 			DescriptionProvider descriptions,
 			List<ScoresProvider> scoresProviders,

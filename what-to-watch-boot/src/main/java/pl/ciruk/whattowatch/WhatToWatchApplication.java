@@ -12,7 +12,7 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
 import pl.ciruk.whattowatch.score.imdb.IMDBScores;
 import pl.ciruk.whattowatch.score.metacritic.MetacriticScores;
-import pl.ciruk.whattowatch.suggest.Suggestions;
+import pl.ciruk.whattowatch.suggest.FilmSuggestions;
 import pl.ciruk.whattowatch.title.zalukaj.ZalukajTitles;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -38,7 +38,7 @@ public class WhatToWatchApplication {
 		CacheProvider<String> cache = createJedisCache(pool);
 		JsoupCachedConnection connection = new JsoupCachedConnection(cache, new OkHttpClient());
 
-		Suggestions suggestions = new Suggestions(
+		FilmSuggestions suggestions = new FilmSuggestions(
 				sampleTitleProvider(properties, executorService),
 				sampleDescriptionProvider(executorService, connection),
 				sampleScoreProviders(executorService, connection),
