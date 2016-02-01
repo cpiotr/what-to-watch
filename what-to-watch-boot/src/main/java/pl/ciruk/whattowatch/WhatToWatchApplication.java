@@ -28,10 +28,13 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class WhatToWatchApplication {
+
+	public static final int POOL_SIZE = 50;
+
 	public static void main(String[] args) {
 		Properties properties = loadDevProperties();
 
-		ExecutorService executorService = Executors.newFixedThreadPool(32);
+		ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE);
 
 		JedisPool pool = createJedisPool(properties);
 		CacheProvider<String> cache = createJedisCache(pool);
@@ -109,7 +112,7 @@ public class WhatToWatchApplication {
 
 	private static JedisPool createJedisPool(Properties properties) {
 		JedisPoolConfig poolConfig = new JedisPoolConfig();
-		poolConfig.setMaxTotal(32);
+		poolConfig.setMaxTotal(50);
 		String maxActive = (String) properties.getOrDefault("redis.pool.maxActive", "8");
 		poolConfig.setMaxIdle(
 				Integer.valueOf(maxActive));

@@ -61,7 +61,7 @@ public class Application {
 
 	@Bean
 	ExecutorService executorService() {
-		return Executors.newFixedThreadPool(32);
+		return Executors.newFixedThreadPool(50);
 	}
 }
 

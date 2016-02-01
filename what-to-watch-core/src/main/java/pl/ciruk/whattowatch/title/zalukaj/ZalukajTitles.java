@@ -106,7 +106,7 @@ public class ZalukajTitles implements TitleProvider {
 			AtomicInteger i = new AtomicInteger(1);
 			return Stream.generate(
 					() -> String.format(pattern, i.incrementAndGet()))
-					.limit(1);
+					.limit(5);
 		} else {
 			return Stream.of(pattern);
 		}
