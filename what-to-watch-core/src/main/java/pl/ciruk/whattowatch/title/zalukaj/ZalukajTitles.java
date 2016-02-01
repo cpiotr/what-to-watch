@@ -97,7 +97,7 @@ public class ZalukajTitles implements TitleProvider {
 	}
 
 	private Stream<Title> extractAndMapToTitles(Stream<Element> element) {
-		return element.flatMap(ZalukajSelectors.TITLES::extractFrom)
+		return element.flatMap(ZalukajStreamSelectors.TITLE_LINKS::extractFrom)
 				.map(this::parseToTitle);
 	}
 
@@ -112,8 +112,10 @@ public class ZalukajTitles implements TitleProvider {
 		}
 	}
 
-	Title parseToTitle(String titleAsText) {
+	Title parseToTitle(Element linkToTitle) {
+		String titleAsText = ZalukajSelectors.TITLE.extractFrom(linkToTitle).orElse("");
 		Title.TitleBuilder builder = Title.builder();
+		builder.url(ZalukajSelectors.HREF.extractFrom(linkToTitle).orElse(""));
 
 		Matcher yearMatcher = YEAR.matcher(titleAsText);
 		if (yearMatcher.matches()) {

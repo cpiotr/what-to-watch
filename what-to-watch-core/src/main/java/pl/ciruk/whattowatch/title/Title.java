@@ -14,4 +14,6 @@ public class Title {
 
 	private int year;
 
+	private String url;
+
 }

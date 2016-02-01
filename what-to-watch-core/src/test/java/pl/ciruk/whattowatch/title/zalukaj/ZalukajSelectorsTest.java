@@ -41,7 +41,9 @@ public class ZalukajSelectorsTest {
 
 	@Test
 	public void shouldExtractTitlesFromPage() throws Exception {
-		List<String> titles = ZalukajSelectors.TITLES.extractFrom(document)
+		List<String> titles = ZalukajStreamSelectors.TITLE_LINKS.extractFrom(document)
+				.map(ZalukajSelectors.HREF::extractFrom)
+				.map(Optional::get)
 				.collect(toList());
 
 		assertThat(titles, everyItem(not(equalTo(""))));
@@ -49,7 +51,9 @@ public class ZalukajSelectorsTest {
 
 	@Test
 	public void titlesShouldNotContainUnrelatedInformation() throws Exception {
-		List<String> titles = ZalukajSelectors.TITLES.extractFrom(document)
+		List<String> titles = ZalukajStreamSelectors.TITLE_LINKS.extractFrom(document)
+				.map(ZalukajSelectors.TITLE::extractFrom)
+				.map(Optional::get)
 				.collect(toList());
 
 		assertThat(titles, everyItem(containsOnlyTitleAndYear()));

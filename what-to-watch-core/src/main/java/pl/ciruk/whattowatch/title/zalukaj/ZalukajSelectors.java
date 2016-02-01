@@ -3,24 +3,23 @@ package pl.ciruk.whattowatch.title.zalukaj;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.Extractable;
 
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
-public enum ZalukajSelectors implements Extractable<Stream<String>> {
-	TITLES(description -> description.select(".tivief4 .rmk23m4 h3 a")
-			.stream()
-			.map(element -> element.attr("title"))
-			.map(ZalukajSelectors::onlyTitleAndYear)
-	),;
+public enum ZalukajSelectors implements Extractable<Optional<String>> {
+	TITLE(link -> Optional.ofNullable(link.attr("title"))
+			.map(ZalukajSelectors::onlyTitleAndYear)),
+	HREF(link -> Optional.ofNullable(link.attr("href")))
+	;
 
-	private Function<Element, Stream<String>> extractor;
+	private Function<Element, Optional<String>> extractor;
 
-	private ZalukajSelectors(Function<Element, Stream<String>> extractor) {
+	private ZalukajSelectors(Function<Element, Optional<String>> extractor) {
 		this.extractor = extractor;
 	}
 
 	@Override
-	public Stream<String> extractFrom(Element element) {
+	public Optional<String> extractFrom(Element element) {
 		return extractor.apply(element);
 	}
 
