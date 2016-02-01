@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.boundary;
 
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ManagedAsync;
 import pl.ciruk.whattowatch.Film;
@@ -13,7 +15,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -37,7 +41,11 @@ public class Suggestions {
 		log.info("get");
 
 		suggestions.suggestFilms()
-				.thenApply(s -> s.filter(Film::isWorthWatching).collect(toList()))
+				.thenApply(this::toFilmResults)
+				.thenApply(list -> Response.ok(list)
+						.header("Access-Control-Allow-Origin", "*")
+						.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+						.build())
 				.thenApply(asyncResponse::resume)
 				.exceptionally(e -> {
 					log.error("get - Could not get suggestions", e);
@@ -48,5 +56,35 @@ public class Suggestions {
 		asyncResponse.setTimeoutHandler(ar -> ar.resume(
 				Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
 
+	}
+
+	private List<FilmResult> toFilmResults(Stream<Film> filmStream) {
+		return filmStream.filter(Film::isWorthWatching)
+				.map(this::toFilmResult)
+				.collect(toList());
+	}
+
+	private FilmResult toFilmResult(Film film) {
+		return FilmResult.builder()
+				.title(film.getDescription().titleAsText())
+				.year(film.getDescription().getYear())
+				.plot(film.getDescription().getPlot())
+				.poster(film.getDescription().getPoster())
+				.score(film.normalizedScore())
+				.genres(film.getDescription().getGenres())
+				.link(film.getDescription().getFoundFor().getUrl())
+				.build();
+	}
+
+	@Builder
+	@Getter
+	static class FilmResult {
+		String title;
+		Integer year;
+		String plot;
+		String link;
+		String poster;
+		Double score;
+		List<String> genres;
 	}
 }
