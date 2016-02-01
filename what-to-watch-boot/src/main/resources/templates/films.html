@@ -14,31 +14,33 @@
 <div class="container">
     <div role="main">
         <div ng-controller="FilmListController">
-            <div class="row" ng-repeat="film in films">
-            <div class="col-sm-6 col-md-4">
-                <div class="thumbnail">
-                    <a href="{{film.link}}}">
-                        <img src="{{film.poster}}" alt="{{film.title}}"/>
-                    </a>
-                    <div class="caption">
-                        <h3>
-                            <a href="{{film.link}}">{{film.title}} ({{film.year}})</a>
-                        </h3>
-                        <p>{{film.plot}}</p>
-                        <p>
-                            <div class="btn btn-primary" role="button">
-                                <span class="glyphicon glyphicon-star" aria-hidden="true"/>
-                                <span class="badge">{{film.score}}</span>
-                            </div>
-                        </p>
+            <div class="row" >
+                <div class="col-sm-6 col-md-4" ng-repeat-start="film in films">
+                        <div class="thumbnail">
+                            <a href="{{film.link}}}">
+                                <img src="{{film.poster}}" alt="{{film.title}}"/>
+                            </a>
+                            <div class="caption">
+                                <h3>
+                                    <a href="{{film.link}}">{{film.title}} ({{film.year}})</a>
+                                </h3>
+                                <p>{{film.plot}}</p>
+                                <p>
+                                <div class="btn btn-primary" role="button">
+                                    <span class="glyphicon glyphicon-star" aria-hidden="true"/>
+                                    <span class="badge">{{film.score}}</span>
+                                </div>
+                                </p>
 
-                        <p class="genres" ng-repeat="genre in film.genres">
-                            <span class="label label-info">{{genre}}</span>
-                        </p>
-                    </div>
+                                <p class="genres" ng-repeat="genre in film.genres">
+                                    <span class="label label-info">{{genre}}</span>
+                                </p>
+                            </div>
+                        </div>
                 </div>
+                <div class="clearfix" ng-if="$index%3==2"></div>
+                <div ng-repeat-end=""></div>
             </div>
-        </div>
         </div>
     </div>
 </div>
