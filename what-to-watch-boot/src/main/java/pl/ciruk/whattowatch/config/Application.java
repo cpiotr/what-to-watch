@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.config;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +62,7 @@ public class Application {
 
 	@Bean
 	ExecutorService executorService() {
-		return Executors.newFixedThreadPool(50);
+		return Executors.newFixedThreadPool(50, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
 	}
 }
 
