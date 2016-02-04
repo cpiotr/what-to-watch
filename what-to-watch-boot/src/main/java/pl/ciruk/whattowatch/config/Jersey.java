@@ -10,7 +10,7 @@ import pl.ciruk.whattowatch.boundary.Suggestions;
 import javax.ws.rs.ApplicationPath;
 
 @Configuration
-@ApplicationPath("/")
+@ApplicationPath("/resources")
 public class Jersey extends ResourceConfig {
 	public Jersey() {
 		register(Descriptions.class);
