@@ -52,7 +52,7 @@ public class Suggestions {
 					return asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
 				});
 
-		asyncResponse.setTimeout(120, TimeUnit.SECONDS);
+		asyncResponse.setTimeout(5, TimeUnit.SECONDS);
 		asyncResponse.setTimeoutHandler(ar -> ar.resume(
 				Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
 
