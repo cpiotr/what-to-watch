@@ -62,7 +62,7 @@ public class Application {
 
 	@Bean
 	ExecutorService executorService() {
-		return Executors.newFixedThreadPool(50, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
+		return Executors.newFixedThreadPool(32, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
 	}
 }
 
