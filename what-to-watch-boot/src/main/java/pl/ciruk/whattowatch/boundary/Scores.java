@@ -27,6 +27,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
 @Component
 @Path("/scores")
@@ -36,13 +37,12 @@ public class Scores {
 
     @Inject
     public Scores(List<ScoresProvider> scoresProviders) {
-        log.info("Scores create");
         this.scoresProviders = scoresProviders;
     }
 
     @PostConstruct
     void init() {
-        log.info("init - ScoresProviders: {}", scoresProviders);
+        log.debug("init - ScoresProviders: {}", scoresProviders);
     }
 
     @GET
@@ -68,7 +68,7 @@ public class Scores {
 
         scoresProviders.stream()
                 .map(toScoresOfAsync)
-                .reduce(completedFuture(Stream.empty()), (cf1, cf2) -> cf1.thenCombine(cf2, Stream::concat))
+                .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat))
                 .thenApply(stream -> stream.collect(toList()))
                 .thenApply(asyncResponse::resume)
                 .exceptionally(e ->

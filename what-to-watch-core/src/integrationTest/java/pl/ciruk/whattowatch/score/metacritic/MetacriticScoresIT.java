@@ -43,9 +43,8 @@ public class MetacriticScoresIT {
 
 	private Title titleOfRespectfulFilm() {
 		return Title.builder()
-				.title("Citizenfour")
-				.originalTitle("Citizenfour")
-				.year(2014)
+				.originalTitle("Harry Potter and the Deathly Hallows: Part 2")
+				.year(2011)
 				.build();
 	}
 }

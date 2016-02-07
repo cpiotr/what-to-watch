@@ -3,35 +3,41 @@ package pl.ciruk.core.concurrent;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
-public class CompletableFutures {
-	public static <T> CompletableFuture<Void> allOf(List<CompletableFuture<T>> futures) {
-		return CompletableFuture.allOf(
-				futures.toArray(new CompletableFuture[futures.size()])
-		);
-	}
+import static java.util.stream.Collectors.toList;
 
-	public static <T> CompletableFuture<Stream<T>> getAllOf(List<CompletableFuture<T>> futures) {
+public class CompletableFutures {
+	public static <T> CompletableFuture<Stream<T>> allOf(List<CompletableFuture<T>> futures) {
 		CompletableFuture.allOf(
 				futures.toArray(new CompletableFuture[futures.size()])
 		);
 
 		return CompletableFuture.supplyAsync(
-				() ->
-						futures.stream()
-								.map(future -> {
-									try {
-										return future.get();
-									} catch (InterruptedException | ExecutionException e) {
-										throw new RuntimeException(e);
-									}
-								}));
+				() -> futures.stream().map(CompletableFutures::get)
+		);
+	}
+
+	public static <T> CompletableFuture<Stream<T>> allOf(Stream<CompletableFuture<T>> futures) {
+		return allOf(futures.collect(toList()));
 	}
 
 	public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(BiFunction<T, T, T> combinator) {
-		return (cf1, cf2) -> cf1.thenCombine(cf2, combinator);
+		return (cf1, cf2) -> cf1.thenCombineAsync(cf2, combinator);
+	}
+
+	public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(BiFunction<T, T, T> combinator, ExecutorService executorService) {
+		return (cf1, cf2) -> cf1.thenCombineAsync(cf2, combinator, executorService);
+	}
+
+	public static <T> T get(CompletableFuture<T> future) {
+		try {
+			return future.get();
+		} catch (InterruptedException | ExecutionException e) {
+			throw new AsyncExecutionException(e);
+		}
 	}
 }

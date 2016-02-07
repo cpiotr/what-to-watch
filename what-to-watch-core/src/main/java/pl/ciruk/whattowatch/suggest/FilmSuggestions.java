@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.suggest;
 
 import lombok.extern.slf4j.Slf4j;
-import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
@@ -47,48 +46,32 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 	}
 
 	@Override
-	public CompletableFuture<Stream<Film>> suggestFilms() {
+	public Stream<CompletableFuture<Film>> suggestFilms() {
 		log.info("suggestFilms");
 
 		return titles.streamOfTitles()
-				.map(this::titlesToFilms)
-				.reduce(
-						completedFuture(Stream.<Film>empty()),
-						combineUsing(Stream::concat))
-				.thenApply(stream -> stream.filter(Film::isNotEmpty));
-	}
-
-	CompletableFuture<Stream<Film>> titlesToFilms(CompletableFuture<Stream<Title>> titlesFromPage) {
-		log.debug("titlesToFilms");
-
-		return titlesFromPage.thenCompose(
-				titleStream -> CompletableFutures.getAllOf(
-						titleStream
-								.map(this::forTitle)
-								.collect(toList())));
+				.map(this::forTitle);
 	}
 
 	CompletableFuture<Film> forTitle(Title title) {
 		CompletableFuture<Optional<Description>> descriptionOfAsync = descriptions.descriptionOfAsync(title);
-		return descriptionOfAsync.thenCompose(
+		return descriptionOfAsync.thenComposeAsync(
 				optionalDescription -> optionalDescription
 						.map(this::descriptionToFilm)
 						.orElse(completedFuture(Film.empty())));
 	}
 
 	private CompletableFuture<Film> descriptionToFilm(Description description) {
-		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toAsyncScores =
+		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
 				scoresProvider -> scoresProvider.scoresOfAsync(description);
 
-		CompletableFuture<Film> future = scoresProviders.stream()
-				.map(toAsyncScores)
-				.reduce(completedFuture(Stream.empty()),
-						combineUsing(Stream::concat))
+		return scoresProviders.stream()
+				.map(toScoresOfAsync)
+				.reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService))
 				.thenApply(stream -> stream.collect(toList()))
 				.thenApply(list -> Film.builder()
 						.description(description)
 						.scores(list)
 						.build());
-		return future;
 	}
 }

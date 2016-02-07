@@ -1,15 +1,11 @@
 package pl.ciruk.whattowatch.description;
 
-import com.google.common.base.Strings;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 import pl.ciruk.whattowatch.title.Title;
 
 import java.util.List;
-import java.util.Optional;
 
-@ToString
 @Getter
 @Builder
 public class Description {
@@ -26,9 +22,7 @@ public class Description {
 	private List<String> genres;
 
 	public String titleAsText() {
-		return Optional.ofNullable(title.getOriginalTitle())
-				.filter(t -> !Strings.isNullOrEmpty(t))
-				.orElse(title.getTitle());
+		return title.asText();
 	}
 	
 	public int getYear() {
@@ -45,5 +39,10 @@ public class Description {
 
 	public static Description empty() {
 		return Description.EMPTY;
+	}
+
+	@Override
+	public String toString() {
+		return title.toString();
 	}
 }

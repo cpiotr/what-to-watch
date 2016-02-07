@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ManagedAsync;
+import pl.ciruk.core.concurrent.AsyncExecutionException;
+import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
 
@@ -17,7 +19,6 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -40,28 +41,20 @@ public class Suggestions {
 	public void get(@Suspended final AsyncResponse asyncResponse) {
 		log.info("get");
 
-		suggestions.suggestFilms()
-				.thenApply(this::toFilmResults)
-				.thenApply(list -> Response.ok(list)
-						.header("Access-Control-Allow-Origin", "*")
-						.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-						.build())
-				.thenApply(asyncResponse::resume)
-				.exceptionally(e -> {
-					log.error("get - Could not get suggestions", e);
-					return asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
-				});
-
-		asyncResponse.setTimeout(5, TimeUnit.SECONDS);
+		asyncResponse.setTimeout(30, TimeUnit.SECONDS);
 		asyncResponse.setTimeoutHandler(ar -> ar.resume(
 				Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
 
-	}
-
-	private List<FilmResult> toFilmResults(Stream<Film> filmStream) {
-		return filmStream.filter(Film::isWorthWatching)
-				.map(this::toFilmResult)
-				.collect(toList());
+		try {
+			List<FilmResult> films = suggestions.suggestFilms()
+					.map(CompletableFutures::get)
+					.filter(Film::isWorthWatching)
+					.map(this::toFilmResult)
+					.collect(toList());
+			asyncResponse.resume(Response.ok(films).build());
+		} catch (AsyncExecutionException e) {
+			asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
+		}
 	}
 
 	private FilmResult toFilmResult(Film film) {

@@ -33,7 +33,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 
 	@PostConstruct
 	public void init() {
-		log.info("init");
+		log.debug("init");
 		httpClient.interceptors().add(this::log);
 	}
 
@@ -75,7 +75,6 @@ public class JsoupCachedConnection implements JsoupConnection {
 			throw new RuntimeException("Cannot process request to " + url, e);
 		}
 	}
-
 
 	private Response execute(Request.Builder requestBuilder) throws IOException {
 		Request build = requestBuilder.build();

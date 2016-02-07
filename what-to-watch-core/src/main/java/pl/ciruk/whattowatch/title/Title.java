@@ -1,11 +1,12 @@
 package pl.ciruk.whattowatch.title;
 
+import com.google.common.base.Strings;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
+
+import java.util.Optional;
 
 @Getter
-@ToString
 @Builder
 public class Title {
 	private String originalTitle;
@@ -16,4 +17,14 @@ public class Title {
 
 	private String url;
 
+	public String asText() {
+		return Optional.ofNullable(getOriginalTitle())
+				.filter(t -> !Strings.isNullOrEmpty(t))
+				.orElse(getTitle());
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s (%d)", asText(), year);
+	}
 }

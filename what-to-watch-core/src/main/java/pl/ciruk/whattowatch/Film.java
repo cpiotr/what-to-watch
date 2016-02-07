@@ -23,7 +23,8 @@ public class Film {
 	}
 
 	public boolean isWorthWatching() {
-		return normalizedScore() > 0.7
+		return isNotEmpty()
+				&& normalizedScore() > 0.65
 				&& scores.size() > 2;
 	}
 

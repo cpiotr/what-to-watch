@@ -14,8 +14,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,18 +25,15 @@ public class ZalukajTitles implements TitleProvider {
 	public static final Pattern YEAR = Pattern.compile(".*\\(([12][0-9]{3})\\)$");
 	public static final Pattern ORIGINAL_TITLE = Pattern.compile("(.*)\\((.*)\\)$");
 	private final JsoupCachedConnection connection;
-	private final ExecutorService executorService;
 
 	@Inject
-	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, ExecutorService executorService) {
+	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection) {
 		this.connection = connection;
-		this.executorService = executorService;
 	}
 
 
-	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, ExecutorService executorService, String login, String password) {
+	public ZalukajTitles(@Named("allCookies") JsoupCachedConnection connection, String login, String password) {
 		this.connection = connection;
-		this.executorService = executorService;
 		this.login = login;
 		this.password = password;
 	}
@@ -65,18 +60,19 @@ public class ZalukajTitles implements TitleProvider {
 	}
 
 	@Override
-	public Stream<CompletableFuture<Stream<Title>>> streamOfTitles() {
+	public Stream<Title> streamOfTitles() {
 		log.info("streamOfTitles");
 		if (areCredentialsPresent()) {
 			authenticate();
 		}
 
 		return urls.stream()
+				.parallel()
 				.flatMap(pattern -> generateFivePages(pattern))
-				.map(url -> CompletableFuture.supplyAsync(() -> connection.connectToAndGet(url), this.executorService)
-								.thenApply(Optionals::asStream)
-								.thenApply(this::extractAndMapToTitles)
-				);
+				.map(connection::connectToAndGet)
+				.flatMap(Optionals::asStream)
+				.flatMap(ZalukajStreamSelectors.TITLE_LINKS::extractFrom)
+				.map(this::parseToTitle);
 	}
 
 	private boolean areCredentialsPresent() {
@@ -96,17 +92,12 @@ public class ZalukajTitles implements TitleProvider {
 		);
 	}
 
-	private Stream<Title> extractAndMapToTitles(Stream<Element> element) {
-		return element.flatMap(ZalukajStreamSelectors.TITLE_LINKS::extractFrom)
-				.map(this::parseToTitle);
-	}
-
 	Stream<String> generateFivePages(String pattern) {
 		if (pattern.contains("%d")) {
 			AtomicInteger i = new AtomicInteger(1);
 			return Stream.generate(
 					() -> String.format(pattern, i.incrementAndGet()))
-					.limit(5);
+					.limit(1);
 		} else {
 			return Stream.of(pattern);
 		}

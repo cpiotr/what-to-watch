@@ -11,12 +11,14 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 
 @Named("Metacritic")
 @Slf4j
@@ -48,7 +50,7 @@ public class MetacriticScores implements ScoresProvider {
 		log.info("scoresOf - Description: {}", description);
 
 		Optional<Element> htmlWithScores = metacriticSummaryOf(description.titleAsText(), description.getYear())
-				.flatMap(MetacriticSelectors.LINK_TO_DETAILS::extractFrom)
+				.flatMap(LINK_TO_DETAILS::extractFrom)
 				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
 				.flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
 				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
@@ -63,11 +65,8 @@ public class MetacriticScores implements ScoresProvider {
 				.flatMap(htmlContent -> nytScoreFrom(htmlContent))
 				.map(Stream::of).orElseGet(Stream::empty);
 
-		return Stream.concat(
-				averageScoreStream,
-				nytScoreStream
-		);
-
+		return Stream.concat(averageScoreStream, nytScoreStream)
+				.peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
 	}
 
 	Optional<Double> averageGradeFrom(Element htmlWithScores) {
@@ -93,20 +92,17 @@ public class MetacriticScores implements ScoresProvider {
 	}
 
 	Optional<Element> metacriticSummaryOf(String title, int year) {
-		String searchUrl;
 		try {
-			searchUrl = String.format(
-					METACRITIC_BASE_URL + "/search/movie/%s/results", 
+			Predicate<String> matchesTitle = matches(title);
+
+			String searchUrl = String.format(
+					METACRITIC_BASE_URL + "/search/movie/%s/results",
 					URLEncoder.encode(title, Charsets.UTF_8.toString()));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-		
-		try {
+
 			return downloadPage(searchUrl)
 					.flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
 							.filter(e -> MetacriticSelectors.TITLE.extractFrom(e)
-											.filter(t -> t.equalsIgnoreCase(title))
+											.filter(matchesTitle)
 											.isPresent()
 							)
 							.filter(e -> MetacriticSelectors.RELEASE_DATE.extractFrom(e)
@@ -118,5 +114,14 @@ public class MetacriticScores implements ScoresProvider {
 			log.warn("Cannot find metacritic summary of {}", title, e);
 			return Optional.empty();
 		}
+	}
+
+	private Predicate<String> matches(String title) {
+		String titleOnlyAlphaNum = replaceNonAlphaNumWithSpace(title);
+		return t -> replaceNonAlphaNumWithSpace(t).equalsIgnoreCase(titleOnlyAlphaNum);
+	}
+
+	private static String replaceNonAlphaNumWithSpace(String text) {
+		return text.replaceAll("[^\\p{L}0-9 ]", " ");
 	}
 }

@@ -38,6 +38,7 @@ public class FilmwebScores implements ScoresProvider {
 	public Stream<Score> scoresOf(Description description) {
 		log.info("scoresOf - Description: {}", description);
 
-		return dataSource.scoresOf(description);
+		return dataSource.scoresOf(description)
+				.peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
 	}
 }

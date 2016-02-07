@@ -13,11 +13,8 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 @Component
@@ -34,12 +31,9 @@ public class Titles {
 	@ManagedAsync
 	@Produces("application/json")
 	public void findAll(@Suspended AsyncResponse asyncResponse) {
-		titles.streamOfTitles()
-				.reduce(completedFuture(Stream.empty()), (cf1, cf2) -> cf1.thenCombine(cf2, Stream::concat))
-				.thenApply(stream -> stream.collect(toList()))
-				.thenApply(asyncResponse::resume)
-				.exceptionally(e ->
-						asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build()));
+		asyncResponse.resume(
+				Response.ok(titles.streamOfTitles().collect(toList())).build()
+		);
 
 		asyncResponse.setTimeout(20_000, TimeUnit.MILLISECONDS);
 		asyncResponse.setTimeoutHandler(ar -> ar.resume(
