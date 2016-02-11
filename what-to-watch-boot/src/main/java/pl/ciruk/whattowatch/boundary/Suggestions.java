@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.boundary;
 
+import com.google.common.base.Stopwatch;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -41,19 +42,24 @@ public class Suggestions {
 	public void get(@Suspended final AsyncResponse asyncResponse) {
 		log.info("get");
 
-		asyncResponse.setTimeout(30, TimeUnit.SECONDS);
+		asyncResponse.setTimeout(60, TimeUnit.SECONDS);
 		asyncResponse.setTimeoutHandler(ar -> ar.resume(
 				Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
 
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		try {
 			List<FilmResult> films = suggestions.suggestFilms()
 					.map(CompletableFutures::get)
 					.filter(Film::isWorthWatching)
 					.map(this::toFilmResult)
 					.collect(toList());
+			stopwatch.stop();
+
 			asyncResponse.resume(Response.ok(films).build());
 		} catch (AsyncExecutionException e) {
 			asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
+		} finally {
+			log.debug("get - Request processed in {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 		}
 	}
 
@@ -64,6 +70,7 @@ public class Suggestions {
 				.plot(film.getDescription().getPlot())
 				.poster(film.getDescription().getPoster())
 				.score(film.normalizedScore())
+				.numberOfScores(film.getScores().size())
 				.genres(film.getDescription().getGenres())
 				.link(film.getDescription().getFoundFor().getUrl())
 				.build();
@@ -78,6 +85,7 @@ public class Suggestions {
 		String link;
 		String poster;
 		Double score;
+		Integer numberOfScores;
 		List<String> genres;
 	}
 }
