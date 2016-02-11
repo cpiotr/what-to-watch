@@ -33,7 +33,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 
 	@PostConstruct
 	public void init() {
-		log.debug("init");
+		log.debug("init: Cache: {}, HttpClient: {}", cache, httpClient);
 		httpClient.interceptors().add(this::log);
 	}
 

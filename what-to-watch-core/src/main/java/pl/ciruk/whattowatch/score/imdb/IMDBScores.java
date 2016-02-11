@@ -22,7 +22,7 @@ public class IMDBScores implements ScoresProvider {
 	private final ExecutorService executorService;
 
 	@Inject
-	public IMDBScores(@Named("allCookies") JsoupConnection jsoupConnection, ExecutorService executorService) {
+	public IMDBScores(@Named("noCookies") JsoupConnection jsoupConnection, ExecutorService executorService) {
 		this.executorService = executorService;
 		dataSource = new GoogleScores(jsoupConnection, executorService, "imdb");
 	}

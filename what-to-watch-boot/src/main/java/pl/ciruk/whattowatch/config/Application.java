@@ -32,12 +32,13 @@ public class Application {
 
 	@Bean
 	@Named("allCookies")
-	JsoupConnection jsoupConnectionAllCookies(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
+	JsoupConnection jsoupConnectionAllCookies(OkHttpClient httpClient) {
 		new AllCookies().applyTo(httpClient);
-		return new JsoupCachedConnection(cacheProvider, httpClient);
+		return new JsoupCachedConnection(CacheProvider.empty(), httpClient);
 	}
 
 	@Bean
+	@Named("noCookies")
 	JsoupConnection jsoupConnection(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
 		return new JsoupCachedConnection(cacheProvider, httpClient);
 	}

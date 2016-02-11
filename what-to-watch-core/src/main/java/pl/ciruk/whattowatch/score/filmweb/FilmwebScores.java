@@ -21,7 +21,7 @@ public class FilmwebScores implements ScoresProvider {
 	ScoresProvider dataSource;
 
 	@Inject
-	public FilmwebScores(@Named("allCookies") JsoupConnection jsoupConnection, ExecutorService executorService) {
+	public FilmwebScores(@Named("noCookies") JsoupConnection jsoupConnection, ExecutorService executorService) {
 		this.executorService = executorService;
 		dataSource = new GoogleScores(jsoupConnection, this.executorService, "filmweb");
 	}

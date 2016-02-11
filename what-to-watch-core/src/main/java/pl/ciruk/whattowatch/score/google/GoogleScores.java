@@ -22,7 +22,7 @@ public class GoogleScores implements ScoresProvider {
 
 	private String sourcePage;
 
-	public GoogleScores(@Named("allCookies") JsoupConnection connection, ExecutorService executorService, String sourcePage) {
+	public GoogleScores(@Named("noCookies") JsoupConnection connection, ExecutorService executorService, String sourcePage) {
 		this.connection = connection;
 		this.executorService = executorService;
 		this.sourcePage = sourcePage;
