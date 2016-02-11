@@ -8,12 +8,15 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Named
 @Slf4j
 public class RedisCache implements CacheProvider<String> {
 
-    private StringRedisTemplate cache;
+    private final StringRedisTemplate cache;
+
+    private final AtomicLong hitCounter = new AtomicLong();
 
     @Inject
     public RedisCache(StringRedisTemplate cache) {
@@ -27,8 +30,11 @@ public class RedisCache implements CacheProvider<String> {
 
     @Override
     public Optional<String> get(String key) {
-        String value = cache.opsForValue().get(key);
-        return Optional.ofNullable(value);
+        Optional<String> optional = Optional.ofNullable(cache.opsForValue().get(key));
+        if (optional.isPresent()) {
+            hitCounter.incrementAndGet();
+        }
+        return optional;
     }
 
     @Override
@@ -36,3 +42,4 @@ public class RedisCache implements CacheProvider<String> {
         cache.opsForValue().set(key, value);
     }
 }
+
