@@ -31,7 +31,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	private final ExecutorService executorService;
 
 	@Inject
-	public FilmwebDescriptions(@Named("allCookies") JsoupConnection connection, ExecutorService executorService) {
+	public FilmwebDescriptions(@Named("noCookies") JsoupConnection connection, ExecutorService executorService) {
 		this.connection = connection;
 		this.executorService = executorService;
 	}
