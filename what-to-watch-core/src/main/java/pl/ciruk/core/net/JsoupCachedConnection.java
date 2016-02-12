@@ -11,13 +11,11 @@ import pl.ciruk.core.cache.CacheProvider;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Named
 @Slf4j
 public class JsoupCachedConnection implements JsoupConnection {
 
@@ -41,22 +39,21 @@ public class JsoupCachedConnection implements JsoupConnection {
 	public Optional<Element> connectToAndGet(String url) {
 		log.debug("connectToAndGet- Url: {}", url);
 
-		Optional<Element> document = cache.get(url)
-				.map(Jsoup::parse);
-
-		if (document.isPresent()) {
-			return document;
-		} else {
-			Element content = null;
+		Optional<String> document = cache.get(url);
+		if (!document.isPresent()) {
+			log.debug("connectToAndGet - Cache miss for: {}", url);
 			try {
 				Response response = execute(to(url));
-				content = Jsoup.parse(response.body().string());
-				cache.put(url, content.html());
+				String html = response.body().string();
+				cache.put(url, html);
+
+				document = Optional.of(html);
 			} catch (IOException e) {
 				log.warn("connectToAndGet - Cannot fetch " + url, e);
 			}
-			return Optional.ofNullable(content);
 		}
+
+		return document.map(Jsoup::parse);
 	}
 
 	public Optional<Element> connectToAndConsume(String url, Consumer<Request.Builder> action) {
@@ -68,7 +65,7 @@ public class JsoupCachedConnection implements JsoupConnection {
 			Response response = execute(builder);
 			log.debug("Headers: {}", response.headers());
 			String body = response.body().string();
-			log.debug("Body: {}", body);
+			log.trace("Body: {}", body);
 			return Optional.ofNullable(body)
 					.map(Jsoup::parse);
 		} catch (IOException e) {
