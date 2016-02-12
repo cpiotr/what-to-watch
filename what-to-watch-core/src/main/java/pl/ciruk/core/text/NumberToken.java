@@ -21,7 +21,12 @@ public class NumberToken {
 			String[] fractionParts = value.split("/");
 			return Double.valueOf(fractionParts[0]) / Double.valueOf(fractionParts[1]);
 		}
-		return Double.valueOf(value);
+
+		try {
+			return Double.valueOf(value);
+		} catch (NumberFormatException e) {
+			return 0.0;
+		}
 	}
 
 	public String asString() {
