@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.squareup.okhttp.FormEncodingBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
@@ -24,15 +24,16 @@ import java.util.stream.Stream;
 public class ZalukajTitles implements TitleProvider {
 	public static final Pattern YEAR = Pattern.compile(".*\\(([12][0-9]{3})\\)$");
 	public static final Pattern ORIGINAL_TITLE = Pattern.compile("(.*)\\((.*)\\)$");
-	private final JsoupConnection connection;
+
+	private final HttpConnection<Element> connection;
 
 	@Inject
-	public ZalukajTitles(@Named("allCookies") JsoupConnection connection) {
+	public ZalukajTitles(@Named("allCookies") HttpConnection<Element> connection) {
 		this.connection = connection;
 	}
 
 
-	public ZalukajTitles(@Named("allCookies") JsoupConnection connection, String login, String password) {
+	public ZalukajTitles(@Named("allCookies") HttpConnection<Element> connection, String login, String password) {
 		this.connection = connection;
 		this.login = login;
 		this.password = password;

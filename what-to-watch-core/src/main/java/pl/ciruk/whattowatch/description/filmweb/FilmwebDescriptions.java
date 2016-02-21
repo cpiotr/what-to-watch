@@ -2,7 +2,7 @@ package pl.ciruk.whattowatch.description.filmweb;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
@@ -26,12 +26,12 @@ import static pl.ciruk.core.stream.Predicates.not;
 @Slf4j
 public class FilmwebDescriptions implements DescriptionProvider {
 
-	private final JsoupConnection connection;
+	private final HttpConnection<Element> connection;
 
 	private final ExecutorService executorService;
 
 	@Inject
-	public FilmwebDescriptions(@Named("noCookies") JsoupConnection connection, ExecutorService executorService) {
+	public FilmwebDescriptions(@Named("noCookies") HttpConnection<Element> connection, ExecutorService executorService) {
 		this.connection = connection;
 		this.executorService = executorService;
 	}

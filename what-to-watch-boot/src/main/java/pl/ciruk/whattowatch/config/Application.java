@@ -13,7 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.net.AllCookies;
 import pl.ciruk.core.net.JsoupCachedConnection;
-import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.net.HttpConnection;
 import redis.clients.jedis.JedisShardInfo;
 
 import javax.inject.Named;
@@ -32,14 +32,14 @@ public class Application {
 
 	@Bean
 	@Named("allCookies")
-	JsoupConnection jsoupConnectionAllCookies(OkHttpClient httpClient) {
+	HttpConnection jsoupConnectionAllCookies(OkHttpClient httpClient) {
 		new AllCookies().applyTo(httpClient);
 		return new JsoupCachedConnection(CacheProvider.empty(), httpClient);
 	}
 
 	@Bean
 	@Named("noCookies")
-	JsoupConnection jsoupConnection(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
+	HttpConnection jsoupConnection(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
 		return new JsoupCachedConnection(cacheProvider, httpClient);
 	}
 

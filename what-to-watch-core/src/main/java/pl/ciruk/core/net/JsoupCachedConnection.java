@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 @Slf4j
-public class JsoupCachedConnection implements JsoupConnection {
+public class JsoupCachedConnection implements HttpConnection<Element> {
 
 	private CacheProvider<String> cache;
 

@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.score.google;
 
-import pl.ciruk.core.net.JsoupConnection;
+import org.jsoup.nodes.Element;
+import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -16,13 +17,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 public class GoogleScores implements ScoresProvider {
-	private final JsoupConnection connection;
+	private final HttpConnection<Element> connection;
 
 	private final ExecutorService executorService;
 
 	private String sourcePage;
 
-	public GoogleScores(@Named("noCookies") JsoupConnection connection, ExecutorService executorService, String sourcePage) {
+	public GoogleScores(@Named("noCookies") HttpConnection<Element> connection, ExecutorService executorService, String sourcePage) {
 		this.connection = connection;
 		this.executorService = executorService;
 		this.sourcePage = sourcePage;

@@ -3,7 +3,7 @@ package pl.ciruk.whattowatch.score.metacritic;
 import com.google.common.base.Charsets;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -27,12 +27,12 @@ public class MetacriticScores implements ScoresProvider {
 
 	private static final int NYT_SCORE_WEIGHT = 1_000;
 
-	private final JsoupConnection connection;
+	private final HttpConnection connection;
 
 	private final ExecutorService executorService;
 
 	@Inject
-	public MetacriticScores(@Named("noCookies") JsoupConnection connection, ExecutorService executorService) {
+	public MetacriticScores(@Named("noCookies") HttpConnection connection, ExecutorService executorService) {
 		this.connection = connection;
 		this.executorService = executorService;
 	}

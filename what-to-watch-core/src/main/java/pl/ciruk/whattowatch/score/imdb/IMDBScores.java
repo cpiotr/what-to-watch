@@ -1,7 +1,7 @@
 package pl.ciruk.whattowatch.score.imdb;
 
 import lombok.extern.slf4j.Slf4j;
-import pl.ciruk.core.net.JsoupConnection;
+import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
@@ -22,9 +22,9 @@ public class IMDBScores implements ScoresProvider {
 	private final ExecutorService executorService;
 
 	@Inject
-	public IMDBScores(@Named("noCookies") JsoupConnection jsoupConnection, ExecutorService executorService) {
+	public IMDBScores(@Named("noCookies") HttpConnection httpConnection, ExecutorService executorService) {
 		this.executorService = executorService;
-		dataSource = new GoogleScores(jsoupConnection, executorService, "imdb");
+		dataSource = new GoogleScores(httpConnection, executorService, "imdb");
 	}
 
 	@Override
