@@ -32,7 +32,7 @@ public class MetacriticScores implements ScoresProvider {
 	private final ExecutorService executorService;
 
 	@Inject
-	public MetacriticScores(@Named("noCookies") HttpConnection connection, ExecutorService executorService) {
+	public MetacriticScores(@Named("noCookiesHtml") HttpConnection connection, ExecutorService executorService) {
 		this.connection = connection;
 		this.executorService = executorService;
 	}

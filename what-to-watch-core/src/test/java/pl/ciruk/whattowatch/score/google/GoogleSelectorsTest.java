@@ -7,7 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Before;
 import org.junit.Test;
-import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.core.net.html.JsoupConnection;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,7 +29,7 @@ public class GoogleSelectorsTest {
 				Files.readAllBytes(
 						Paths.get(
 								getClass().getClassLoader().getResource("google-search-results.html").toURI())));
-		JsoupCachedConnection connection = mock(JsoupCachedConnection.class);
+		JsoupConnection connection = mock(JsoupConnection.class);
 		document = Jsoup.parse(searchResultsHTML);
 		when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
 	}

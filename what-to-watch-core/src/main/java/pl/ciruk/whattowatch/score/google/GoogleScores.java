@@ -23,7 +23,7 @@ public class GoogleScores implements ScoresProvider {
 
 	private String sourcePage;
 
-	public GoogleScores(@Named("noCookies") HttpConnection<Element> connection, ExecutorService executorService, String sourcePage) {
+	public GoogleScores(@Named("noCookiesHtml") HttpConnection<Element> connection, ExecutorService executorService, String sourcePage) {
 		this.connection = connection;
 		this.executorService = executorService;
 		this.sourcePage = sourcePage;

@@ -3,8 +3,8 @@ package pl.ciruk.whattowatch.score.metacritic;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
-import pl.ciruk.core.cache.CacheProvider;
-import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.core.net.HtmlConnection;
+import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.title.Title;
@@ -16,12 +16,13 @@ import static org.junit.Assert.assertThat;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class MetacriticScoresIT {
-	private JsoupCachedConnection connection;
+	private JsoupConnection connection;
 	private MetacriticScores scores;
 
 	@Before
 	public void setUp() throws Exception {
-		connection = new JsoupCachedConnection(CacheProvider.<String>empty(), new OkHttpClient());
+		connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+
 		connection.init();
 		scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
 	}

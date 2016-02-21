@@ -4,10 +4,14 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.core.net.AllCookies;
-import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.core.net.CachedConnection;
+import pl.ciruk.core.net.HtmlConnection;
+import pl.ciruk.core.net.HttpConnection;
+import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
@@ -38,7 +42,7 @@ public class WhatToWatchApplication {
 
 		JedisPool pool = createJedisPool(properties);
 		CacheProvider<String> cache = createJedisCache(pool);
-		JsoupCachedConnection connection = new JsoupCachedConnection(cache, new OkHttpClient());
+		JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 
 		FilmSuggestions suggestions = new FilmSuggestions(
 				sampleTitleProvider(properties, executorService),
@@ -68,11 +72,11 @@ public class WhatToWatchApplication {
 		}
 	}
 
-	private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupCachedConnection connection) {
+	private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
 		return new FilmwebDescriptions(connection, executorService);
 	}
 
-	private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupCachedConnection connection) {
+	private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection) {
 		return Lists.newArrayList(
 				new FilmwebScores(connection, executorService),
 				new IMDBScores(connection, executorService),
@@ -81,17 +85,17 @@ public class WhatToWatchApplication {
 	}
 
 	private static ZalukajTitles sampleTitleProvider(Properties properties, ExecutorService executorService) {
-		JsoupCachedConnection keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
+		HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
 		return new ZalukajTitles(
 				keepCookiesConnection,
 				properties.getProperty("zalukaj-login"),
 				properties.getProperty("zalukaj-password"));
 	}
 
-	private static JsoupCachedConnection createDirectConnectionWhichKeepsCookies() {
+	private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
 		OkHttpClient httpClient = new OkHttpClient();
 		new AllCookies().applyTo(httpClient);
-		return new JsoupCachedConnection(CacheProvider.empty(), httpClient);
+		return new JsoupConnection(new HtmlConnection(httpClient));
 	}
 
 	private static CacheProvider<String> createJedisCache(final JedisPool pool) {

@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.config;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,9 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.net.AllCookies;
-import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.core.net.CachedConnection;
+import pl.ciruk.core.net.HtmlConnection;
+import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.core.net.HttpConnection;
 import redis.clients.jedis.JedisShardInfo;
 
@@ -32,15 +35,33 @@ public class Application {
 
 	@Bean
 	@Named("allCookies")
-	HttpConnection jsoupConnectionAllCookies(OkHttpClient httpClient) {
-		new AllCookies().applyTo(httpClient);
-		return new JsoupCachedConnection(CacheProvider.empty(), httpClient);
+	HttpConnection<String> allCookiesConnection(OkHttpClient client) {
+		new AllCookies().applyTo(client);
+		return new HtmlConnection(client);
 	}
 
 	@Bean
 	@Named("noCookies")
-	HttpConnection jsoupConnection(CacheProvider<String> cacheProvider, OkHttpClient httpClient) {
-		return new JsoupCachedConnection(cacheProvider, httpClient);
+	HttpConnection<String> noCookiesConnection(OkHttpClient client) {
+		return new HtmlConnection(client);
+	}
+
+	@Bean
+	@Named("cachedConnection")
+	HttpConnection<String> cachedConnection(CacheProvider<String> cacheProvider, @Named("noCookies") HttpConnection<String> connection) {
+		return new CachedConnection(cacheProvider, connection);
+	}
+
+	@Bean
+	@Named("allCookiesHtml")
+	HttpConnection<Element> jsoupConnectionAllCookies(@Named("allCookies") HttpConnection<String> allCookies) {
+		return new JsoupConnection(allCookies);
+	}
+
+	@Bean
+	@Named("noCookiesHtml")
+	HttpConnection<Element> jsoupConnection(@Named("cachedConnection") HttpConnection<String> connection) {
+		return new JsoupConnection(connection);
 	}
 
 	@Bean

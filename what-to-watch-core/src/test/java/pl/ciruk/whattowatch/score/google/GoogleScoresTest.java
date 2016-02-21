@@ -4,7 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Before;
 import org.junit.Test;
-import pl.ciruk.core.net.JsoupCachedConnection;
+import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.title.Title;
@@ -22,7 +22,7 @@ import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class GoogleScoresTest {
 	private Document document;
-	private JsoupCachedConnection connection;
+	private JsoupConnection connection;
 
 	@Before
 	public void setUp() throws Exception {
@@ -30,7 +30,7 @@ public class GoogleScoresTest {
 				Files.readAllBytes(
 						Paths.get(
 								getClass().getClassLoader().getResource("google-search-results.html").toURI())));
-		connection = mock(JsoupCachedConnection.class);
+		connection = mock(JsoupConnection.class);
 		document = Jsoup.parse(searchResultsHTML);
 		when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
 	}

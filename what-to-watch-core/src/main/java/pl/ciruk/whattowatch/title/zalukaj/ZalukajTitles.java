@@ -28,12 +28,12 @@ public class ZalukajTitles implements TitleProvider {
 	private final HttpConnection<Element> connection;
 
 	@Inject
-	public ZalukajTitles(@Named("allCookies") HttpConnection<Element> connection) {
+	public ZalukajTitles(@Named("allCookiesHtml") HttpConnection<Element> connection) {
 		this.connection = connection;
 	}
 
 
-	public ZalukajTitles(@Named("allCookies") HttpConnection<Element> connection, String login, String password) {
+	public ZalukajTitles(@Named("allCookiesHtml") HttpConnection<Element> connection, String login, String password) {
 		this.connection = connection;
 		this.login = login;
 		this.password = password;

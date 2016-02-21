@@ -5,58 +5,44 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import pl.ciruk.core.cache.CacheProvider;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 @Slf4j
-public class JsoupCachedConnection implements HttpConnection<Element> {
+public class HtmlConnection implements HttpConnection<String> {
+	private final OkHttpClient httpClient;
 
-	private CacheProvider<String> cache;
-
-	private OkHttpClient httpClient;
-
-	@Inject
-	public JsoupCachedConnection(CacheProvider<String> cache, OkHttpClient httpClient) {
-		this.cache = cache;
+	public HtmlConnection(OkHttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
 
 	@PostConstruct
 	public void init() {
-		log.debug("init: Cache: {}, HttpClient: {}", cache, httpClient);
+		log.debug("init: HttpClient: {}", httpClient);
 		httpClient.interceptors().add(this::log);
 	}
 
 	@Override
-	public Optional<Element> connectToAndGet(String url) {
+	public Optional<String> connectToAndGet(String url) {
 		log.debug("connectToAndGet- Url: {}", url);
 
-		Optional<String> document = cache.get(url);
-		if (!document.isPresent()) {
-			log.debug("connectToAndGet - Cache miss for: {}", url);
-			try {
-				Response response = execute(to(url));
-				String html = response.body().string();
-				cache.put(url, html);
-
-				document = Optional.of(html);
-			} catch (IOException e) {
-				log.warn("connectToAndGet - Cannot fetch " + url, e);
-			}
+		try {
+			Response response = execute(to(url));
+			return Optional.ofNullable(
+					response.body().string()
+			);
+		} catch (IOException e) {
+			log.warn("connectToAndGet - Could no get {}", url, e);
+			return Optional.empty();
 		}
-
-		return document.map(Jsoup::parse);
 	}
 
-	public Optional<Element> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+	@Override
+	public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
 		log.debug("connectToAndConsume - Url: {}", url);
 		Request.Builder builder = to(url);
 
@@ -66,12 +52,13 @@ public class JsoupCachedConnection implements HttpConnection<Element> {
 			log.debug("Headers: {}", response.headers());
 			String body = response.body().string();
 			log.trace("Body: {}", body);
-			return Optional.ofNullable(body)
-					.map(Jsoup::parse);
+			return Optional.ofNullable(body);
 		} catch (IOException e) {
-			throw new RuntimeException("Cannot process request to " + url, e);
+			log.warn("Cannot process request to {}", url, e);
+			return Optional.empty();
 		}
 	}
+
 
 	private Response execute(Request.Builder requestBuilder) throws IOException {
 		Request build = requestBuilder.build();

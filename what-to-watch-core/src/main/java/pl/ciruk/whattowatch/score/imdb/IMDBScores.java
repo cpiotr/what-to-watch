@@ -22,7 +22,7 @@ public class IMDBScores implements ScoresProvider {
 	private final ExecutorService executorService;
 
 	@Inject
-	public IMDBScores(@Named("noCookies") HttpConnection httpConnection, ExecutorService executorService) {
+	public IMDBScores(@Named("noCookiesHtml") HttpConnection httpConnection, ExecutorService executorService) {
 		this.executorService = executorService;
 		dataSource = new GoogleScores(httpConnection, executorService, "imdb");
 	}
