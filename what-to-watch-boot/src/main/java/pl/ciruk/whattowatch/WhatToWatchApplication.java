@@ -12,6 +12,7 @@ import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.core.net.json.JsonConnection;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
@@ -43,11 +44,12 @@ public class WhatToWatchApplication {
 		JedisPool pool = createJedisPool(properties);
 		CacheProvider<String> cache = createJedisCache(pool);
 		JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
+		JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 
 		FilmSuggestions suggestions = new FilmSuggestions(
 				sampleTitleProvider(properties, executorService),
 				sampleDescriptionProvider(executorService, connection),
-				sampleScoreProviders(executorService, connection),
+				sampleScoreProviders(executorService, connection, jsonConnection),
 				executorService);
 
 		Stopwatch started = Stopwatch.createStarted();
@@ -76,10 +78,10 @@ public class WhatToWatchApplication {
 		return new FilmwebDescriptions(connection, executorService);
 	}
 
-	private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection) {
+	private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {
 		return Lists.newArrayList(
 				new FilmwebScores(connection, executorService),
-				new IMDBScores(connection, executorService),
+				new IMDBScores(jsonConnection, executorService),
 				new MetacriticScores(connection, executorService)
 		);
 	}

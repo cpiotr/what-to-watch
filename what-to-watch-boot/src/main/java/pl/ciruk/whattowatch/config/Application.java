@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,9 @@ import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.net.AllCookies;
 import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
-import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.core.net.HttpConnection;
+import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.core.net.json.JsonConnection;
 import redis.clients.jedis.JedisShardInfo;
 
 import javax.inject.Named;
@@ -62,6 +64,12 @@ public class Application {
 	@Named("noCookiesHtml")
 	HttpConnection<Element> jsoupConnection(@Named("cachedConnection") HttpConnection<String> connection) {
 		return new JsoupConnection(connection);
+	}
+
+	@Bean
+	@Named("noCookiesJson")
+	HttpConnection<JsonNode> jsonConnection(@Named("cachedConnection") HttpConnection<String> connection) {
+		return new JsonConnection(connection);
 	}
 
 	@Bean

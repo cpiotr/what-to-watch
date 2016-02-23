@@ -4,7 +4,7 @@ import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.net.HtmlConnection;
-import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.core.net.json.JsonConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.title.Title;
@@ -16,14 +16,13 @@ import static org.junit.Assert.assertThat;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class IMDBScoresIT {
-	private JsoupConnection connection;
+	private JsonConnection connection;
 	private IMDBScores scores;
 
 	@Before
 	public void setUp() throws Exception {
-		connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+		connection = new JsonConnection(new HtmlConnection(new OkHttpClient()));
 
-		connection.init();
 		scores = new IMDBScores(connection, Executors.newSingleThreadExecutor());
 	}
 
@@ -45,7 +44,7 @@ public class IMDBScoresIT {
 	private Title titleOfOldAndRespectfulFilm() {
 		return Title.builder()
 				.title("Rambo")
-				.originalTitle("Rambo")
+				.originalTitle("First blood")
 				.year(1982)
 				.build();
 	}
