@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.score.google;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.text.NumberTokenizer;
@@ -16,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
+@Slf4j
 public class GoogleScores implements ScoresProvider {
 	private final HttpConnection<Element> connection;
 
@@ -48,7 +50,10 @@ public class GoogleScores implements ScoresProvider {
 					return new Score(rating, quantity);
 				})
 				.map(Stream::of)
-				.orElse(Stream.empty());
+				.orElseGet(() -> {
+					log.warn("scoresOf - No result for: {}", description.getTitle());
+					return Stream.empty();
+				});
 	}
 
 	private Optional<String> retrieveScoreFrom(String url) {
