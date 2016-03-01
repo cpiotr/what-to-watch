@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -21,7 +22,7 @@ public class FilmwebScores implements ScoresProvider {
 	ScoresProvider dataSource;
 
 	@Inject
-	public FilmwebScores(@Named("noCookiesHtml") HttpConnection httpConnection, ExecutorService executorService) {
+	public FilmwebScores(@Named("noCookiesHtml") HttpConnection<Element> httpConnection, ExecutorService executorService) {
 		this.executorService = executorService;
 		dataSource = new GoogleScores(httpConnection, this.executorService, "filmweb");
 	}
