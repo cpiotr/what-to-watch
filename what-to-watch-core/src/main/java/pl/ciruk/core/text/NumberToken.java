@@ -29,6 +29,14 @@ public class NumberToken {
 		}
 	}
 
+	public long asSimpleLong() {
+		try {
+			return Long.valueOf(value.replaceAll("\\W+", ""));
+		} catch (NumberFormatException e) {
+			return -1L;
+		}
+	}
+
 	public String asString() {
 		return value;
 	}
