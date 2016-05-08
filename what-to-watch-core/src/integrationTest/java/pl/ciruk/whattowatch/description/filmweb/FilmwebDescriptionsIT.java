@@ -6,6 +6,7 @@ import org.junit.Test;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
+import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
 import java.util.concurrent.Executors;
@@ -21,7 +22,7 @@ public class FilmwebDescriptionsIT {
 	@Before
 	public void setUp() throws Exception {
 		JsoupConnection connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
-		descriptions = new FilmwebDescriptions(connection, Executors.newSingleThreadExecutor());
+		descriptions = new FilmwebDescriptions(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
 	}
 
 	@Test

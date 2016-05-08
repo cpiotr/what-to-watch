@@ -7,6 +7,7 @@ import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
+import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
 import java.util.concurrent.Executors;
@@ -25,7 +26,7 @@ public class FilmwebScoresIT {
 		connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
 
 		connection.init();
-		scores = new FilmwebScores(connection, Executors.newSingleThreadExecutor());
+		scores = new FilmwebScores(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
 	}
 
 	@Test

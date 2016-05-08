@@ -18,6 +18,7 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
 import pl.ciruk.whattowatch.score.imdb.IMDBScores;
 import pl.ciruk.whattowatch.score.metacritic.MetacriticScores;
+import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.suggest.FilmSuggestions;
 import pl.ciruk.whattowatch.title.zalukaj.ZalukajTitles;
 import redis.clients.jedis.Jedis;
@@ -75,12 +76,12 @@ public class WhatToWatchApplication {
 	}
 
 	private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
-		return new FilmwebDescriptions(connection, executorService);
+		return new FilmwebDescriptions(new FilmwebProxy(connection), executorService);
 	}
 
 	private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {
 		return Lists.newArrayList(
-				new FilmwebScores(connection, executorService),
+				new FilmwebScores(new FilmwebProxy(connection), executorService),
 				new IMDBScores(jsonConnection, executorService),
 				new MetacriticScores(connection, executorService)
 		);

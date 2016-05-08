@@ -2,17 +2,14 @@ package pl.ciruk.whattowatch.description.filmweb;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
+import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -26,13 +23,12 @@ import static pl.ciruk.core.stream.Predicates.not;
 @Slf4j
 public class FilmwebDescriptions implements DescriptionProvider {
 
-	private final HttpConnection<Element> connection;
-
 	private final ExecutorService executorService;
+	private final FilmwebProxy filmwebProxy;
 
 	@Inject
-	public FilmwebDescriptions(@Named("noCookiesHtml") HttpConnection<Element> connection, ExecutorService executorService) {
-		this.connection = connection;
+	public FilmwebDescriptions(@Named FilmwebProxy filmwebProxy, ExecutorService executorService) {
+		this.filmwebProxy = filmwebProxy;
 		this.executorService = executorService;
 	}
 
@@ -56,11 +52,11 @@ public class FilmwebDescriptions implements DescriptionProvider {
 	}
 
 	Stream<Description> filmsForTitle(String title, int year) {
-		Optional<Element> optionalResult = searchFor(title, year);
+		Optional<Element> optionalResult = filmwebProxy.searchFor(title, year);
 
 		return optionalResult
 				.map(page -> FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT.extractFrom(page)
-								.map(this::getPageWithFilmDetailsFor)
+								.map(link -> filmwebProxy.getPageWithFilmDetailsFor(link).get())
 								.map(pageWithDetails -> {
 									try {
 										return extractDescriptionFrom(pageWithDetails);
@@ -101,27 +97,6 @@ public class FilmwebDescriptions implements DescriptionProvider {
 
 	private Integer parseYear(String extractFrom) {
 		return Integer.valueOf(extractFrom);
-	}
-
-	private Element getPageWithFilmDetailsFor(String href) {
-		return connection.connectToAndGet(FilmwebSelectors.ROOT_URL + href).get();
-	}
-
-	Optional<Element> searchFor(String title, int year) {
-		String url = null;
-		try {
-			url = String.format("%s/search/film?q=%s&startYear=%d&endYear=%d",
-					FilmwebSelectors.ROOT_URL,
-					URLEncoder.encode(title, Charset.defaultCharset().name()),
-					year,
-					year);
-
-		} catch (UnsupportedEncodingException e) {
-			log.warn("searchFor - Could not find films for title={} year={}", title, year, e);
-		}
-
-		return Optional.ofNullable(url)
-				.flatMap(connection::connectToAndGet);
 	}
 }
 
