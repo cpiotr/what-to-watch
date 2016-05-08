@@ -10,7 +10,7 @@ public class ScoreMatchers {
 			@Override
 			protected boolean matchesSafely(Score item) {
 				boolean validGrade = item.getGrade() >= 0.1 && item.getGrade() <= 1.0;
-				boolean validQuantity = item.getQuantity() >= 10;
+				boolean validQuantity = item.getQuantity() >= 250;
 
 				return validGrade && validQuantity;
 			}
