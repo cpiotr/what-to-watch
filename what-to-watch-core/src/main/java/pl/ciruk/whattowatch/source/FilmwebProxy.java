@@ -36,12 +36,11 @@ public class FilmwebProxy {
 		HttpUrl url = new HttpUrl.Builder()
 				.scheme("http")
 				.host("www.filmweb.pl")
-				.addPathSegment(href)
-				.build();
+				.build()
+				.resolve(href);
 
 		return Optional.ofNullable(url)
 				.map(Object::toString)
 				.flatMap(connection::connectToAndGet);
 	}
-
 }
