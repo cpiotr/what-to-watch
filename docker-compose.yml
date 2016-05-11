@@ -1,0 +1,10 @@
+cache:
+  image: redis:3.0.3
+  hostname: redis
+  ports:
+    - "6379:6379"
+w2w:
+    build: ./what-to-watch-boot
+    hostname: w2w-app
+    links:
+      - "cache:redis"
