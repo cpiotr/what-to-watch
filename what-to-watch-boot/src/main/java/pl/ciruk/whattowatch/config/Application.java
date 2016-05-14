@@ -94,5 +94,24 @@ public class Application {
 	ExecutorService executorService() {
 		return Executors.newFixedThreadPool(32, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
 	}
+
+	@Value("${zalukaj-login}")
+	String zalukajLogin;
+
+	@Bean
+	@Named("zalukajLogin")
+	String zalukajLogin() {
+		return zalukajLogin;
+	}
+
+	@Bean
+	@Named("zalukajPassword")
+	String zalukajPassword() {
+		return zalukajPassword;
+	}
+
+	@Value("${zalukaj-password}")
+	String zalukajPassword;
+
 }
 

@@ -49,10 +49,7 @@ public class HtmlConnection implements HttpConnection<String> {
 		action.accept(builder);
 		try {
 			Response response = execute(builder);
-			log.debug("Headers: {}", response.headers());
-			String body = response.body().string();
-			log.trace("Body: {}", body);
-			return Optional.ofNullable(body);
+			return Optional.ofNullable(response.body().string());
 		} catch (IOException e) {
 			log.warn("Cannot process request to {}", url, e);
 			return Optional.empty();
@@ -71,14 +68,16 @@ public class HtmlConnection implements HttpConnection<String> {
 				.url(url)
 				.addHeader("User-Agent", UserAgents.next())
 				.addHeader("Accept-Language", "pl")
-				.addHeader("Referrer", rootDomainFor(url));
+				.addHeader("Referer", rootDomainFor(url));
 	}
 
 	private Response log(Interceptor.Chain chain) throws IOException {
 		Request request = chain.request();
 		log.debug("Request: {}", request);
+
 		Response response = chain.proceed(request);
 		log.debug("Response: {}", response);
+
 		return response;
 	}
 

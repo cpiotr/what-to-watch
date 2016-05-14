@@ -28,12 +28,10 @@ public class ZalukajTitles implements TitleProvider {
 	private final HttpConnection<Element> connection;
 
 	@Inject
-	public ZalukajTitles(@Named("allCookiesHtml") HttpConnection<Element> connection) {
-		this.connection = connection;
-	}
-
-
-	public ZalukajTitles(@Named("allCookiesHtml") HttpConnection<Element> connection, String login, String password) {
+	public ZalukajTitles(
+			@Named("allCookiesHtml") HttpConnection<Element> connection,
+			@Named("zalukajLogin") String login,
+			@Named("zalukajPassword") String password) {
 		this.connection = connection;
 		this.login = login;
 		this.password = password;
@@ -82,14 +80,19 @@ public class ZalukajTitles implements TitleProvider {
 	}
 
 	private void authenticate() {
+		log.info("authenticate()");
+
 		connection.connectToAndConsume(
 				loginPage,
-				request -> request.post(
-						new FormEncodingBuilder()
-								.add("login", login)
-								.add("password", password)
-								.build()
-				)
+				request -> {
+					request.addHeader("Referer", "http://zalukaj.com/libs/ajax/login.php?login=1");
+					request.post(
+							new FormEncodingBuilder()
+									.add("login", login)
+									.add("password", password)
+									.build()
+					);
+				}
 		);
 	}
 

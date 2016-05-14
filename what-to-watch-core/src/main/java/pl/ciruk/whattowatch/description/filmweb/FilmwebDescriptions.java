@@ -37,7 +37,10 @@ public class FilmwebDescriptions implements DescriptionProvider {
 		return CompletableFuture.supplyAsync(
 				() -> descriptionOf(title),
 				executorService
-		);
+		).exceptionally(t -> {
+			log.error("Cannot get description of {}", title, t);
+			return Optional.empty();
+		});
 	}
 
 	@Override

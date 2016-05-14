@@ -33,6 +33,7 @@ public class JsoupConnection implements HttpConnection<Element> {
 	}
 
 	public Optional<Element> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-		return connectToAndConsume(url, action);
+		return connection.connectToAndConsume(url, action)
+				.map(Jsoup::parse);
 	}
 }

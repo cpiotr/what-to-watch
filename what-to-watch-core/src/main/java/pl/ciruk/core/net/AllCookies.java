@@ -37,11 +37,12 @@ public class AllCookies implements CookiePolicy {
 
 	private void readCookiesFrom(Response response) {
 		List<String> cookiesFromResponse = response.headers("Set-Cookie");
-		cookies.addAll(cookiesFromResponse);
 		log.debug("HTTP interceptor - Received cookies: {}", cookiesFromResponse);
+		cookies.addAll(cookiesFromResponse);
 	}
 
 	private void attachCookiesTo(Request.Builder request) {
+		log.debug("Cookies to be sent: {}", cookies);
 		cookies.stream()
 				.forEach(cookie -> request.addHeader("Cookie", cookie));
 	}

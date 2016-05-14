@@ -58,7 +58,11 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 		return descriptionOfAsync.thenComposeAsync(
 				optionalDescription -> optionalDescription
 						.map(this::descriptionToFilm)
-						.orElse(completedFuture(Film.empty())));
+						.orElse(completedFuture(Film.empty())))
+				.exceptionally(t -> {
+					log.error("Cannot get film for title {}", title, t);
+					return Film.empty();
+				});
 	}
 
 	private CompletableFuture<Film> descriptionToFilm(Description description) {
