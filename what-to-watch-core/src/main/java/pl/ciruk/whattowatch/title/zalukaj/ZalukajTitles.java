@@ -71,7 +71,8 @@ public class ZalukajTitles implements TitleProvider {
 				.map(connection::connectToAndGet)
 				.flatMap(Optionals::asStream)
 				.flatMap(ZalukajStreamSelectors.TITLE_LINKS::extractFrom)
-				.map(this::parseToTitle);
+				.map(this::parseToTitle)
+				.distinct();
 	}
 
 	private boolean areCredentialsPresent() {

@@ -2,12 +2,14 @@ package pl.ciruk.whattowatch.title;
 
 import com.google.common.base.Strings;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Optional;
 
 @Getter
 @Builder
+@EqualsAndHashCode
 public class Title {
 	private String originalTitle;
 	
