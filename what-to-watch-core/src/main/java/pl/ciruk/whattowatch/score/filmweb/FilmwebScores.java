@@ -51,7 +51,12 @@ public class FilmwebScores implements ScoresProvider {
 				.flatMap(page -> FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT.extractFrom(page))
 				.map(FilmwebSelectors.SCORE::extractFrom)
 				.flatMap(Optionals::asStream)
-				.map(this::parseScore);
+				.map(this::parseScore)
+				.filter(this::isPositive);
+	}
+
+	private boolean isPositive(Score score) {
+		return score.getGrade() > 0 && score.getGrade() > 0;
 	}
 
 	private Score parseScore(String s) {
