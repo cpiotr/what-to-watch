@@ -68,6 +68,7 @@ public class ZalukajTitles implements TitleProvider {
 		return urls.stream()
 				.parallel()
 				.flatMap(pattern -> generateFivePages(pattern))
+				.peek(url -> log.debug("Loading films from: {}", url))
 				.map(connection::connectToAndGet)
 				.flatMap(Optionals::asStream)
 				.flatMap(ZalukajStreamSelectors.TITLE_LINKS::extractFrom)
