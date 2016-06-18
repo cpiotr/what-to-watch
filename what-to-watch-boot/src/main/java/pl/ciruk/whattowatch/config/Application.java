@@ -19,6 +19,7 @@ import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.core.net.json.JsonConnection;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 
 import javax.inject.Named;
@@ -83,16 +84,26 @@ public class Application {
 	@Value("${redis.host}")
 	String redisHost;
 
+	@Value("${redis.pool.maxActive:8}")
+	Integer redisPoolMaxActive;
+
 	private RedisConnectionFactory redisConnectionFactory() {
 		JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
 		jedisConnectionFactory.setHostName(redisHost);
+		JedisPoolConfig poolConfig = new JedisPoolConfig();
+		poolConfig.setMaxTotal(redisPoolMaxActive);
+		jedisConnectionFactory.setPoolConfig(poolConfig);
 		jedisConnectionFactory.setShardInfo(new JedisShardInfo(redisHost));
 		return jedisConnectionFactory;
 	}
 
+
+	@Value("${w2w.pool.size:8}")
+	Integer filmPoolSize;
+
 	@Bean
 	ExecutorService executorService() {
-		return Executors.newFixedThreadPool(32, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
+		return Executors.newFixedThreadPool(filmPoolSize, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
 	}
 
 	@Value("${zalukaj-login}")
