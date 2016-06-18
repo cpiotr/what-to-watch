@@ -7,15 +7,18 @@ import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Slf4j
 public class HtmlConnection implements HttpConnection<String> {
 	private final OkHttpClient httpClient;
 
+	@Inject
 	public HtmlConnection(OkHttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
@@ -24,6 +27,13 @@ public class HtmlConnection implements HttpConnection<String> {
 	public void init() {
 		log.debug("init: HttpClient: {}", httpClient);
 		httpClient.interceptors().add(this::log);
+		setTimeouts();
+
+	}
+
+	private void setTimeouts() {
+		httpClient.setConnectTimeout(10, TimeUnit.SECONDS);
+		httpClient.setReadTimeout(10, TimeUnit.SECONDS);
 	}
 
 	@Override
