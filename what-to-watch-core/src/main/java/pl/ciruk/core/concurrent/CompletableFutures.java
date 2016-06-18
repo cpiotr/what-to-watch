@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
@@ -35,9 +37,10 @@ public class CompletableFutures {
 
 	public static <T> T get(CompletableFuture<T> future) {
 		try {
-			return future.get();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new AsyncExecutionException(e);
+			return future.get(1, TimeUnit.MINUTES);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			future.completeExceptionally(e);
+			return null;
 		}
 	}
 }
