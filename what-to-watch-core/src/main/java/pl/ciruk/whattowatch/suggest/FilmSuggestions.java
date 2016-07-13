@@ -12,7 +12,6 @@ import pl.ciruk.whattowatch.title.TitleProvider;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -54,12 +53,11 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 	}
 
 	CompletableFuture<Film> findFilmForTitle(Title title) {
-		CompletableFuture<Optional<Description>> descriptionOfAsync = descriptions.descriptionOfAsync(title);
-		return descriptionOfAsync.thenComposeAsync(
-				optionalDescription -> optionalDescription
-						.map(this::descriptionToFilm)
-						.orElse(completedFuture(Film.empty())),
-				executorService)
+		return descriptions.descriptionOfAsync(title)
+                .thenComposeAsync(
+                    optionalDescription ->
+                            optionalDescription.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())),
+                    executorService)
 				.exceptionally(t -> {
 					log.error("Cannot get film for title {}", title, t);
 					return Film.empty();
@@ -74,9 +72,9 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 				.map(toScoresOfAsync)
 				.reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService))
 				.thenApply(stream -> stream.collect(toList()))
-				.thenApply(list -> Film.builder()
+				.thenApply(scores -> Film.builder()
 						.description(description)
-						.scores(list)
+						.scores(scores)
 						.build());
 	}
 }

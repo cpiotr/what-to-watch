@@ -39,20 +39,20 @@ public class WhatToWatchApplication {
 
 	public static void main(String[] args) {
 		Properties properties = loadDevProperties();
-		ExecutorService executorService = Executors.newWorkStealingPool(POOL_SIZE);
+		ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
 
-		JedisPool pool = createJedisPool(properties);
-		CacheProvider<String> cache = createJedisCache(pool);
+		JedisPool jedisPool = createJedisPool(properties);
+		CacheProvider<String> cache = createJedisCache(jedisPool);
 		JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 		JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 
 		connection.init();
 
 		FilmSuggestions suggestions = new FilmSuggestions(
-				sampleTitleProvider(properties, executorService),
-				sampleDescriptionProvider(executorService, connection),
-				sampleScoreProviders(executorService, connection, jsonConnection),
-				executorService);
+				sampleTitleProvider(properties, threadPool),
+				sampleDescriptionProvider(threadPool, connection),
+				sampleScoreProviders(threadPool, connection, jsonConnection),
+				threadPool);
 
 		Stopwatch started = Stopwatch.createStarted();
 
@@ -63,14 +63,14 @@ public class WhatToWatchApplication {
 					.forEach(System.out::println);
 			started.stop();
 
-			executorService.shutdown();
-			executorService.awaitTermination(10, TimeUnit.SECONDS);
+			threadPool.shutdown();
+			threadPool.awaitTermination(10, TimeUnit.SECONDS);
 
 			System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
 		} catch (InterruptedException e) {
 			log.error("main - Processing error", e);
 		} finally {
-			pool.destroy();
+			jedisPool.destroy();
 		}
 	}
 
