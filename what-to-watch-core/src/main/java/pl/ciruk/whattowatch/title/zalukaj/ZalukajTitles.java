@@ -66,9 +66,8 @@ public class ZalukajTitles implements TitleProvider {
 		}
 
 		return urls.stream()
-				.parallel()
 				.flatMap(pattern -> generateFivePages(pattern))
-				.peek(url -> log.debug("Loading films from: {}", url))
+				.peek(url -> log.info("Loading films from: {}", url))
 				.map(connection::connectToAndGet)
 				.flatMap(Optionals::asStream)
 				.flatMap(ZalukajStreamSelectors.TITLE_LINKS::extractFrom)
@@ -103,7 +102,7 @@ public class ZalukajTitles implements TitleProvider {
 			AtomicInteger i = new AtomicInteger(1);
 			return Stream.generate(
 					() -> String.format(pattern, i.incrementAndGet()))
-					.limit(5);
+					.limit(2);
 		} else {
 			return Stream.of(pattern);
 		}

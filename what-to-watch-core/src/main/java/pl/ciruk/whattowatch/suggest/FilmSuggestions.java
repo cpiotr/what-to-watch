@@ -50,15 +50,16 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 		log.info("suggestFilms");
 
 		return titles.streamOfTitles()
-				.map(this::forTitle);
+				.map(this::findFilmForTitle);
 	}
 
-	CompletableFuture<Film> forTitle(Title title) {
+	CompletableFuture<Film> findFilmForTitle(Title title) {
 		CompletableFuture<Optional<Description>> descriptionOfAsync = descriptions.descriptionOfAsync(title);
 		return descriptionOfAsync.thenComposeAsync(
 				optionalDescription -> optionalDescription
 						.map(this::descriptionToFilm)
-						.orElse(completedFuture(Film.empty())))
+						.orElse(completedFuture(Film.empty())),
+				executorService)
 				.exceptionally(t -> {
 					log.error("Cannot get film for title {}", title, t);
 					return Film.empty();

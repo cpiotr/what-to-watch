@@ -48,8 +48,7 @@ public class Suggestions {
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		try {
-			List<FilmResult> films = suggestions.suggestFilms()
-					.map(CompletableFutures::get)
+			List<FilmResult> films = CompletableFutures.getAllOf(suggestions.suggestFilms())
 					.filter(Film::isWorthWatching)
 					.map(this::toFilmResult)
 					.collect(toList());

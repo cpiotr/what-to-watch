@@ -2,12 +2,14 @@ package pl.ciruk.whattowatch.suggest;
 
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.OkHttpClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.core.net.json.JsonConnection;
+import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
@@ -24,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,11 +38,12 @@ public class FilmSuggestionsIT {
 	public static final int NUMBER_OF_TITLES = 50;
 
 	private FilmSuggestions suggestions;
+	private ExecutorService pool;
 
 	@Before
 	public void setUp() throws Exception {
 		HtmlConnection htmlConnection = new HtmlConnection(new OkHttpClient());
-		ExecutorService pool = Executors.newFixedThreadPool(NUMBER_OF_TITLES / 4);
+		pool = Executors.newWorkStealingPool(NUMBER_OF_TITLES / 4);
 		suggestions = new FilmSuggestions(
 				provideTitlesFromResource(),
 				sampleDescriptionProvider(htmlConnection, pool),
@@ -49,13 +54,20 @@ public class FilmSuggestionsIT {
 
 	@Test
 	public void shouldSuggestAllFilmsFromSampleTitleProvider() throws Exception {
-		int numberOfFilms = (int) suggestions.suggestFilms()
-				.map(CompletableFutures::get)
+		Stream<Film> films = CompletableFutures.getAllOf(
+				suggestions.suggestFilms());
+		int numberOfFilms = (int) films
 				.filter(Objects::nonNull)
 				.filter(f -> f.isNotEmpty())
 				.count();
 
 		assertThat(numberOfFilms, is(equalTo(NUMBER_OF_TITLES)));
+	}
+
+	@After
+	public void cleanUp() throws InterruptedException {
+		pool.shutdown();
+		pool.awaitTermination(1, TimeUnit.SECONDS);
 	}
 
 	private FilmwebDescriptions sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
@@ -73,7 +85,7 @@ public class FilmSuggestionsIT {
 	}
 
 	private TitleProvider provideTitlesFromResource() {
-		InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("films-with-my-scores.csv");
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("films-with-my-scores.csv");
 		List<Title> titles = new BufferedReader(new InputStreamReader(inputStream))
 				.lines()
 				.limit(NUMBER_OF_TITLES)

@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class WhatToWatchApplication {
@@ -40,12 +39,14 @@ public class WhatToWatchApplication {
 
 	public static void main(String[] args) {
 		Properties properties = loadDevProperties();
-		ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE);
+		ExecutorService executorService = Executors.newWorkStealingPool(POOL_SIZE);
 
 		JedisPool pool = createJedisPool(properties);
 		CacheProvider<String> cache = createJedisCache(pool);
 		JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 		JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
+
+		connection.init();
 
 		FilmSuggestions suggestions = new FilmSuggestions(
 				sampleTitleProvider(properties, executorService),
@@ -56,10 +57,8 @@ public class WhatToWatchApplication {
 		Stopwatch started = Stopwatch.createStarted();
 
 		try {
-			List<Film> films = suggestions.suggestFilms()
-					.map(CompletableFutures::get)
-					.collect(Collectors.toList());
-			films.stream()
+			CompletableFutures.getAllOf(suggestions.suggestFilms())
+					.limit(100)
 					.filter(Film::isNotEmpty)
 					.forEach(System.out::println);
 			started.stop();
@@ -122,7 +121,7 @@ public class WhatToWatchApplication {
 
 	private static JedisPool createJedisPool(Properties properties) {
 		JedisPoolConfig poolConfig = new JedisPoolConfig();
-		poolConfig.setMaxTotal(50);
+		poolConfig.setMaxTotal(POOL_SIZE);
 		String maxActive = (String) properties.getOrDefault("redis.pool.maxActive", "8");
 		poolConfig.setMaxIdle(
 				Integer.valueOf(maxActive));

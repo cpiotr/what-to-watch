@@ -27,6 +27,18 @@ public class CompletableFutures {
 		return allOf(futures.collect(toList()));
 	}
 
+	public static <T> Stream<T> getAllOf(List<CompletableFuture<T>> futures) {
+		CompletableFuture.allOf(
+				futures.toArray(new CompletableFuture[futures.size()])
+		);
+
+		return futures.stream().map(CompletableFutures::get);
+	}
+
+	public static <T> Stream<T> getAllOf(Stream<CompletableFuture<T>> futures) {
+		return getAllOf(futures.collect(toList()));
+	}
+
 	public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(BiFunction<T, T, T> combinator) {
 		return (cf1, cf2) -> cf1.thenCombineAsync(cf2, combinator);
 	}

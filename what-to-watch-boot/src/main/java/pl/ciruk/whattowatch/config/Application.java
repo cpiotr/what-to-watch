@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
@@ -103,7 +102,7 @@ public class Application {
 
 	@Bean
 	ExecutorService executorService() {
-		return Executors.newFixedThreadPool(filmPoolSize, new ThreadFactoryBuilder().setNameFormat("films-pool-%d").build());
+		return Executors.newWorkStealingPool(filmPoolSize);
 	}
 
 	@Value("${zalukaj-login}")
