@@ -3,9 +3,9 @@ package pl.ciruk.whattowatch.boundary;
 import org.glassfish.jersey.server.ManagedAsync;
 import org.springframework.stereotype.Component;
 import pl.ciruk.whattowatch.title.TitleProvider;
-import pl.ciruk.whattowatch.title.zalukaj.ZalukajTitles;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -23,7 +23,7 @@ public class Titles {
 	TitleProvider titles;
 
 	@Inject
-	public Titles(ZalukajTitles titles) {
+	public Titles(@Named("ekinoTitles") TitleProvider titles) {
 		this.titles = titles;
 	}
 

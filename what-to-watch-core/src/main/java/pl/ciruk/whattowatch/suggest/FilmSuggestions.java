@@ -34,7 +34,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 
 	@Inject
 	public FilmSuggestions(
-			TitleProvider titles,
+			@Named("ekinoTitles") TitleProvider titles,
 			DescriptionProvider descriptions,
 			List<ScoresProvider> scoresProviders,
 			ExecutorService executorService) {
