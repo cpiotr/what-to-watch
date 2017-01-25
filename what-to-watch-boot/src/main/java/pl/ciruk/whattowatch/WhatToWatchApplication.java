@@ -20,7 +20,8 @@ import pl.ciruk.whattowatch.score.imdb.IMDBScores;
 import pl.ciruk.whattowatch.score.metacritic.MetacriticScores;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.suggest.FilmSuggestions;
-import pl.ciruk.whattowatch.title.zalukaj.ZalukajTitles;
+import pl.ciruk.whattowatch.title.TitleProvider;
+import pl.ciruk.whattowatch.title.ekino.EkinoTitles;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -42,8 +43,8 @@ public class WhatToWatchApplication {
 		ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
 
 		JedisPool jedisPool = createJedisPool(properties);
-		CacheProvider<String> cache = createJedisCache(jedisPool);
-		JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
+        CacheProvider<String> cache = createEmptyJedisCache();
+        JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 		JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 
 		connection.init();
@@ -86,12 +87,9 @@ public class WhatToWatchApplication {
 		);
 	}
 
-	private static ZalukajTitles sampleTitleProvider(Properties properties, ExecutorService executorService) {
+	private static TitleProvider sampleTitleProvider(Properties properties, ExecutorService executorService) {
 		HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-		return new ZalukajTitles(
-				keepCookiesConnection,
-				properties.getProperty("zalukaj-login"),
-				properties.getProperty("zalukaj-password"));
+		return new EkinoTitles(keepCookiesConnection);
 	}
 
 	private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
@@ -99,24 +97,27 @@ public class WhatToWatchApplication {
 		new AllCookies().applyTo(httpClient);
 		return new JsoupConnection(new HtmlConnection(httpClient));
 	}
+    private static CacheProvider<String> createJedisCache(final JedisPool pool) {
+        return new CacheProvider<String>() {
+            @Override
+            public void put(String key, String value) {
+                try (Jedis jedis = pool.getResource()) {
+                    jedis.set(key, value);
+                }
+            }
 
-	private static CacheProvider<String> createJedisCache(final JedisPool pool) {
-		return new CacheProvider<String>() {
-				@Override
-				public void put(String key, String value) {
-					try (Jedis jedis = pool.getResource()) {
-						jedis.set(key, value);
-					}
-				}
+            @Override
+            public Optional<String> get(String key) {
+                try (Jedis jedis = pool.getResource()) {
+                    return Optional.ofNullable(
+                            jedis.get(key));
+                }
+            }
+        };
+    }
 
-				@Override
-				public Optional<String> get(String key) {
-					try (Jedis jedis = pool.getResource()) {
-						return Optional.ofNullable(
-								jedis.get(key));
-					}
-				}
-			};
+	private static CacheProvider<String> createEmptyJedisCache() {
+		return CacheProvider.empty();
 	}
 
 	private static JedisPool createJedisPool(Properties properties) {
