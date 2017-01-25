@@ -49,7 +49,7 @@ public class EkinoTitles implements TitleProvider {
 			AtomicInteger i = new AtomicInteger(0);
 			return Stream.generate(
 					() -> String.format(pattern, i.incrementAndGet()))
-					.limit(15);
+					.limit(10);
 		} else {
 			return Stream.of(pattern);
 		}

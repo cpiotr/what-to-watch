@@ -54,7 +54,7 @@ public class MetacriticScores implements ScoresProvider {
 				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
 				.flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
 				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
-				.map(page -> page.select("#main").first());
+				.map(page -> page.select("#main_content").first());
 
 		Stream<Score> averageScoreStream = htmlWithScores
 				.flatMap(htmlContent -> averageGradeFrom(htmlContent)

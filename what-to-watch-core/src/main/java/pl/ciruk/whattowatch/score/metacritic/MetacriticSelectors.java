@@ -13,27 +13,28 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
 			.stream()
 			.map(link -> link.attr("href"))
 			.findFirst()),
-	AVERAGE_GRADE(details -> details.select(".metascore_summary .metascore_w.movie span")
+	AVERAGE_GRADE(details -> details.select(".simple_summary .metascore_w.movie")
 			.stream()
 			.map(Element::text)
 			.findFirst()),
-	NUMBER_OF_GRADES(details -> details.select(".metascore_summary .summary .count strong")
+	NUMBER_OF_GRADES(details -> Optional.of(String.valueOf(
+			details.select(".simple_summary div.chart div.count")
 			.stream()
 			.map(Element::text)
 			.map(NumberTokenizer::new)
 			.filter(NumberTokenizer::hasMoreTokens)
 			.map(NumberTokenizer::nextToken)
-			.map(NumberToken::asString)
-			.findFirst()),
-	NEW_YORK_TIMES_GRADE(details -> details.select(".reviews .review")
+			.mapToLong(NumberToken::asSimpleLong)
+			.sum()))),
+	NEW_YORK_TIMES_GRADE(details -> details.select(".critic_reviews .review")
 			.stream()
 			.filter(review -> review.select(".source").text().equalsIgnoreCase("The New York Times"))
-			.map(review -> review.select(".review_grade").text())
+			.map(review -> review.select(".metascore_w.movie").text())
 			.findFirst()),
-	LINK_TO_CRITIC_REVIEWS(details -> details.select(".critic_reviews_module .module_title a")
-			.stream()
-			.map(link -> link.attr("href"))
-			.findFirst()),
+    LINK_TO_CRITIC_REVIEWS(details -> details.select(".critics_col a.see_all")
+            .stream()
+            .map(link -> link.attr("href"))
+            .findFirst()),
 	TITLE(details -> details.select(".product_title")
 			.stream()
 			.map(Element::text)
