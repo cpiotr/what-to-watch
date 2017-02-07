@@ -8,21 +8,17 @@ import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-@Named
 @Slf4j
 public class EkinoTitles implements TitleProvider {
 
     public static final String BASE_URL = "http://ekino-tv.pl/";
     private final HttpConnection<Element> connection;
 
-	@Inject
-	public EkinoTitles(@Named("allCookiesHtml") HttpConnection<Element> connection) {
+	public EkinoTitles(HttpConnection<Element> connection) {
 		this.connection = connection;
 	}
 

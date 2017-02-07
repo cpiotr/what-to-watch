@@ -9,14 +9,11 @@ import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
-@Named("IMDB")
 @Slf4j
 public class IMDBScores implements ScoresProvider {
 
@@ -24,7 +21,6 @@ public class IMDBScores implements ScoresProvider {
 	private final HttpConnection<JsonNode> httpConnection;
 	private final ExecutorService executorService;
 
-	@Inject
 	public IMDBScores(HttpConnection<JsonNode> httpConnection, ExecutorService executorService) {
 		this.httpConnection = httpConnection;
 		this.executorService = executorService;

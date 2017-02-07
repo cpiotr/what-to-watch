@@ -9,8 +9,6 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -21,7 +19,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
-@Named
 @Slf4j
 public class FilmSuggestions implements FilmSuggestionProvider {
 	TitleProvider titles;
@@ -32,9 +29,8 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 
 	final ExecutorService executorService;
 
-	@Inject
 	public FilmSuggestions(
-			@Named("ekinoTitles") TitleProvider titles,
+			TitleProvider titles,
 			DescriptionProvider descriptions,
 			List<ScoresProvider> scoresProviders,
 			ExecutorService executorService) {

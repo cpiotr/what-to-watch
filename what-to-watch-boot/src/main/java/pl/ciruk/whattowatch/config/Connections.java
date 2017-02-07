@@ -22,12 +22,10 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 
 import javax.inject.Named;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Configuration
 @Slf4j
-public class Application {
+public class Connections {
 
 	@Bean
 	OkHttpClient httpClient() {
@@ -95,33 +93,4 @@ public class Application {
 		jedisConnectionFactory.setShardInfo(new JedisShardInfo(redisHost));
 		return jedisConnectionFactory;
 	}
-
-
-	@Value("${w2w.pool.size:8}")
-	Integer filmPoolSize;
-
-	@Bean
-	ExecutorService executorService() {
-		return Executors.newWorkStealingPool(filmPoolSize);
-	}
-
-	@Value("${zalukaj-login}")
-	String zalukajLogin;
-
-	@Bean
-	@Named("zalukajLogin")
-	String zalukajLogin() {
-		return zalukajLogin;
-	}
-
-	@Bean
-	@Named("zalukajPassword")
-	String zalukajPassword() {
-		return zalukajPassword;
-	}
-
-	@Value("${zalukaj-password}")
-	String zalukajPassword;
-
 }
-

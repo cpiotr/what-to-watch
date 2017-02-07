@@ -7,7 +7,6 @@ import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import java.util.function.Consumer;
 public class HtmlConnection implements HttpConnection<String> {
 	private final OkHttpClient httpClient;
 
-	@Inject
 	public HtmlConnection(OkHttpClient httpClient) {
 		this.httpClient = httpClient;
 	}

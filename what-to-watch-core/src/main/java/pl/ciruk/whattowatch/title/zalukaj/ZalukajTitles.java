@@ -11,15 +11,12 @@ import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-@Named
 @Slf4j
 public class ZalukajTitles implements TitleProvider {
 	public static final Pattern YEAR = Pattern.compile(".*\\(([12][0-9]{3})\\)$");
@@ -27,11 +24,10 @@ public class ZalukajTitles implements TitleProvider {
 
 	private final HttpConnection<Element> connection;
 
-	@Inject
 	public ZalukajTitles(
-			@Named("allCookiesHtml") HttpConnection<Element> connection,
-			@Named("zalukajLogin") String login,
-			@Named("zalukajPassword") String password) {
+			HttpConnection<Element> connection,
+			String login,
+			String password) {
 		this.connection = connection;
 		this.login = login;
 		this.password = password;

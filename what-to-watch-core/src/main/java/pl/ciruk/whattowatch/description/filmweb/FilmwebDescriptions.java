@@ -8,8 +8,6 @@ import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -19,15 +17,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.core.stream.Predicates.not;
 
-@Named
 @Slf4j
 public class FilmwebDescriptions implements DescriptionProvider {
 
 	private final ExecutorService executorService;
 	private final FilmwebProxy filmwebProxy;
 
-	@Inject
-	public FilmwebDescriptions(@Named FilmwebProxy filmwebProxy, ExecutorService executorService) {
+	public FilmwebDescriptions(FilmwebProxy filmwebProxy, ExecutorService executorService) {
 		this.filmwebProxy = filmwebProxy;
 		this.executorService = executorService;
 	}

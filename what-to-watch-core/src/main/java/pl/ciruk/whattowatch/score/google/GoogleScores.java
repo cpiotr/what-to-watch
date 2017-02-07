@@ -8,7 +8,6 @@ import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 
-import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -25,7 +24,7 @@ public class GoogleScores implements ScoresProvider {
 
 	private String sourcePage;
 
-	public GoogleScores(@Named("noCookiesHtml") HttpConnection<Element> connection, ExecutorService executorService, String sourcePage) {
+	public GoogleScores(HttpConnection<Element> connection, ExecutorService executorService, String sourcePage) {
 		this.connection = connection;
 		this.executorService = executorService;
 		this.sourcePage = sourcePage;

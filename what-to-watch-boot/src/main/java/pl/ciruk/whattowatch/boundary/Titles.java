@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -23,7 +22,7 @@ public class Titles {
 	TitleProvider titles;
 
 	@Inject
-	public Titles(@Named("ekinoTitles") TitleProvider titles) {
+	public Titles(TitleProvider titles) {
 		this.titles = titles;
 	}
 

@@ -4,16 +4,12 @@ import com.squareup.okhttp.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Optional;
 
-@Named
 public class FilmwebProxy {
 	private final HttpConnection<Element> connection;
 
-	@Inject
-	public FilmwebProxy(@Named("noCookiesHtml") HttpConnection<Element> connection) {
+	public FilmwebProxy(HttpConnection<Element> connection) {
 		this.connection = connection;
 	}
 

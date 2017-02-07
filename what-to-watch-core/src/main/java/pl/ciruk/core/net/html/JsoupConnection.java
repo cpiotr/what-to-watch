@@ -7,7 +7,6 @@ import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -16,7 +15,6 @@ public class JsoupConnection implements HttpConnection<Element> {
 
 	private HttpConnection<String> connection;
 
-	@Inject
 	public JsoupConnection(HttpConnection<String> connection) {
 		this.connection = connection;
 	}

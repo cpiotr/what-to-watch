@@ -19,3 +19,7 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = '3.3'
 }
+
+springBoot {
+    mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
+}

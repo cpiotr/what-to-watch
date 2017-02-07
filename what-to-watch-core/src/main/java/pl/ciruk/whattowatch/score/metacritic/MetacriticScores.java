@@ -9,8 +9,6 @@ import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +18,6 @@ import java.util.stream.Stream;
 
 import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 
-@Named("Metacritic")
 @Slf4j
 public class MetacriticScores implements ScoresProvider {
 	private static final String METACRITIC_BASE_URL = "http://www.metacritic.com";
@@ -31,8 +28,7 @@ public class MetacriticScores implements ScoresProvider {
 
 	private final ExecutorService executorService;
 
-	@Inject
-	public MetacriticScores(@Named("noCookiesHtml") HttpConnection connection, ExecutorService executorService) {
+	public MetacriticScores(HttpConnection connection, ExecutorService executorService) {
 		this.connection = connection;
 		this.executorService = executorService;
 	}

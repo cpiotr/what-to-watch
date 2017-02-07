@@ -9,21 +9,17 @@ import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
-@Named("Filmweb")
 @Slf4j
 public class FilmwebScores implements ScoresProvider {
 	private final FilmwebProxy filmwebProxy;
 	private final ExecutorService executorService;
 
-	@Inject
-	public FilmwebScores(@Named FilmwebProxy filmwebProxy, ExecutorService executorService) {
+	public FilmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
 		this.filmwebProxy = filmwebProxy;
 		this.executorService = executorService;
 	}
