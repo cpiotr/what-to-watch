@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Getter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = { "url" })
 public class Title {
 	private String originalTitle;
 	

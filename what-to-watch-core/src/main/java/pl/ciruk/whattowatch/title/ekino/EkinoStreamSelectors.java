@@ -7,9 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public enum EkinoStreamSelectors implements Extractable<Stream<Element>> {
-	TITLE_LINKS(description -> description.select(".mainWrap .movies-list-item")
-			.stream()
-	);
+	TITLE_LINKS(description -> description.select(".mainWrap .movies-list-item").stream());
 
 	private Function<Element, Stream<Element>> extractor;
 

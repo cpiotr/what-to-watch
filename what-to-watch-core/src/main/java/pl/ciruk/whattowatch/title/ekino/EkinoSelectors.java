@@ -7,13 +7,24 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum EkinoSelectors implements Extractable<Optional<String>> {
-	TITLE(film -> Optional.ofNullable(film.select(".title a").first().text())),
-	ORIGINAL_TITLE(film -> Optional.ofNullable(film.select(".title .blue a").first().text())),
-	HREF(film -> Optional.ofNullable(film.select(".title a").first().attr("href"))),
-	YEAR(film -> Optional.ofNullable(film.select(".info-categories .cates").text())
+	TITLE(film -> film.select(".title a")
+            .stream()
+            .findFirst()
+            .map(Element::text)),
+    ORIGINAL_TITLE(film -> film.select(".title .blue a")
+            .stream()
+            .findFirst()
+            .map(Element::text)),
+    HREF(film -> film.select(".title a")
+            .stream()
+            .findFirst()
+            .map(e -> e.attr("href"))),
+	YEAR(film -> film.select(".info-categories .cates")
+            .stream()
+            .findFirst()
+            .map(Element::text)
             .map(EkinoSelectors::trimToYear))
 	;
-
 	private Function<Element, Optional<String>> extractor;
 
 	private EkinoSelectors(Function<Element, Optional<String>> extractor) {
@@ -29,4 +40,5 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
 		int endOfFirstPart = wholeDescriptionInTitle.indexOf('|');
 		return wholeDescriptionInTitle.substring(0, endOfFirstPart).trim();
 	}
+
 }
