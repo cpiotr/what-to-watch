@@ -31,7 +31,7 @@ public class WilsonScore {
         return -sqrt(w1 * w3);
     }
 
-    public static Double confidenceIntervalLowerBound(int pos, int n, double power)
+    public static Double confidenceIntervalLowerBound(long pos, long n, double power)
     {
         if (n == 0)
             return 0.0;

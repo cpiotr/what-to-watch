@@ -15,13 +15,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 @Slf4j
-public class IMDBScores implements ScoresProvider {
+public class ImdbScores implements ScoresProvider {
 
 	public static final int MAX_IMDB_SCORE = 10;
 	private final HttpConnection<JsonNode> httpConnection;
 	private final ExecutorService executorService;
 
-	public IMDBScores(HttpConnection<JsonNode> httpConnection, ExecutorService executorService) {
+	public ImdbScores(HttpConnection<JsonNode> httpConnection, ExecutorService executorService) {
 		this.httpConnection = httpConnection;
 		this.executorService = executorService;
 	}

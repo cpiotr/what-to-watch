@@ -43,7 +43,6 @@ public class AllCookies implements CookiePolicy {
 
 	private void attachCookiesTo(Request.Builder request) {
 		log.debug("Cookies to be sent: {}", cookies);
-		cookies.stream()
-				.forEach(cookie -> request.addHeader("Cookie", cookie));
+		cookies.forEach(cookie -> request.addHeader("Cookie", cookie));
 	}
 }

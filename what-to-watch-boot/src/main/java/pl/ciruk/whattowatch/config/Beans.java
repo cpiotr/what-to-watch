@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +9,7 @@ import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
-import pl.ciruk.whattowatch.score.imdb.IMDBScores;
+import pl.ciruk.whattowatch.score.imdb.ImdbWebScores;
 import pl.ciruk.whattowatch.score.metacritic.MetacriticScores;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
@@ -50,8 +49,8 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider imdbScores(HttpConnection<JsonNode> httpConnection, ExecutorService executorService) {
-        return new IMDBScores(httpConnection, executorService);
+    ScoresProvider imdbScores(@Named("noCookiesHtml") HttpConnection<Element> httpConnection, ExecutorService executorService) {
+        return new ImdbWebScores(httpConnection, executorService);
     }
 
     @Bean
@@ -60,7 +59,7 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider metacriticScores(@Named("noCookiesHtml")HttpConnection httpConnection, ExecutorService executorService) {
+    ScoresProvider metacriticScores(@Named("noCookiesHtml") HttpConnection<Element> httpConnection, ExecutorService executorService) {
         return new MetacriticScores(httpConnection, executorService);
     }
 

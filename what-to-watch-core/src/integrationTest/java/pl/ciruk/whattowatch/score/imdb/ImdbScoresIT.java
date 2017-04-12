@@ -15,15 +15,15 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertThat;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
-public class IMDBScoresIT {
+public class ImdbScoresIT {
 	private JsonConnection connection;
-	private IMDBScores scores;
+	private ImdbScores scores;
 
 	@Before
 	public void setUp() throws Exception {
 		connection = new JsonConnection(new HtmlConnection(new OkHttpClient()));
 
-		scores = new IMDBScores(connection, Executors.newSingleThreadExecutor());
+		scores = new ImdbScores(connection, Executors.newSingleThreadExecutor());
 	}
 
 	@Test

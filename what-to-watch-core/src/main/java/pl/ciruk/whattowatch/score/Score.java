@@ -8,10 +8,10 @@ import lombok.ToString;
 public class Score {
 
 	private double grade;
-	private int quantity;
+	private long quantity;
 
-	public Score(double grade, int quantity) {
+	public Score(double grade, long quantity) {
 		this.grade = grade;
-		this.quantity = quantity;
-	}
+        this.quantity = Math.toIntExact(quantity);
+    }
 }

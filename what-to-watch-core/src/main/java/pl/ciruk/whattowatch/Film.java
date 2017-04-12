@@ -29,8 +29,8 @@ public class Film {
 	}
 
 	public Double normalizedScore() {
-		int totalQuantity = scores.stream()
-				.mapToInt(Score::getQuantity)
+		long totalQuantity = scores.stream()
+				.mapToLong(Score::getQuantity)
 				.sum();
 		int positiveQuantity = (int) (score() * totalQuantity);
 		return confidenceIntervalLowerBound(positiveQuantity, totalQuantity, 0.95);

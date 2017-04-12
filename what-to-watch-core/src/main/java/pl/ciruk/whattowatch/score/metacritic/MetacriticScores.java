@@ -24,11 +24,11 @@ public class MetacriticScores implements ScoresProvider {
 
 	private static final int NYT_SCORE_WEIGHT = 1_000;
 
-	private final HttpConnection connection;
+	private final HttpConnection<Element> connection;
 
 	private final ExecutorService executorService;
 
-	public MetacriticScores(HttpConnection connection, ExecutorService executorService) {
+	public MetacriticScores(HttpConnection<Element> connection, ExecutorService executorService) {
 		this.connection = connection;
 		this.executorService = executorService;
 	}
