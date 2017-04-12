@@ -8,8 +8,7 @@ import java.util.stream.Stream;
 
 public enum FilmwebStreamSelectors implements Extractable<Stream<Element>> {
     FILMS_FROM_SEARCH_RESULT(page -> page.select("ul.resultsList li .hitDesc .hitDescWrapper")
-            .stream()),
-    ;
+            .stream()),;
     private Function<Element, Stream<Element>> extractor;
 
     FilmwebStreamSelectors(Function<Element, Stream<Element>> extractor) {

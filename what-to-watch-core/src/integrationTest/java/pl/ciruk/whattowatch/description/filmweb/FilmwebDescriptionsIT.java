@@ -34,4 +34,13 @@ public class FilmwebDescriptionsIT {
 
 		assertThat(description, is(ofTitle("First Blood")));
 	}
+	@Test
+	public void shouldResolveRecentTitle() throws Exception {
+		Title rambo = Title.builder().title("A United Kingdom").year(2016).build();
+
+		Description description = descriptions.descriptionOf(rambo)
+				.orElseThrow(AssertionError::new);
+
+		assertThat(description, is(ofTitle("A United Kingdom")));
+	}
 }
