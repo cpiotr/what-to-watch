@@ -36,67 +36,68 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WhatToWatchApplication {
 
-	public static final int POOL_SIZE = 32;
+    public static final int POOL_SIZE = 32;
 
-	public static void main(String[] args) {
-		Properties properties = loadDevProperties();
-		ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
+    public static void main(String[] args) {
+        Properties properties = loadDevProperties();
+        ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
 
-		JedisPool jedisPool = createJedisPool(properties);
+        JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createEmptyJedisCache();
         JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
-		JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
+        JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 
-		connection.init();
+        connection.init();
 
-		FilmSuggestions suggestions = new FilmSuggestions(
-				sampleTitleProvider(properties, threadPool),
-				sampleDescriptionProvider(threadPool, connection),
-				sampleScoreProviders(threadPool, connection, jsonConnection),
-				threadPool);
+        FilmSuggestions suggestions = new FilmSuggestions(
+                sampleTitleProvider(properties, threadPool),
+                sampleDescriptionProvider(threadPool, connection),
+                sampleScoreProviders(threadPool, connection, jsonConnection),
+                threadPool);
 
-		Stopwatch started = Stopwatch.createStarted();
+        Stopwatch started = Stopwatch.createStarted();
 
-		try {
-			CompletableFutures.getAllOf(suggestions.suggestFilms())
-					.limit(100)
-					.filter(Film::isNotEmpty)
-					.forEach(System.out::println);
-			started.stop();
+        try {
+            CompletableFutures.getAllOf(suggestions.suggestFilms())
+                    .limit(100)
+                    .filter(Film::isNotEmpty)
+                    .forEach(System.out::println);
+            started.stop();
 
-			threadPool.shutdown();
-			threadPool.awaitTermination(10, TimeUnit.SECONDS);
+            threadPool.shutdown();
+            threadPool.awaitTermination(10, TimeUnit.SECONDS);
 
-			System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
-		} catch (InterruptedException e) {
-			log.error("main - Processing error", e);
-		} finally {
-			jedisPool.destroy();
-		}
-	}
+            System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
+        } catch (InterruptedException e) {
+            log.error("main - Processing error", e);
+        } finally {
+            jedisPool.destroy();
+        }
+    }
 
-	private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
-		return new FilmwebDescriptions(new FilmwebProxy(connection), executorService);
-	}
+    private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
+        return new FilmwebDescriptions(new FilmwebProxy(connection), executorService);
+    }
 
-	private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {
-		return Lists.newArrayList(
-				new FilmwebScores(new FilmwebProxy(connection), executorService),
-				new ImdbScores(jsonConnection, executorService),
-				new MetacriticScores(connection, executorService)
-		);
-	}
+    private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {
+        return Lists.newArrayList(
+                new FilmwebScores(new FilmwebProxy(connection), executorService),
+                new ImdbScores(jsonConnection, executorService),
+                new MetacriticScores(connection, executorService)
+        );
+    }
 
-	private static TitleProvider sampleTitleProvider(Properties properties, ExecutorService executorService) {
-		HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-		return new EkinoTitles(keepCookiesConnection);
-	}
+    private static TitleProvider sampleTitleProvider(Properties properties, ExecutorService executorService) {
+        HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
+        return new EkinoTitles(keepCookiesConnection);
+    }
 
-	private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
-		OkHttpClient httpClient = new OkHttpClient();
-		new AllCookies().applyTo(httpClient);
-		return new JsoupConnection(new HtmlConnection(httpClient));
-	}
+    private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
+        OkHttpClient httpClient = new OkHttpClient();
+        new AllCookies().applyTo(httpClient);
+        return new JsoupConnection(new HtmlConnection(httpClient));
+    }
+
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
         return new CacheProvider<String>() {
             @Override
@@ -116,27 +117,27 @@ public class WhatToWatchApplication {
         };
     }
 
-	private static CacheProvider<String> createEmptyJedisCache() {
-		return CacheProvider.empty();
-	}
+    private static CacheProvider<String> createEmptyJedisCache() {
+        return CacheProvider.empty();
+    }
 
-	private static JedisPool createJedisPool(Properties properties) {
-		JedisPoolConfig poolConfig = new JedisPoolConfig();
-		poolConfig.setMaxTotal(POOL_SIZE);
-		String maxActive = (String) properties.getOrDefault("redis.pool.maxActive", "8");
-		poolConfig.setMaxIdle(
-				Integer.valueOf(maxActive));
-		return new JedisPool(poolConfig, properties.getProperty("redis.host"));
-	}
+    private static JedisPool createJedisPool(Properties properties) {
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        poolConfig.setMaxTotal(POOL_SIZE);
+        String maxActive = (String) properties.getOrDefault("redis.pool.maxActive", "8");
+        poolConfig.setMaxIdle(
+                Integer.valueOf(maxActive));
+        return new JedisPool(poolConfig, properties.getProperty("redis.host"));
+    }
 
-	private static Properties loadDevProperties() {
-		Properties properties = new Properties();
-		try {
-			properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties"));
-		} catch (Exception e) {
-			log.error("loadDevProperties - Cannot load application-dev properties", e);
-		}
-		return properties;
-	}
+    private static Properties loadDevProperties() {
+        Properties properties = new Properties();
+        try {
+            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties"));
+        } catch (Exception e) {
+            log.error("loadDevProperties - Cannot load application-dev properties", e);
+        }
+        return properties;
+    }
 
 }

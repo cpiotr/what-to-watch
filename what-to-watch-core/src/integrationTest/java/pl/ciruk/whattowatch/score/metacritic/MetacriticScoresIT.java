@@ -19,50 +19,50 @@ import static org.junit.Assert.assertThat;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class MetacriticScoresIT {
-	private JsoupConnection connection;
-	private MetacriticScores scores;
+    private JsoupConnection connection;
+    private MetacriticScores scores;
 
-	@Before
-	public void setUp() throws Exception {
-		connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+    @Before
+    public void setUp() throws Exception {
+        connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
 
-		connection.init();
-		scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
-	}
+        connection.init();
+        scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
+    }
 
-	@Test
-	public void shouldRetrieveMeaningfulScore() throws Exception {
-		Title title = titleOfRespectfulFilm();
-		Description description = Description.builder()
-				.title(title)
-				.build();
+    @Test
+    public void shouldRetrieveMeaningfulScore() throws Exception {
+        Title title = titleOfRespectfulFilm();
+        Description description = Description.builder()
+                .title(title)
+                .build();
 
-		Stream<Score> scoreStream = scores.scoresOf(description);
-		Score score = scoreStream
-				.filter(ScoreMatchers::isMeaningful)
-				.findAny()
-				.orElseThrow(AssertionError::new);
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .filter(ScoreMatchers::isMeaningful)
+                .findAny()
+                .orElseThrow(AssertionError::new);
 
-		assertThat(score, isMeaningful());
-	}
+        assertThat(score, isMeaningful());
+    }
 
-	@Test
-	public void shouldRetrieveMultipleScores() throws Exception {
-		Title title = titleOfRespectfulFilm();
-		Description description = Description.builder()
-				.title(title)
-				.build();
+    @Test
+    public void shouldRetrieveMultipleScores() throws Exception {
+        Title title = titleOfRespectfulFilm();
+        Description description = Description.builder()
+                .title(title)
+                .build();
 
-		long numberOfScores = scores.scoresOf(description)
-				.count();
+        long numberOfScores = scores.scoresOf(description)
+                .count();
 
-		assertThat(numberOfScores, is(greaterThan(1L)));
-	}
+        assertThat(numberOfScores, is(greaterThan(1L)));
+    }
 
-	private Title titleOfRespectfulFilm() {
-		return Title.builder()
-				.originalTitle("Moana")
-				.year(2016)
-				.build();
-	}
+    private Title titleOfRespectfulFilm() {
+        return Title.builder()
+                .originalTitle("Moana")
+                .year(2016)
+                .build();
+    }
 }

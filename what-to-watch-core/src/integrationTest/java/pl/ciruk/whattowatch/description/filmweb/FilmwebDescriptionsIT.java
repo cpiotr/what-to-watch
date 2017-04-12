@@ -17,30 +17,31 @@ import static pl.ciruk.whattowatch.description.DescriptionMatchers.ofTitle;
 
 public class FilmwebDescriptionsIT {
 
-	private FilmwebDescriptions descriptions;
+    private FilmwebDescriptions descriptions;
 
-	@Before
-	public void setUp() throws Exception {
-		JsoupConnection connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
-		descriptions = new FilmwebDescriptions(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
-	}
+    @Before
+    public void setUp() throws Exception {
+        JsoupConnection connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+        descriptions = new FilmwebDescriptions(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
+    }
 
-	@Test
-	public void shouldResolveRamboTitleToFirstBlood() throws Exception {
-		Title rambo = Title.builder().title("Rambo").year(1982).build();
+    @Test
+    public void shouldResolveRamboTitleToFirstBlood() throws Exception {
+        Title rambo = Title.builder().title("Rambo").year(1982).build();
 
-		Description description = descriptions.descriptionOf(rambo)
-				.orElseThrow(AssertionError::new);
+        Description description = descriptions.descriptionOf(rambo)
+                .orElseThrow(AssertionError::new);
 
-		assertThat(description, is(ofTitle("First Blood")));
-	}
-	@Test
-	public void shouldResolveRecentTitle() throws Exception {
-		Title rambo = Title.builder().title("A United Kingdom").year(2016).build();
+        assertThat(description, is(ofTitle("First Blood")));
+    }
 
-		Description description = descriptions.descriptionOf(rambo)
-				.orElseThrow(AssertionError::new);
+    @Test
+    public void shouldResolveRecentTitle() throws Exception {
+        Title rambo = Title.builder().title("A United Kingdom").year(2016).build();
 
-		assertThat(description, is(ofTitle("A United Kingdom")));
-	}
+        Description description = descriptions.descriptionOf(rambo)
+                .orElseThrow(AssertionError::new);
+
+        assertThat(description, is(ofTitle("A United Kingdom")));
+    }
 }

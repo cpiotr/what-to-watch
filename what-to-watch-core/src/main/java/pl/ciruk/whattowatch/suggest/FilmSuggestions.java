@@ -21,56 +21,56 @@ import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
 @Slf4j
 public class FilmSuggestions implements FilmSuggestionProvider {
-	TitleProvider titles;
+    TitleProvider titles;
 
-	DescriptionProvider descriptions;
+    DescriptionProvider descriptions;
 
-	List<ScoresProvider> scoresProviders;
+    List<ScoresProvider> scoresProviders;
 
-	final ExecutorService executorService;
+    final ExecutorService executorService;
 
-	public FilmSuggestions(
-			TitleProvider titles,
-			DescriptionProvider descriptions,
-			List<ScoresProvider> scoresProviders,
-			ExecutorService executorService) {
-		this.titles = titles;
-		this.descriptions = descriptions;
-		this.scoresProviders = scoresProviders;
-		this.executorService = executorService;
-	}
+    public FilmSuggestions(
+            TitleProvider titles,
+            DescriptionProvider descriptions,
+            List<ScoresProvider> scoresProviders,
+            ExecutorService executorService) {
+        this.titles = titles;
+        this.descriptions = descriptions;
+        this.scoresProviders = scoresProviders;
+        this.executorService = executorService;
+    }
 
-	@Override
-	public Stream<CompletableFuture<Film>> suggestFilms() {
-		log.info("suggestFilms");
+    @Override
+    public Stream<CompletableFuture<Film>> suggestFilms() {
+        log.info("suggestFilms");
 
-		return titles.streamOfTitles()
-				.map(this::findFilmForTitle);
-	}
+        return titles.streamOfTitles()
+                .map(this::findFilmForTitle);
+    }
 
-	CompletableFuture<Film> findFilmForTitle(Title title) {
-		return descriptions.descriptionOfAsync(title)
+    CompletableFuture<Film> findFilmForTitle(Title title) {
+        return descriptions.descriptionOfAsync(title)
                 .thenComposeAsync(
-                    optionalDescription ->
-                            optionalDescription.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())),
-                    executorService)
-				.exceptionally(t -> {
-					log.error("Cannot get film for title {}", title, t);
-					return Film.empty();
-				});
-	}
+                        optionalDescription ->
+                                optionalDescription.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())),
+                        executorService)
+                .exceptionally(t -> {
+                    log.error("Cannot get film for title {}", title, t);
+                    return Film.empty();
+                });
+    }
 
-	private CompletableFuture<Film> descriptionToFilm(Description description) {
-		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-				scoresProvider -> scoresProvider.scoresOfAsync(description);
+    private CompletableFuture<Film> descriptionToFilm(Description description) {
+        Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
+                scoresProvider -> scoresProvider.scoresOfAsync(description);
 
-		return scoresProviders.stream()
-				.map(toScoresOfAsync)
-				.reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService))
-				.thenApply(stream -> stream.collect(toList()))
-				.thenApply(scores -> Film.builder()
-						.description(description)
-						.scores(scores)
-						.build());
-	}
+        return scoresProviders.stream()
+                .map(toScoresOfAsync)
+                .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService))
+                .thenApply(stream -> stream.collect(toList()))
+                .thenApply(scores -> Film.builder()
+                        .description(description)
+                        .scores(scores)
+                        .build());
+    }
 }

@@ -15,34 +15,34 @@ import java.util.Set;
 @Slf4j
 public class AllCookies implements CookiePolicy {
 
-	private Set<String> cookies = new HashSet<>();
+    private Set<String> cookies = new HashSet<>();
 
-	@Override
-	public void applyTo(OkHttpClient client) {
-		CookieManager cookieManager = new CookieManager();
-		cookieManager.setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL);
-		client.setCookieHandler(cookieManager);
-		client.networkInterceptors().add(this::handleCookies);
-		client.setFollowRedirects(true);
-	}
+    @Override
+    public void applyTo(OkHttpClient client) {
+        CookieManager cookieManager = new CookieManager();
+        cookieManager.setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL);
+        client.setCookieHandler(cookieManager);
+        client.networkInterceptors().add(this::handleCookies);
+        client.setFollowRedirects(true);
+    }
 
-	public Response handleCookies(Interceptor.Chain chain) throws IOException {
-		Request.Builder request = chain.request().newBuilder();
-		attachCookiesTo(request);
+    public Response handleCookies(Interceptor.Chain chain) throws IOException {
+        Request.Builder request = chain.request().newBuilder();
+        attachCookiesTo(request);
 
-		Response response = chain.proceed(request.build());
-		readCookiesFrom(response);
-		return response;
-	}
+        Response response = chain.proceed(request.build());
+        readCookiesFrom(response);
+        return response;
+    }
 
-	private void readCookiesFrom(Response response) {
-		List<String> cookiesFromResponse = response.headers("Set-Cookie");
-		log.debug("HTTP interceptor - Received cookies: {}", cookiesFromResponse);
-		cookies.addAll(cookiesFromResponse);
-	}
+    private void readCookiesFrom(Response response) {
+        List<String> cookiesFromResponse = response.headers("Set-Cookie");
+        log.debug("HTTP interceptor - Received cookies: {}", cookiesFromResponse);
+        cookies.addAll(cookiesFromResponse);
+    }
 
-	private void attachCookiesTo(Request.Builder request) {
-		log.debug("Cookies to be sent: {}", cookies);
-		cookies.forEach(cookie -> request.addHeader("Cookie", cookie));
-	}
+    private void attachCookiesTo(Request.Builder request) {
+        log.debug("Cookies to be sent: {}", cookies);
+        cookies.forEach(cookie -> request.addHeader("Cookie", cookie));
+    }
 }

@@ -6,6 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public interface FilmSuggestionProvider {
-	Stream<CompletableFuture<Film>> suggestFilms();
+    Stream<CompletableFuture<Film>> suggestFilms();
 
 }

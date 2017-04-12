@@ -18,37 +18,37 @@ import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class FilmwebScoresIT {
 
-	private JsoupConnection connection;
-	private FilmwebScores scores;
+    private JsoupConnection connection;
+    private FilmwebScores scores;
 
-	@Before
-	public void setUp() throws Exception {
-		connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+    @Before
+    public void setUp() throws Exception {
+        connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
 
-		connection.init();
-		scores = new FilmwebScores(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
-	}
+        connection.init();
+        scores = new FilmwebScores(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
+    }
 
-	@Test
-	public void shouldRetrieveMeaningfulScore() throws Exception {
-		Title title = titleOfOldAndRespectfulFilm();
-		Description description = Description.builder()
-				.title(title)
-				.build();
+    @Test
+    public void shouldRetrieveMeaningfulScore() throws Exception {
+        Title title = titleOfOldAndRespectfulFilm();
+        Description description = Description.builder()
+                .title(title)
+                .build();
 
-		Stream<Score> scoreStream = scores.scoresOf(description);
-		Score score = scoreStream
-				.findAny()
-				.orElseThrow(AssertionError::new);
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .findAny()
+                .orElseThrow(AssertionError::new);
 
-		assertThat(score, isMeaningful());
-	}
+        assertThat(score, isMeaningful());
+    }
 
-	private Title titleOfOldAndRespectfulFilm() {
-		return Title.builder()
-				.title("Rambo")
-				.originalTitle("Rambo")
-				.year(1982)
-				.build();
-	}
+    private Title titleOfOldAndRespectfulFilm() {
+        return Title.builder()
+                .title("Rambo")
+                .originalTitle("Rambo")
+                .year(1982)
+                .build();
+    }
 }

@@ -18,40 +18,40 @@ public class EkinoTitles implements TitleProvider {
     public static final String BASE_URL = "http://ekino-tv.pl/";
     private final HttpConnection<Element> connection;
 
-	public EkinoTitles(HttpConnection<Element> connection) {
-		this.connection = connection;
-	}
+    public EkinoTitles(HttpConnection<Element> connection) {
+        this.connection = connection;
+    }
 
-	List<String> urls = Lists.newArrayList(
+    List<String> urls = Lists.newArrayList(
             BASE_URL + "movie/cat/strona%%5B%d%%5D+"
-	);
+    );
 
-	@Override
-	public Stream<Title> streamOfTitles() {
-		log.info("streamOfTitles");
+    @Override
+    public Stream<Title> streamOfTitles() {
+        log.info("streamOfTitles");
 
-		return urls.stream()
-				.flatMap(pattern -> generateSomePages(pattern))
-				.peek(url -> log.info("Loading films from: {}", url))
-				.map(connection::connectToAndGet)
-				.flatMap(Optionals::asStream)
-				.flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
-				.map(this::parseToTitle)
-				.distinct();
-	}
+        return urls.stream()
+                .flatMap(pattern -> generateSomePages(pattern))
+                .peek(url -> log.info("Loading films from: {}", url))
+                .map(connection::connectToAndGet)
+                .flatMap(Optionals::asStream)
+                .flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
+                .map(this::parseToTitle)
+                .distinct();
+    }
 
-	Stream<String> generateSomePages(String pattern) {
-		if (pattern.contains("%d")) {
-			AtomicInteger i = new AtomicInteger(0);
-			return Stream.generate(
-					() -> String.format(pattern, i.incrementAndGet()))
-					.limit(10);
-		} else {
-			return Stream.of(pattern);
-		}
-	}
+    Stream<String> generateSomePages(String pattern) {
+        if (pattern.contains("%d")) {
+            AtomicInteger i = new AtomicInteger(0);
+            return Stream.generate(
+                    () -> String.format(pattern, i.incrementAndGet()))
+                    .limit(10);
+        } else {
+            return Stream.of(pattern);
+        }
+    }
 
-	Title parseToTitle(Element linkToTitle) {
+    Title parseToTitle(Element linkToTitle) {
         Title.TitleBuilder builder = Title.builder();
         EkinoSelectors.TITLE.extractFrom(linkToTitle)
                 .ifPresent(builder::title);
@@ -59,11 +59,11 @@ public class EkinoTitles implements TitleProvider {
                 .map(link -> BASE_URL + link)
                 .ifPresent(builder::url);
         EkinoSelectors.YEAR.extractFrom(linkToTitle)
-				.map(Integer::valueOf)
-				.ifPresent(builder::year);
-		EkinoSelectors.ORIGINAL_TITLE.extractFrom(linkToTitle)
-				.ifPresent(builder::originalTitle);
+                .map(Integer::valueOf)
+                .ifPresent(builder::year);
+        EkinoSelectors.ORIGINAL_TITLE.extractFrom(linkToTitle)
+                .ifPresent(builder::originalTitle);
 
-		return builder.build();
-	}
+        return builder.build();
+    }
 }

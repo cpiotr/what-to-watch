@@ -1,15 +1,16 @@
 package pl.ciruk.core.math;
 
 
-import static java.lang.Math.*;
+import static java.lang.Math.log;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
 public class WilsonScore {
-    private static double pnormaldist(double qn)
-    {
-        double[] b = { 1.570796288, 0.03706987906, -0.8364353589e-3, -0.2250947176e-3,
+    private static double pnormaldist(double qn) {
+        double[] b = {1.570796288, 0.03706987906, -0.8364353589e-3, -0.2250947176e-3,
                 0.6841218299e-5, 0.5824238515e-5, -0.104527497e-5,
                 0.8360937017e-7, -0.3231081277e-8, 0.3657763036e-10,
-                0.6936233982e-12 };
+                0.6936233982e-12};
 
         if (qn < 0.0 || 1.0 < qn)
             return 0.0;
@@ -31,8 +32,7 @@ public class WilsonScore {
         return -sqrt(w1 * w3);
     }
 
-    public static Double confidenceIntervalLowerBound(long pos, long n, double power)
-    {
+    public static Double confidenceIntervalLowerBound(long pos, long n, double power) {
         if (n == 0)
             return 0.0;
         double z = pnormaldist(1 - power / 2);

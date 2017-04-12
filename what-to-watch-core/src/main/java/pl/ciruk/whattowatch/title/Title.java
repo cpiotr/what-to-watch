@@ -9,24 +9,24 @@ import java.util.Optional;
 
 @Getter
 @Builder
-@EqualsAndHashCode(exclude = { "url" })
+@EqualsAndHashCode(exclude = {"url"})
 public class Title {
-	private String originalTitle;
-	
-	private String title;
+    private String originalTitle;
 
-	private int year;
+    private String title;
 
-	private String url;
+    private int year;
 
-	public String asText() {
-		return Optional.ofNullable(getOriginalTitle())
-				.filter(t -> !Strings.isNullOrEmpty(t))
-				.orElse(getTitle());
-	}
+    private String url;
 
-	@Override
-	public String toString() {
-		return String.format("%s (%d)", asText(), year);
-	}
+    public String asText() {
+        return Optional.ofNullable(getOriginalTitle())
+                .filter(t -> !Strings.isNullOrEmpty(t))
+                .orElse(getTitle());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s (%d)", asText(), year);
+    }
 }

@@ -19,23 +19,23 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 @Component
 @Path("/titles")
 public class Titles {
-	TitleProvider titles;
+    TitleProvider titles;
 
-	@Inject
-	public Titles(TitleProvider titles) {
-		this.titles = titles;
-	}
+    @Inject
+    public Titles(TitleProvider titles) {
+        this.titles = titles;
+    }
 
-	@GET
-	@ManagedAsync
-	@Produces("application/json")
-	public void findAll(@Suspended AsyncResponse asyncResponse) {
-		asyncResponse.resume(
-				Response.ok(titles.streamOfTitles().collect(toList())).build()
-		);
+    @GET
+    @ManagedAsync
+    @Produces("application/json")
+    public void findAll(@Suspended AsyncResponse asyncResponse) {
+        asyncResponse.resume(
+                Response.ok(titles.streamOfTitles().collect(toList())).build()
+        );
 
-		asyncResponse.setTimeout(20_000, TimeUnit.MILLISECONDS);
-		asyncResponse.setTimeoutHandler(ar -> ar.resume(
-				Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
-	}
+        asyncResponse.setTimeout(20_000, TimeUnit.MILLISECONDS);
+        asyncResponse.setTimeoutHandler(ar -> ar.resume(
+                Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
+    }
 }

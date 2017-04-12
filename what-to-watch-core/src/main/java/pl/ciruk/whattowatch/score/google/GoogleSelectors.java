@@ -7,21 +7,20 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum GoogleSelectors implements Extractable<Optional<String>> {
-	SCORE(details -> details.select(".f.slp")
-			.stream()
-			.findFirst()
-			.filter(e -> !e.select(".star").isEmpty())
-			.map(Element::text)
-			.filter(s -> !s.isEmpty()))
-	;
-	private Function<Element, Optional<String>> extractor;
+    SCORE(details -> details.select(".f.slp")
+            .stream()
+            .findFirst()
+            .filter(e -> !e.select(".star").isEmpty())
+            .map(Element::text)
+            .filter(s -> !s.isEmpty()));
+    private Function<Element, Optional<String>> extractor;
 
-	private GoogleSelectors(Function<Element, Optional<String>> extractor) {
-		this.extractor = extractor;
-	}
+    private GoogleSelectors(Function<Element, Optional<String>> extractor) {
+        this.extractor = extractor;
+    }
 
-	@Override
-	public Optional<String> extractFrom(Element details) {
-		return extractor.apply(details);
-	}
+    @Override
+    public Optional<String> extractFrom(Element details) {
+        return extractor.apply(details);
+    }
 }

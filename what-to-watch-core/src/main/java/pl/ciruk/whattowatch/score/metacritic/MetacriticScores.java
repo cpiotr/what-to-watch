@@ -20,104 +20,104 @@ import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_
 
 @Slf4j
 public class MetacriticScores implements ScoresProvider {
-	private static final String METACRITIC_BASE_URL = "http://www.metacritic.com";
+    private static final String METACRITIC_BASE_URL = "http://www.metacritic.com";
 
-	private static final int NYT_SCORE_WEIGHT = 1_000;
+    private static final int NYT_SCORE_WEIGHT = 1_000;
 
-	private final HttpConnection<Element> connection;
+    private final HttpConnection<Element> connection;
 
-	private final ExecutorService executorService;
+    private final ExecutorService executorService;
 
-	public MetacriticScores(HttpConnection<Element> connection, ExecutorService executorService) {
-		this.connection = connection;
-		this.executorService = executorService;
-	}
+    public MetacriticScores(HttpConnection<Element> connection, ExecutorService executorService) {
+        this.connection = connection;
+        this.executorService = executorService;
+    }
 
-	@Override
-	public CompletableFuture<Stream<Score>> scoresOfAsync(Description description) {
-		return CompletableFuture.supplyAsync(
-				() -> scoresOf(description),
-				executorService
-		);
-	}
-	
-	@Override
-	public Stream<Score> scoresOf(Description description) {
-		log.info("scoresOf - Description: {}", description);
+    @Override
+    public CompletableFuture<Stream<Score>> scoresOfAsync(Description description) {
+        return CompletableFuture.supplyAsync(
+                () -> scoresOf(description),
+                executorService
+        );
+    }
 
-		Optional<Element> htmlWithScores = metacriticSummaryOf(description.titleAsText(), description.getYear())
-				.flatMap(LINK_TO_DETAILS::extractFrom)
-				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
-				.flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
-				.flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
-				.map(page -> page.select("#main_content").first());
+    @Override
+    public Stream<Score> scoresOf(Description description) {
+        log.info("scoresOf - Description: {}", description);
 
-		Stream<Score> averageScoreStream = htmlWithScores
-				.flatMap(htmlContent -> averageGradeFrom(htmlContent)
-						.map(grade -> new Score(grade, numberOfReviewsFrom(htmlContent))))
-				.map(Stream::of).orElseGet(Stream::empty);
+        Optional<Element> htmlWithScores = metacriticSummaryOf(description.titleAsText(), description.getYear())
+                .flatMap(LINK_TO_DETAILS::extractFrom)
+                .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
+                .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
+                .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
+                .map(page -> page.select("#main_content").first());
 
-		Stream<Score> nytScoreStream = htmlWithScores
-				.flatMap(htmlContent -> nytScoreFrom(htmlContent))
-				.map(Stream::of).orElseGet(Stream::empty);
+        Stream<Score> averageScoreStream = htmlWithScores
+                .flatMap(htmlContent -> averageGradeFrom(htmlContent)
+                        .map(grade -> new Score(grade, numberOfReviewsFrom(htmlContent))))
+                .map(Stream::of).orElseGet(Stream::empty);
 
-		return Stream.concat(averageScoreStream, nytScoreStream)
-				.peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
-	}
+        Stream<Score> nytScoreStream = htmlWithScores
+                .flatMap(htmlContent -> nytScoreFrom(htmlContent))
+                .map(Stream::of).orElseGet(Stream::empty);
 
-	Optional<Double> averageGradeFrom(Element htmlWithScores) {
-		return MetacriticSelectors.AVERAGE_GRADE.extractFrom(htmlWithScores)
-				.map(Double::valueOf)
-				.map(d -> d / 100.0);
-	}
-	
-	int numberOfReviewsFrom(Element htmlWithScores) {
-		return MetacriticSelectors.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
-				.map(Integer::valueOf)
-				.orElseThrow(() -> new MissingValueException(htmlWithScores.text()));
-	}
-	
-	Optional<Score> nytScoreFrom(Element htmlWithScores) {
-		return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
-				.map(grade -> (Double.valueOf(grade) / 100.0))
-				.map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT));
-	}
-	
-	private Optional<Element> downloadPage(String url) {
-		return connection.connectToAndGet(url);
-	}
+        return Stream.concat(averageScoreStream, nytScoreStream)
+                .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
+    }
 
-	Optional<Element> metacriticSummaryOf(String title, int year) {
-		try {
-			Predicate<String> matchesTitle = matches(title);
+    Optional<Double> averageGradeFrom(Element htmlWithScores) {
+        return MetacriticSelectors.AVERAGE_GRADE.extractFrom(htmlWithScores)
+                .map(Double::valueOf)
+                .map(d -> d / 100.0);
+    }
 
-			String searchUrl = String.format(
-					METACRITIC_BASE_URL + "/search/movie/%s/results",
-					URLEncoder.encode(title, Charsets.UTF_8.toString()));
+    int numberOfReviewsFrom(Element htmlWithScores) {
+        return MetacriticSelectors.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
+                .map(Integer::valueOf)
+                .orElseThrow(() -> new MissingValueException(htmlWithScores.text()));
+    }
 
-			return downloadPage(searchUrl)
-					.flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
-							.filter(e -> MetacriticSelectors.TITLE.extractFrom(e)
-											.filter(matchesTitle)
-											.isPresent()
-							)
-							.filter(e -> MetacriticSelectors.RELEASE_DATE.extractFrom(e)
-											.filter(date -> date.endsWith(String.valueOf(year)))
-											.isPresent()
-							)
-							.findFirst());
-		} catch (Exception e) {
-			log.warn("Cannot find metacritic summary of {}", title, e);
-			return Optional.empty();
-		}
-	}
+    Optional<Score> nytScoreFrom(Element htmlWithScores) {
+        return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
+                .map(grade -> (Double.valueOf(grade) / 100.0))
+                .map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT));
+    }
 
-	private Predicate<String> matches(String title) {
-		String titleOnlyAlphaNum = replaceNonAlphaNumWithSpace(title);
-		return t -> replaceNonAlphaNumWithSpace(t).equalsIgnoreCase(titleOnlyAlphaNum);
-	}
+    private Optional<Element> downloadPage(String url) {
+        return connection.connectToAndGet(url);
+    }
 
-	private static String replaceNonAlphaNumWithSpace(String text) {
-		return text.replaceAll("[^\\p{L}0-9 ]", " ");
-	}
+    Optional<Element> metacriticSummaryOf(String title, int year) {
+        try {
+            Predicate<String> matchesTitle = matches(title);
+
+            String searchUrl = String.format(
+                    METACRITIC_BASE_URL + "/search/movie/%s/results",
+                    URLEncoder.encode(title, Charsets.UTF_8.toString()));
+
+            return downloadPage(searchUrl)
+                    .flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
+                            .filter(e -> MetacriticSelectors.TITLE.extractFrom(e)
+                                    .filter(matchesTitle)
+                                    .isPresent()
+                            )
+                            .filter(e -> MetacriticSelectors.RELEASE_DATE.extractFrom(e)
+                                    .filter(date -> date.endsWith(String.valueOf(year)))
+                                    .isPresent()
+                            )
+                            .findFirst());
+        } catch (Exception e) {
+            log.warn("Cannot find metacritic summary of {}", title, e);
+            return Optional.empty();
+        }
+    }
+
+    private Predicate<String> matches(String title) {
+        String titleOnlyAlphaNum = replaceNonAlphaNumWithSpace(title);
+        return t -> replaceNonAlphaNumWithSpace(t).equalsIgnoreCase(titleOnlyAlphaNum);
+    }
+
+    private static String replaceNonAlphaNumWithSpace(String text) {
+        return text.replaceAll("[^\\p{L}0-9 ]", " ");
+    }
 }

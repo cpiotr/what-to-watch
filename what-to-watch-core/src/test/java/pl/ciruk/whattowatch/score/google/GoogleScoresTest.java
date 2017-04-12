@@ -21,34 +21,35 @@ import static org.mockito.Mockito.when;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class GoogleScoresTest {
-	private Document document;
-	private JsoupConnection connection;
+    private Document document;
+    private JsoupConnection connection;
 
-	@Before
-	public void setUp() throws Exception {
-		String searchResultsHTML = new String(
-				Files.readAllBytes(
-						Paths.get(
-								getClass().getClassLoader().getResource("google-search-results.html").toURI())));
-		connection = mock(JsoupConnection.class);
-		document = Jsoup.parse(searchResultsHTML);
-		when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
-	}
-	@Test
-	public void shouldFindMeaningfulScoreForRambo() throws Exception {
-		GoogleScores scores = new GoogleScores(connection, Executors.newSingleThreadExecutor(), "Test");
+    @Before
+    public void setUp() throws Exception {
+        String searchResultsHTML = new String(
+                Files.readAllBytes(
+                        Paths.get(
+                                getClass().getClassLoader().getResource("google-search-results.html").toURI())));
+        connection = mock(JsoupConnection.class);
+        document = Jsoup.parse(searchResultsHTML);
+        when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
+    }
 
-		Score score = scores.scoresOf(rambo())
-				.findAny()
-				.orElseThrow(AssertionError::new);
+    @Test
+    public void shouldFindMeaningfulScoreForRambo() throws Exception {
+        GoogleScores scores = new GoogleScores(connection, Executors.newSingleThreadExecutor(), "Test");
 
-		assertThat(score, isMeaningful());
-	}
+        Score score = scores.scoresOf(rambo())
+                .findAny()
+                .orElseThrow(AssertionError::new);
 
-	private Description rambo() {
-		return Description.builder()
-				.title(Title.builder().title("rambo").build())
-				.build();
-	}
+        assertThat(score, isMeaningful());
+    }
+
+    private Description rambo() {
+        return Description.builder()
+                .title(Title.builder().title("rambo").build())
+                .build();
+    }
 
 }

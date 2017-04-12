@@ -9,8 +9,7 @@ import java.util.stream.Stream;
 public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
     SEARCH_RESULTS(page ->
             page.select("div.body .search_results .result")
-                    .stream()),
-    ;
+                    .stream()),;
 
     private Function<Element, Stream<Element>> extractor;
 

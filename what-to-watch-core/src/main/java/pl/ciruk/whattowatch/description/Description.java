@@ -9,40 +9,40 @@ import java.util.List;
 @Getter
 @Builder
 public class Description {
-	private static final Description EMPTY = Description.builder().build();
+    private static final Description EMPTY = Description.builder().build();
 
-	private Title title;
+    private Title title;
 
-	private Title foundFor;
+    private Title foundFor;
 
-	private String poster;
+    private String poster;
 
-	private String plot;
+    private String plot;
 
-	private List<String> genres;
+    private List<String> genres;
 
-	public String titleAsText() {
-		return title.asText();
-	}
-	
-	public int getYear() {
-		return title.getYear();
-	}
+    public String titleAsText() {
+        return title.asText();
+    }
 
-	public void foundFor(Title title) {
-		foundFor = title;
-	}
+    public int getYear() {
+        return title.getYear();
+    }
 
-	public boolean isEmpty() {
-		return this == EMPTY;
-	}
+    public void foundFor(Title title) {
+        foundFor = title;
+    }
 
-	public static Description empty() {
-		return Description.EMPTY;
-	}
+    public boolean isEmpty() {
+        return this == EMPTY;
+    }
 
-	@Override
-	public String toString() {
-		return title.toString();
-	}
+    public static Description empty() {
+        return Description.EMPTY;
+    }
+
+    @Override
+    public String toString() {
+        return title.toString();
+    }
 }

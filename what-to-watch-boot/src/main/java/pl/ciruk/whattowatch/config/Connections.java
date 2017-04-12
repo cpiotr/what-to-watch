@@ -27,70 +27,70 @@ import javax.inject.Named;
 @Slf4j
 public class Connections {
 
-	@Bean
-	OkHttpClient httpClient() {
-		OkHttpClient httpClient = new OkHttpClient();
-		return httpClient;
-	}
+    @Bean
+    OkHttpClient httpClient() {
+        OkHttpClient httpClient = new OkHttpClient();
+        return httpClient;
+    }
 
-	@Bean
-	@Named("allCookies")
-	HttpConnection<String> allCookiesConnection(OkHttpClient client) {
-		new AllCookies().applyTo(client);
-		return new HtmlConnection(client);
-	}
+    @Bean
+    @Named("allCookies")
+    HttpConnection<String> allCookiesConnection(OkHttpClient client) {
+        new AllCookies().applyTo(client);
+        return new HtmlConnection(client);
+    }
 
-	@Bean
-	@Named("noCookies")
-	HttpConnection<String> noCookiesConnection(OkHttpClient client) {
-		return new HtmlConnection(client);
-	}
+    @Bean
+    @Named("noCookies")
+    HttpConnection<String> noCookiesConnection(OkHttpClient client) {
+        return new HtmlConnection(client);
+    }
 
-	@Bean
-	@Named("cachedConnection")
-	HttpConnection<String> cachedConnection(CacheProvider<String> cacheProvider, @Named("noCookies") HttpConnection<String> connection) {
-		return new CachedConnection(cacheProvider, connection);
-	}
+    @Bean
+    @Named("cachedConnection")
+    HttpConnection<String> cachedConnection(CacheProvider<String> cacheProvider, @Named("noCookies") HttpConnection<String> connection) {
+        return new CachedConnection(cacheProvider, connection);
+    }
 
-	@Bean
-	@Named("allCookiesHtml")
-	HttpConnection<Element> jsoupConnectionAllCookies(@Named("allCookies") HttpConnection<String> allCookies) {
-		return new JsoupConnection(allCookies);
-	}
+    @Bean
+    @Named("allCookiesHtml")
+    HttpConnection<Element> jsoupConnectionAllCookies(@Named("allCookies") HttpConnection<String> allCookies) {
+        return new JsoupConnection(allCookies);
+    }
 
-	@Bean
-	@Named("noCookiesHtml")
-	HttpConnection<Element> jsoupConnection(@Named("cachedConnection") HttpConnection<String> connection) {
-		return new JsoupConnection(connection);
-	}
+    @Bean
+    @Named("noCookiesHtml")
+    HttpConnection<Element> jsoupConnection(@Named("cachedConnection") HttpConnection<String> connection) {
+        return new JsoupConnection(connection);
+    }
 
-	@Bean
-	@Named("noCookiesJson")
-	HttpConnection<JsonNode> jsonConnection(@Named("cachedConnection") HttpConnection<String> connection) {
-		return new JsonConnection(connection);
-	}
+    @Bean
+    @Named("noCookiesJson")
+    HttpConnection<JsonNode> jsonConnection(@Named("cachedConnection") HttpConnection<String> connection) {
+        return new JsonConnection(connection);
+    }
 
-	@Bean
-	@Primary
-	StringRedisTemplate stringRedisTemplate() {
-		RedisConnectionFactory connectionFactory = redisConnectionFactory();
-		log.debug("stringRedisTemplate - host: {}", redisHost);
-		return new StringRedisTemplate(connectionFactory);
-	}
+    @Bean
+    @Primary
+    StringRedisTemplate stringRedisTemplate() {
+        RedisConnectionFactory connectionFactory = redisConnectionFactory();
+        log.debug("stringRedisTemplate - host: {}", redisHost);
+        return new StringRedisTemplate(connectionFactory);
+    }
 
-	@Value("${redis.host}")
-	String redisHost;
+    @Value("${redis.host}")
+    String redisHost;
 
-	@Value("${redis.pool.maxActive:8}")
-	Integer redisPoolMaxActive;
+    @Value("${redis.pool.maxActive:8}")
+    Integer redisPoolMaxActive;
 
-	private RedisConnectionFactory redisConnectionFactory() {
-		JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-		jedisConnectionFactory.setHostName(redisHost);
-		JedisPoolConfig poolConfig = new JedisPoolConfig();
-		poolConfig.setMaxTotal(redisPoolMaxActive);
-		jedisConnectionFactory.setPoolConfig(poolConfig);
-		jedisConnectionFactory.setShardInfo(new JedisShardInfo(redisHost));
-		return jedisConnectionFactory;
-	}
+    private RedisConnectionFactory redisConnectionFactory() {
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        jedisConnectionFactory.setHostName(redisHost);
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        poolConfig.setMaxTotal(redisPoolMaxActive);
+        jedisConnectionFactory.setPoolConfig(poolConfig);
+        jedisConnectionFactory.setShardInfo(new JedisShardInfo(redisHost));
+        return jedisConnectionFactory;
+    }
 }

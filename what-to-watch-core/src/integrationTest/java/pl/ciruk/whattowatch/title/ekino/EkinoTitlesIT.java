@@ -23,41 +23,41 @@ import static org.junit.Assert.assertThat;
 
 public class EkinoTitlesIT {
 
-	private TitleProvider provider;
+    private TitleProvider provider;
 
-	@Test
-	public void shouldFetchTitlesForValidUser() throws Exception {
-		givenCredentialsArePresent();
+    @Test
+    public void shouldFetchTitlesForValidUser() throws Exception {
+        givenCredentialsArePresent();
 
-		List<Title> titles = provider.streamOfTitles()
-				.collect(toList());
+        List<Title> titles = provider.streamOfTitles()
+                .collect(toList());
 
-		assertThat(titles, is(not(empty())));
-	}
+        assertThat(titles, is(not(empty())));
+    }
 
-	private void givenCredentialsArePresent() {
-		provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies());
-	}
+    private void givenCredentialsArePresent() {
+        provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies());
+    }
 
-	private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
-		OkHttpClient httpClient = new OkHttpClient();
-		new AllCookies().applyTo(httpClient);
-		HtmlConnection connection = new HtmlConnection(httpClient);
-		connection.init();
-		return new JsoupConnection(connection);
-	}
+    private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
+        OkHttpClient httpClient = new OkHttpClient();
+        new AllCookies().applyTo(httpClient);
+        HtmlConnection connection = new HtmlConnection(httpClient);
+        connection.init();
+        return new JsoupConnection(connection);
+    }
 
-	private <T> Matcher<Collection<T>> empty() {
-		return new TypeSafeMatcher<Collection<T>>() {
-			@Override
-			protected boolean matchesSafely(Collection<T> item) {
-				return item == null || item.isEmpty();
-			}
+    private <T> Matcher<Collection<T>> empty() {
+        return new TypeSafeMatcher<Collection<T>>() {
+            @Override
+            protected boolean matchesSafely(Collection<T> item) {
+                return item == null || item.isEmpty();
+            }
 
-			@Override
-			public void describeTo(Description description) {
-				description.appendText("empty collection");
-			}
-		};
-	}
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("empty collection");
+            }
+        };
+    }
 }

@@ -63,8 +63,8 @@ public class Scores {
                 .title(titleObj)
                 .build();
 
-		Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-				scoresProvider -> scoresProvider.scoresOfAsync(description);
+        Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
+                scoresProvider -> scoresProvider.scoresOfAsync(description);
 
         scoresProviders.stream()
                 .map(toScoresOfAsync)

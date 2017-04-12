@@ -9,33 +9,33 @@ import java.util.function.Consumer;
 
 @Slf4j
 public class CachedConnection implements HttpConnection<String> {
-	private final CacheProvider<String> cache;
+    private final CacheProvider<String> cache;
 
-	private final HttpConnection<String> connection;
+    private final HttpConnection<String> connection;
 
-	public CachedConnection(CacheProvider<String> cache, HttpConnection<String> connection) {
-		this.cache = cache;
-		this.connection = connection;
-	}
+    public CachedConnection(CacheProvider<String> cache, HttpConnection<String> connection) {
+        this.cache = cache;
+        this.connection = connection;
+    }
 
-	@Override
-	public Optional<String> connectToAndGet(String url) {
-		log.debug("connectToAndGet - Url: {}", url);
+    @Override
+    public Optional<String> connectToAndGet(String url) {
+        log.debug("connectToAndGet - Url: {}", url);
 
-		Optional<String> document = cache.get(url);
-		if (!document.isPresent()) {
-			log.debug("connectToAndGet - Cache miss for: {}", url);
-			document = connection.connectToAndGet(url);
-			document.ifPresent(content -> cache.put(url, content));
-		}
-		return document;
-	}
+        Optional<String> document = cache.get(url);
+        if (!document.isPresent()) {
+            log.debug("connectToAndGet - Cache miss for: {}", url);
+            document = connection.connectToAndGet(url);
+            document.ifPresent(content -> cache.put(url, content));
+        }
+        return document;
+    }
 
-	@Override
-	public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-		log.debug("connectToAndConsume - Url: {}", url);
-		log.debug("connectToAndConsume - Method currently does not rely on cache");
+    @Override
+    public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+        log.debug("connectToAndConsume - Url: {}", url);
+        log.debug("connectToAndConsume - Method currently does not rely on cache");
 
-		return connection.connectToAndConsume(url, action);
-	}
+        return connection.connectToAndConsume(url, action);
+    }
 }

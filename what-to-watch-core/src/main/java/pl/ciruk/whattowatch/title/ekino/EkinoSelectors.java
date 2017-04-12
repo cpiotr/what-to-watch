@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum EkinoSelectors implements Extractable<Optional<String>> {
-	TITLE(film -> film.select(".title a")
+    TITLE(film -> film.select(".title a")
             .stream()
             .findFirst()
             .map(Element::text)),
@@ -19,26 +19,25 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
             .stream()
             .findFirst()
             .map(e -> e.attr("href"))),
-	YEAR(film -> film.select(".info-categories .cates")
+    YEAR(film -> film.select(".info-categories .cates")
             .stream()
             .findFirst()
             .map(Element::text)
-            .map(EkinoSelectors::trimToYear))
-	;
-	private Function<Element, Optional<String>> extractor;
+            .map(EkinoSelectors::trimToYear));
+    private Function<Element, Optional<String>> extractor;
 
-	private EkinoSelectors(Function<Element, Optional<String>> extractor) {
-		this.extractor = extractor;
-	}
+    private EkinoSelectors(Function<Element, Optional<String>> extractor) {
+        this.extractor = extractor;
+    }
 
-	@Override
-	public Optional<String> extractFrom(Element element) {
-		return extractor.apply(element);
-	}
+    @Override
+    public Optional<String> extractFrom(Element element) {
+        return extractor.apply(element);
+    }
 
-	private static String trimToYear(String wholeDescriptionInTitle) {
-		int endOfFirstPart = wholeDescriptionInTitle.indexOf('|');
-		return wholeDescriptionInTitle.substring(0, endOfFirstPart).trim();
-	}
+    private static String trimToYear(String wholeDescriptionInTitle) {
+        int endOfFirstPart = wholeDescriptionInTitle.indexOf('|');
+        return wholeDescriptionInTitle.substring(0, endOfFirstPart).trim();
+    }
 
 }

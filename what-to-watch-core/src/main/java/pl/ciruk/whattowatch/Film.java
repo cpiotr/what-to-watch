@@ -12,38 +12,38 @@ import static pl.ciruk.core.math.WilsonScore.confidenceIntervalLowerBound;
 @Builder
 @Data
 public class Film {
-	static final Film EMPTY = Film.builder().build();
+    static final Film EMPTY = Film.builder().build();
 
-	Description description;
+    Description description;
 
-	List<Score> scores;
+    List<Score> scores;
 
-	public static Film empty() {
-		return EMPTY;
-	}
+    public static Film empty() {
+        return EMPTY;
+    }
 
-	public boolean isWorthWatching() {
-		return isNotEmpty()
-				&& normalizedScore() > 0.65
-				&& scores.size() > 2;
-	}
+    public boolean isWorthWatching() {
+        return isNotEmpty()
+                && normalizedScore() > 0.65
+                && scores.size() > 2;
+    }
 
-	public Double normalizedScore() {
-		long totalQuantity = scores.stream()
-				.mapToLong(Score::getQuantity)
-				.sum();
-		int positiveQuantity = (int) (score() * totalQuantity);
-		return confidenceIntervalLowerBound(positiveQuantity, totalQuantity, 0.95);
-	}
+    public Double normalizedScore() {
+        long totalQuantity = scores.stream()
+                .mapToLong(Score::getQuantity)
+                .sum();
+        int positiveQuantity = (int) (score() * totalQuantity);
+        return confidenceIntervalLowerBound(positiveQuantity, totalQuantity, 0.95);
+    }
 
-	public double score() {
-		return scores.stream()
-				.mapToDouble(Score::getGrade)
-				.average()
-				.orElse(0.0);
-	}
+    public double score() {
+        return scores.stream()
+                .mapToDouble(Score::getGrade)
+                .average()
+                .orElse(0.0);
+    }
 
-	public boolean isNotEmpty() {
-		return this != EMPTY;
-	}
+    public boolean isNotEmpty() {
+        return this != EMPTY;
+    }
 }

@@ -5,29 +5,29 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 public class ScoreMatchers {
-	public static Matcher<? super Score> isMeaningful() {
-		return new TypeSafeMatcher<Score>() {
-			@Override
-			protected boolean matchesSafely(Score item) {
-				return isMeaningful(item);
-			}
+    public static Matcher<? super Score> isMeaningful() {
+        return new TypeSafeMatcher<Score>() {
+            @Override
+            protected boolean matchesSafely(Score item) {
+                return isMeaningful(item);
+            }
 
-			@Override
-			public void describeTo(Description description) {
-				description.appendText(" is meaningful");
-			}
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(" is meaningful");
+            }
 
-			@Override
-			protected void describeMismatchSafely(Score item, Description mismatchDescription) {
-				mismatchDescription.appendValue(item).appendText(" is not meaningful");
-			}
-		};
-	}
+            @Override
+            protected void describeMismatchSafely(Score item, Description mismatchDescription) {
+                mismatchDescription.appendValue(item).appendText(" is not meaningful");
+            }
+        };
+    }
 
-	public static boolean isMeaningful(Score item) {
-		boolean validGrade = item.getGrade() >= 0.1 && item.getGrade() <= 1.0;
-		boolean validQuantity = item.getQuantity() >= 10;
+    public static boolean isMeaningful(Score item) {
+        boolean validGrade = item.getGrade() >= 0.1 && item.getGrade() <= 1.0;
+        boolean validQuantity = item.getQuantity() >= 10;
 
-		return validGrade && validQuantity;
-	}
+        return validGrade && validQuantity;
+    }
 }

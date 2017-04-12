@@ -1,6 +1,6 @@
 package pl.ciruk.core.text;
 
-public class MissingValueException extends  RuntimeException{
+public class MissingValueException extends RuntimeException {
     public MissingValueException(String msg) {
         super(msg);
     }
@@ -14,6 +14,6 @@ public class MissingValueException extends  RuntimeException{
     }
 
     public MissingValueException() {
-        
+
     }
 }
