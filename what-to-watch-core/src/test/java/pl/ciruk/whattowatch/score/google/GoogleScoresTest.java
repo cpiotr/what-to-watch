@@ -9,8 +9,6 @@ import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.title.Title;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
@@ -18,6 +16,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static pl.ciruk.whattowatch.Resources.readContentOf;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class GoogleScoresTest {
@@ -26,12 +25,9 @@ public class GoogleScoresTest {
 
     @Before
     public void setUp() throws Exception {
-        String searchResultsHTML = new String(
-                Files.readAllBytes(
-                        Paths.get(
-                                getClass().getClassLoader().getResource("google-search-results.html").toURI())));
+        document = Jsoup.parse(readContentOf("google-search-results.html"));
+
         connection = mock(JsoupConnection.class);
-        document = Jsoup.parse(searchResultsHTML);
         when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
     }
 

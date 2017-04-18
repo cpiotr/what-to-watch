@@ -126,7 +126,7 @@ public class WhatToWatchApplication {
         poolConfig.setMaxTotal(POOL_SIZE);
         String maxActive = (String) properties.getOrDefault("redis.pool.maxActive", "8");
         poolConfig.setMaxIdle(
-                Integer.valueOf(maxActive));
+                Integer.parseInt(maxActive));
         return new JedisPool(poolConfig, properties.getProperty("redis.host"));
     }
 

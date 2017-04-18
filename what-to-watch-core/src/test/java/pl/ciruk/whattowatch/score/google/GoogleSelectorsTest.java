@@ -9,8 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.net.html.JsoupConnection;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -18,6 +16,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static pl.ciruk.whattowatch.Resources.readContentOf;
 
 public class GoogleSelectorsTest {
 
@@ -25,12 +24,9 @@ public class GoogleSelectorsTest {
 
     @Before
     public void setUp() throws Exception {
-        String searchResultsHTML = new String(
-                Files.readAllBytes(
-                        Paths.get(
-                                getClass().getClassLoader().getResource("google-search-results.html").toURI())));
+        document = Jsoup.parse(readContentOf("google-search-results.html"));
+
         JsoupConnection connection = mock(JsoupConnection.class);
-        document = Jsoup.parse(searchResultsHTML);
         when(connection.connectToAndGet(any())).thenReturn(Optional.of(document));
     }
 

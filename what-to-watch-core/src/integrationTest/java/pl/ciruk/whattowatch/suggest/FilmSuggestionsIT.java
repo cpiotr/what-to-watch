@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.suggest;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.After;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -89,19 +86,14 @@ public class FilmSuggestionsIT {
     }
 
     private TitleProvider provideTitlesFromResource() {
-        List<Title> titles = new ArrayList<>();
-
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("films-with-my-scores.csv");
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
-            titles = reader.lines()
+            return () -> reader.lines()
                     .limit(NUMBER_OF_TITLES)
                     .map(line -> line.split(";"))
-                    .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build())
-                    .collect(toList());
+                    .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build());
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new AssertionError(e);
         }
-
-        return titles::stream;
     }
 }
