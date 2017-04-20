@@ -89,7 +89,7 @@ public class WhatToWatchApplication {
 
     private static TitleProvider sampleTitleProvider(Properties properties, ExecutorService executorService) {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new EkinoTitles(keepCookiesConnection);
+        return new EkinoTitles(keepCookiesConnection, 10);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

@@ -28,6 +28,9 @@ public class Beans {
     @Value("${w2w.pool.size:8}")
     Integer filmPoolSize;
 
+    @Value("${w2w.titles.crawled.pages.limit:10}")
+    Integer titlesCrawledPagesLimit;
+
     @Bean
     ExecutorService executorService() {
         return Executors.newWorkStealingPool(filmPoolSize);
@@ -35,7 +38,7 @@ public class Beans {
 
     @Bean
     TitleProvider ekinoTitles(@Named("allCookiesHtml") HttpConnection httpConnection) {
-        return new EkinoTitles(httpConnection);
+        return new EkinoTitles(httpConnection, titlesCrawledPagesLimit);
     }
 
     @Bean

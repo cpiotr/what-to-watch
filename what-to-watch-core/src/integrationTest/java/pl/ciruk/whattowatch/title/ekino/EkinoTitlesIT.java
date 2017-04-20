@@ -36,7 +36,7 @@ public class EkinoTitlesIT {
     }
 
     private void givenCredentialsArePresent() {
-        provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies());
+        provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies(), 1);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

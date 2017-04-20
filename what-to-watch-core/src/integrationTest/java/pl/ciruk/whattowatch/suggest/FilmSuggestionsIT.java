@@ -31,12 +31,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class FilmSuggestionsIT {
-    public static final int NUMBER_OF_TITLES = 50;
+    private static final int NUMBER_OF_TITLES = 50;
 
     private FilmSuggestions suggestions;
     private ExecutorService pool;
@@ -85,13 +86,15 @@ public class FilmSuggestionsIT {
         );
     }
 
-    private TitleProvider provideTitlesFromResource() {
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("films-with-my-scores.csv");
+    private static TitleProvider provideTitlesFromResource() {
+        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("films-with-my-scores.csv");
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
-            return () -> reader.lines()
+            List<Title> titles = reader.lines()
                     .limit(NUMBER_OF_TITLES)
                     .map(line -> line.split(";"))
-                    .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build());
+                    .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build())
+                    .collect(toList());
+            return titles::stream;
         } catch (IOException e) {
             throw new AssertionError(e);
         }

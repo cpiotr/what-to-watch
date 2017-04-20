@@ -10,9 +10,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = WhatToWatchBoot.class)
-@ContextConfiguration(classes = WhatToWatchBootTests.TestConfig.class)
+@ContextConfiguration(classes = WhatToWatchBootTest.TestConfig.class)
 @TestPropertySource(locations = "classpath:application-dev.properties")
-public class WhatToWatchBootTests {
+public class WhatToWatchBootTest {
 
     @Test
     public void contextLoads() {
