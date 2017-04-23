@@ -5,7 +5,7 @@ import org.jsoup.parser.Tag;
 
 public final class JsoupNodes {
     private JsoupNodes() {
-
+        // Utility class
     }
 
     public static Element emptyTextElement() {
@@ -13,6 +13,16 @@ public final class JsoupNodes {
             @Override
             public String text() {
                 return "";
+            }
+
+            @Override
+            public int hashCode() {
+                return super.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return super.equals(o);
             }
         };
     }
