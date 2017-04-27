@@ -44,7 +44,7 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     private HystrixCommand<Optional<String>> createGetCommand(String key) {
-        return new HystrixCommand<Optional<String>>(() -> "get") {
+        return new HystrixCommand<Optional<String>>(() -> "RedisCache.get") {
             @Override
             protected Optional<String> run() throws Exception {
                 return Optional.ofNullable(
@@ -59,7 +59,7 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     private HystrixCommand<Optional<Void>> createPutCommand(String key, String value) {
-        return new HystrixCommand<Optional<Void>>(() -> "put") {
+        return new HystrixCommand<Optional<Void>>(() -> "RedisCache.put") {
             @Override
             protected Optional<Void> run() throws Exception {
                 cache.opsForValue().set(key, value);
