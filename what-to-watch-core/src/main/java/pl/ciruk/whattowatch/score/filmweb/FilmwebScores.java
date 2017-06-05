@@ -40,15 +40,25 @@ public class FilmwebScores implements ScoresProvider {
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
     }
 
-    Stream<Score> scoresForTitle(String title, int year) {
+    private Stream<Score> scoresForTitle(String title, int year) {
         Optional<Element> optionalResult = filmwebProxy.searchFor(title, year);
 
         return Optionals.asStream(optionalResult)
-                .flatMap(page -> FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT.extractFrom(page))
-                .map(FilmwebSelectors.SCORE::extractFrom)
-                .flatMap(Optionals::asStream)
-                .map(this::parseScore)
+                .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
+                .map(this::getDetailsAndFindScore)
+                .flatMap(Optionals::asStream);
+    }
+
+    private Optional<Score> getDetailsAndFindScore(Element result) {
+        return FilmwebSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(result)
+                .flatMap(this::findScoreInDetailsPage)
                 .filter(this::isPositive);
+    }
+
+    private Optional<Score> findScoreInDetailsPage(String linkToDetails) {
+        return filmwebProxy.getPageWithFilmDetailsFor(linkToDetails)
+                .flatMap(FilmwebSelectors.SCORE_FROM_DETAILS::extractFrom)
+                .map(this::parseScore);
     }
 
     private boolean isPositive(Score score) {
@@ -59,6 +69,6 @@ public class FilmwebScores implements ScoresProvider {
         NumberTokenizer numberTokenizer = new NumberTokenizer(s);
         double rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
         int quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
-        return new Score(rating, quantity);
+        return new Score(rating/10.0, quantity);
     }
 }

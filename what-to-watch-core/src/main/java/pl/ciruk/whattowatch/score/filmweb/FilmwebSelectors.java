@@ -2,24 +2,21 @@ package pl.ciruk.whattowatch.score.filmweb;
 
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.Extractable;
+import pl.ciruk.core.stream.Optionals;
 
 import java.util.Optional;
 import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
-    YEAR(details -> details.select("span.hitTitle")
+    LINK_FROM_SEARCH_RESULT(result -> result.select(".hitDescWrapper .hitTitle")
             .stream()
-            .map(Element::text)
-            .map(text -> text.replaceAll("[^0-9]", ""))
+            .map(link -> link.attr("href"))
             .findFirst()),
-    LOCAL_TITLE(details -> details.select("a.hitTitle")
+    SCORE_FROM_SEARCH_RESULT(result -> result.select(".rateInfo .box")
             .stream()
             .map(Element::text)
             .findFirst()),
-    SCORE(details -> details.select(".rateInfo .box")
-            .stream()
-            .map(Element::text)
-            .findFirst()),;
+    SCORE_FROM_DETAILS(details -> extractScoreFromText(details.toString()));
 
     private Function<Element, Optional<String>> extractor;
 
@@ -30,5 +27,31 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
     @Override
     public Optional<String> extractFrom(Element details) {
         return extractor.apply(details);
+    }
+
+    private static Optional<String> extractScoreFromText(String pageAsText) {
+        Optional<String> ratingValue = extractSpanValueForItem(pageAsText, "ratingValue");
+        Optional<String> ratingCount = extractSpanValueForItem(pageAsText, "ratingCount");
+        return Optionals.mergeUsing(
+                ratingValue,
+                ratingCount,
+                (rating, count) -> String.format("%s;%s", rating, count));
+
+    }
+
+    private static Optional<String> extractSpanValueForItem(String pageAsText, String item) {
+        String span = "<span itemprop=\"" + item + "\">";
+        int from = pageAsText.indexOf(span);
+        if (from < 0) {
+            return Optional.empty();
+        }
+
+        from += span.length();
+        int to = pageAsText.indexOf("</span>", from);
+        if (to < from) {
+            return Optional.empty();
+        }
+
+        return Optional.of(pageAsText.substring(from, to));
     }
 }
