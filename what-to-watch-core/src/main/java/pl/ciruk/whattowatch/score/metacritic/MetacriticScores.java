@@ -4,7 +4,7 @@ import com.google.common.base.Charsets;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
-import pl.ciruk.core.text.MissingValueException;
+import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static pl.ciruk.core.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 
 @Slf4j
@@ -52,32 +53,33 @@ public class MetacriticScores implements ScoresProvider {
                 .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
                 .map(page -> page.select("#main_content").first());
 
-        Stream<Score> averageScoreStream = htmlWithScores
-                .flatMap(htmlContent -> averageGradeFrom(htmlContent)
-                        .map(grade -> new Score(grade, numberOfReviewsFrom(htmlContent))))
-                .map(Stream::of).orElseGet(Stream::empty);
-
-        Stream<Score> nytScoreStream = htmlWithScores
-                .flatMap(htmlContent -> nytScoreFrom(htmlContent))
-                .map(Stream::of).orElseGet(Stream::empty);
-
+        Stream<Score> averageScoreStream = Optionals.asStream(htmlWithScores.flatMap(this::extractScoreFrom));
+        Stream<Score> nytScoreStream = Optionals.asStream(htmlWithScores.flatMap(this::nytScoreFrom));
         return Stream.concat(averageScoreStream, nytScoreStream)
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
     }
 
-    Optional<Double> averageGradeFrom(Element htmlWithScores) {
+    private Optional<Score> extractScoreFrom(Element htmlWithScores) {
+        Optional<Double> averageGrade = averageGradeFrom(htmlWithScores);
+        Optional<Double> numberOfReviews = numberOfReviewsFrom(htmlWithScores);
+        return mergeUsing(
+                averageGrade,
+                numberOfReviews,
+                (rating, count) -> new Score(rating, count.intValue()));
+    }
+
+    private Optional<Double> averageGradeFrom(Element htmlWithScores) {
         return MetacriticSelectors.AVERAGE_GRADE.extractFrom(htmlWithScores)
                 .map(Double::valueOf)
                 .map(d -> d / 100.0);
     }
 
-    int numberOfReviewsFrom(Element htmlWithScores) {
+    private Optional<Double> numberOfReviewsFrom(Element htmlWithScores) {
         return MetacriticSelectors.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
-                .map(Integer::valueOf)
-                .orElseThrow(() -> new MissingValueException(htmlWithScores.text()));
+                .map(Double::valueOf);
     }
 
-    Optional<Score> nytScoreFrom(Element htmlWithScores) {
+    private Optional<Score> nytScoreFrom(Element htmlWithScores) {
         return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
                 .map(grade -> (Double.valueOf(grade) / 100.0))
                 .map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT));
@@ -87,7 +89,7 @@ public class MetacriticScores implements ScoresProvider {
         return connection.connectToAndGet(url);
     }
 
-    Optional<Element> metacriticSummaryOf(String title, int year) {
+    private Optional<Element> metacriticSummaryOf(String title, int year) {
         try {
             Predicate<String> matchesTitle = matches(title);
 
