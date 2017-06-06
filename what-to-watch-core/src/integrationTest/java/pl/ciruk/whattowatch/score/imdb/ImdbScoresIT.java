@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.score.imdb;
 
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.json.JsonConnection;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertThat;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
+@Ignore
 public class ImdbScoresIT {
     private JsonConnection connection;
     private ImdbScores scores;

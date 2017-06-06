@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class Beans {
 
-    @Value("${w2w.pool.size:8}")
+    @Value("${w2w.pool.size:16}")
     Integer filmPoolSize;
 
     @Value("${w2w.titles.crawled.pages.limit:10}")

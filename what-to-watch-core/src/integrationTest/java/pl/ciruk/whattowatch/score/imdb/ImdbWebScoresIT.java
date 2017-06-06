@@ -65,6 +65,43 @@ public class ImdbWebScoresIT {
         assertThat(score, isMeaningful());
     }
 
+    @Test
+    public void shouldRetrieveMeaningfulScoreOfFilmWithSpecialCharsInTitle() throws Exception {
+        Title title = Title.builder()
+                .originalTitle("Radin!")
+                .year(2016)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .findAny()
+                .orElseThrow(AssertionError::new);
+
+        assertThat(score, isMeaningful());
+    }
+
+    @Test
+    public void shouldRetrieveMeaningfulScoreOfPolishFilm() throws Exception {
+        Title title = Title.builder()
+                .originalTitle("Powidoki")
+                .title("Powidoki")
+                .year(2016)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .findAny()
+                .orElseThrow(AssertionError::new);
+
+        assertThat(score, isMeaningful());
+    }
+
     private Title titleOfRecentAndRespectfulFilm() {
         return Title.builder()
                 .title("Vaiana")

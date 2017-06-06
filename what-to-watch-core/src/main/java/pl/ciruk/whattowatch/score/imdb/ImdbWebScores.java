@@ -10,11 +10,11 @@ import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
+import pl.ciruk.whattowatch.title.Title;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static pl.ciruk.whattowatch.score.imdb.ImdbSelectors.NUMBER_OF_SCORES;
@@ -26,6 +26,7 @@ import static pl.ciruk.whattowatch.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEA
 @Slf4j
 public class ImdbWebScores implements ScoresProvider {
     private static final int MAX_IMDB_SCORE = 10;
+    public static final int MISSING_YEAR = 0;
 
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
@@ -58,8 +59,7 @@ public class ImdbWebScores implements ScoresProvider {
 
         Optional<Score> firstResult = Optionals.asStream(httpConnection.connectToAndGet(url.toString()))
                 .flatMap(FILMS_FROM_SEARCH_RESULT::extractFrom)
-                .filter(result -> TITLE.extractFrom(result).filter(matchesTitleFrom(description)).isPresent())
-                .filter(result -> extractYearFrom(result).filter(matchesYearFrom(description)).isPresent())
+                .filter(result -> matchesTitleFromDescription(result, description))
                 .findFirst()
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
@@ -70,13 +70,37 @@ public class ImdbWebScores implements ScoresProvider {
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
     }
 
-    private Predicate<Integer> matchesYearFrom(Description description) {
-        return year -> year.equals(description.getYear());
+    private boolean matchesTitleFromDescription(Element result, Description description) {
+        Title descriptionTitle = description.getTitle();
+        return extractTitleFrom(result).matches(descriptionTitle)
+                || extractFullTitleFrom(result).matches(descriptionTitle);
     }
 
-    private Predicate<String> matchesTitleFrom(Description description) {
-        return title -> description.getTitle().getOriginalTitle().equalsIgnoreCase(title)
-                || description.getTitle().getTitle().equalsIgnoreCase(title);
+    private Title extractTitleFrom(Element result) {
+        return Title.builder()
+                .title(TITLE.extractFrom(result).orElse(""))
+                .year(extractYearFrom(result).orElse(MISSING_YEAR))
+                .build();
+    }
+
+    private Title extractFullTitleFrom(Element result) {
+        return Title.builder()
+                .title(TITLE.extractFrom(result).orElse(""))
+                .originalTitle(getOriginalTitle(result).orElse(""))
+                .year(extractYearFrom(result).orElse(MISSING_YEAR))
+                .build();
+    }
+
+    private Optional<String> getOriginalTitle(Element result) {
+        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(result)
+                .flatMap(this::getDetails)
+                .flatMap(ImdbSelectors.ORIGINAL_TITLE::extractFrom);
+    }
+
+    private Optional<Element> getDetails(String linkToDetails) {
+        String url = "http://www.imdb.com/" + linkToDetails;
+
+        return httpConnection.connectToAndGet(url);
     }
 
     private Optional<Integer> extractYearFrom(Element result) {

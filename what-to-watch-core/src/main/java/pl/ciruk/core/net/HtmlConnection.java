@@ -40,9 +40,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
         try {
             Response response = execute(to(url));
-            return Optional.ofNullable(
-                    response.body().string()
-            );
+            return Optional.ofNullable(response.body().string());
         } catch (IOException e) {
             log.warn("connectToAndGet - Could no get {}", url, e);
             return Optional.empty();
@@ -71,7 +69,7 @@ public class HtmlConnection implements HttpConnection<String> {
         return response;
     }
 
-    Request.Builder to(String url) {
+    private Request.Builder to(String url) {
         return new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", UserAgents.next())
