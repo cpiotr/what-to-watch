@@ -44,7 +44,7 @@ public class MetacriticScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.info("scoresOf - Description: {}", description);
+        log.debug("scoresOf - Description: {}", description);
 
         Optional<Element> htmlWithScores = metacriticSummaryOf(description.titleAsText(), description.getYear())
                 .flatMap(LINK_TO_DETAILS::extractFrom)
@@ -53,8 +53,18 @@ public class MetacriticScores implements ScoresProvider {
                 .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
                 .map(page -> page.select("#main_content").first());
 
-        Stream<Score> averageScoreStream = Optionals.asStream(htmlWithScores.flatMap(this::extractScoreFrom));
-        Stream<Score> nytScoreStream = Optionals.asStream(htmlWithScores.flatMap(this::nytScoreFrom));
+        Optional<Score> metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
+        if (!metacriticScore.isPresent()) {
+            log.warn("scoresOf - Missing Metacritic score for: {}", description.getTitle());
+        }
+
+        Optional<Score> nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
+        if (!nytScore.isPresent()) {
+            log.warn("scoresOf - Missing NYT score for: {}", description.getTitle());
+        }
+
+        Stream<Score> averageScoreStream = Optionals.asStream(metacriticScore);
+        Stream<Score> nytScoreStream = Optionals.asStream(nytScore);
         return Stream.concat(averageScoreStream, nytScoreStream)
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
     }
@@ -62,10 +72,11 @@ public class MetacriticScores implements ScoresProvider {
     private Optional<Score> extractScoreFrom(Element htmlWithScores) {
         Optional<Double> averageGrade = averageGradeFrom(htmlWithScores);
         Optional<Double> numberOfReviews = numberOfReviewsFrom(htmlWithScores);
-        return mergeUsing(
+        Optional<Score> score = mergeUsing(
                 averageGrade,
                 numberOfReviews,
                 (rating, count) -> new Score(rating, count.intValue()));
+        return score;
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {

@@ -26,7 +26,7 @@ import static pl.ciruk.whattowatch.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEA
 @Slf4j
 public class ImdbWebScores implements ScoresProvider {
     private static final int MAX_IMDB_SCORE = 10;
-    public static final int MISSING_YEAR = 0;
+    private static final int MISSING_YEAR = 0;
 
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
@@ -46,7 +46,7 @@ public class ImdbWebScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.info("scoresOf - Description: {}", description);
+        log.debug("scoresOf - Description: {}", description);
 
         HttpUrl url = new HttpUrl.Builder()
                 .scheme("http")
@@ -63,7 +63,8 @@ public class ImdbWebScores implements ScoresProvider {
                 .findFirst()
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
-            log.warn("scoresOf - Missing score for {}; Search query: {}", description, url.toString());
+            log.warn("scoresOf - Missing score for {}", description);
+            log.trace("scoresOf - Search query: {}", url.toString());
         }
 
         return Optionals.asStream(firstResult)

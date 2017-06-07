@@ -12,6 +12,7 @@ import pl.ciruk.whattowatch.source.FilmwebProxy;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -34,7 +35,7 @@ public class FilmwebScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.info("scoresOf - Description: {}", description);
+        log.debug("scoresOf - Description: {}", description);
 
         return scoresForTitle(description.titleAsText(), description.getYear())
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
@@ -46,6 +47,7 @@ public class FilmwebScores implements ScoresProvider {
         return Optionals.asStream(optionalResult)
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
                 .map(this::getDetailsAndFindScore)
+                .peek(logIfMissing(title, year))
                 .flatMap(Optionals::asStream);
     }
 
@@ -70,5 +72,13 @@ public class FilmwebScores implements ScoresProvider {
         double rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
         int quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
         return new Score(rating/10.0, quantity);
+    }
+
+    private Consumer<Optional<?>> logIfMissing(String title, int year) {
+        return score -> {
+            if (!score.isPresent()) {
+                log.warn("Missing score for: {} ({})", title, year);
+            }
+        };
     }
 }

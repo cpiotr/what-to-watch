@@ -9,6 +9,7 @@ import pl.ciruk.whattowatch.title.TitleProvider;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -22,6 +23,8 @@ public class EkinoTitles implements TitleProvider {
 
     private final int crawledPagesLimit;
 
+    private final AtomicLong numberOfTitles = new AtomicLong();
+
     public EkinoTitles(HttpConnection<Element> connection, int crawledPagesLimit) {
         this.connection = connection;
         this.crawledPagesLimit = crawledPagesLimit;
@@ -34,15 +37,16 @@ public class EkinoTitles implements TitleProvider {
 
     @Override
     public Stream<Title> streamOfTitles() {
-        log.info("streamOfTitles");
+        log.debug("streamOfTitles");
 
         return generateSomePages(TITLES_PAGE_PATTERN)
-                .peek(url -> log.info("Loading films from: {}", url))
+                .peek(url -> log.debug("Loading films from: {}", url))
                 .map(connection::connectToAndGet)
                 .flatMap(Optionals::asStream)
                 .flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
                 .map(this::parseToTitle)
-                .distinct();
+                .distinct()
+                .peek(__ -> numberOfTitles.incrementAndGet());
     }
 
     private Stream<String> generateSomePages(String pattern) {

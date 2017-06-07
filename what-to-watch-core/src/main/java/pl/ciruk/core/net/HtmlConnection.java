@@ -36,7 +36,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndGet(String url) {
-        log.debug("connectToAndGet- Url: {}", url);
+        log.trace("connectToAndGet- Url: {}", url);
 
         try {
             Response response = execute(to(url));
@@ -49,7 +49,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-        log.debug("connectToAndConsume - Url: {}", url);
+        log.trace("connectToAndConsume - Url: {}", url);
         Request.Builder builder = to(url);
 
         action.accept(builder);
@@ -61,7 +61,6 @@ public class HtmlConnection implements HttpConnection<String> {
             return Optional.empty();
         }
     }
-
 
     private Response execute(Request.Builder requestBuilder) throws IOException {
         Request build = requestBuilder.build();
@@ -79,10 +78,10 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private Response log(Interceptor.Chain chain) throws IOException {
         Request request = chain.request();
-        log.debug("Request: {}", request);
+        log.trace("Request: {}", request);
 
         Response response = chain.proceed(request);
-        log.debug("Response: {}", response);
+        log.trace("Response: {}", response);
 
         return response;
     }

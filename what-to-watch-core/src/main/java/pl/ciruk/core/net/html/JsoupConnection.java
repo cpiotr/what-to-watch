@@ -21,7 +21,7 @@ public class JsoupConnection implements HttpConnection<Element> {
 
     @PostConstruct
     public void init() {
-        log.debug("init - Connection: {}", connection);
+        log.trace("init - Connection: {}", connection);
     }
 
     @Override

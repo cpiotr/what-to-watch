@@ -36,7 +36,7 @@ public class ImdbScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.info("scoresOf - Description: {}", description);
+        log.debug("scoresOf - Description: {}", description);
 
         HttpUrl url = new HttpUrl.Builder()
                 .scheme("http")

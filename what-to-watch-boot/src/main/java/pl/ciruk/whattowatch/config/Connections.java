@@ -79,10 +79,10 @@ public class Connections {
     }
 
     @Value("${redis.host}")
-    String redisHost;
+    private String redisHost;
 
     @Value("${redis.pool.maxActive:8}")
-    Integer redisPoolMaxActive;
+    private Integer redisPoolMaxActive;
 
     private RedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();

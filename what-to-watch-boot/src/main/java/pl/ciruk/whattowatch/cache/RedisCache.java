@@ -19,6 +19,8 @@ public class RedisCache implements CacheProvider<String> {
 
     private final AtomicLong hitCounter = new AtomicLong();
 
+    private final AtomicLong requestCounter = new AtomicLong();
+
     @Inject
     public RedisCache(StringRedisTemplate cache) {
         this.cache = cache;
@@ -31,6 +33,8 @@ public class RedisCache implements CacheProvider<String> {
 
     @Override
     public Optional<String> get(String key) {
+        requestCounter.incrementAndGet();
+
         Optional<String> optional = createGetCommand(key).execute();
         if (optional.isPresent()) {
             hitCounter.incrementAndGet();

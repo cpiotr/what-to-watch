@@ -42,13 +42,18 @@ public class FilmwebDescriptions implements DescriptionProvider {
 
     @Override
     public Optional<Description> descriptionOf(Title title) {
-        log.info("descriptionOf - Title: {}", title);
+        log.debug("descriptionOf - Title: {}", title);
 
-        return Stream.of(title.getOriginalTitle(), title.getTitle())
+        Optional<Description> foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
                 .filter(not(Strings::isNullOrEmpty))
                 .flatMap(t -> filmsForTitle(t, title.getYear()))
                 .peek(description -> description.foundFor(title))
                 .findAny();
+        if (!foundDescription.isPresent()) {
+            log.warn("Missing description for: {}", title);
+        }
+
+        return foundDescription;
     }
 
     Stream<Description> filmsForTitle(String title, int year) {

@@ -43,8 +43,11 @@ public class Suggestions {
         log.info("get");
 
         asyncResponse.setTimeout(60, TimeUnit.SECONDS);
-        asyncResponse.setTimeoutHandler(ar -> ar.resume(
-                Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
+        asyncResponse.setTimeoutHandler(ar ->
+                ar.resume(
+                        Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()
+                )
+        );
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
@@ -58,7 +61,7 @@ public class Suggestions {
         } catch (AsyncExecutionException e) {
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
         } finally {
-            log.debug("get - Request processed in {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("get - Request processed in {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 

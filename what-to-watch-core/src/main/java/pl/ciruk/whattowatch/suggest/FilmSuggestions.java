@@ -12,7 +12,9 @@ import pl.ciruk.whattowatch.title.TitleProvider;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -21,13 +23,15 @@ import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
 @Slf4j
 public class FilmSuggestions implements FilmSuggestionProvider {
-    TitleProvider titles;
+    private TitleProvider titles;
 
-    DescriptionProvider descriptions;
+    private DescriptionProvider descriptions;
 
-    List<ScoresProvider> scoresProviders;
+    private List<ScoresProvider> scoresProviders;
 
-    final ExecutorService executorService;
+    private final ExecutorService executorService;
+
+    private final AtomicLong suggestedFilms = new AtomicLong();
 
     public FilmSuggestions(
             TitleProvider titles,
@@ -48,7 +52,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
                 .map(this::findFilmForTitle);
     }
 
-    CompletableFuture<Film> findFilmForTitle(Title title) {
+    private CompletableFuture<Film> findFilmForTitle(Title title) {
         return descriptions.descriptionOfAsync(title)
                 .thenComposeAsync(
                         optionalDescription ->
@@ -71,6 +75,14 @@ public class FilmSuggestions implements FilmSuggestionProvider {
                 .thenApply(scores -> Film.builder()
                         .description(description)
                         .scores(scores)
-                        .build());
+                        .build())
+                .thenApply(incrementCounter());
+    }
+
+    private UnaryOperator<Film> incrementCounter() {
+        return film -> {
+            suggestedFilms.incrementAndGet();
+            return film;
+        };
     }
 }
