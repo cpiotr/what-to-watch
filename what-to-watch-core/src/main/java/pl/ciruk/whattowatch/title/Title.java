@@ -12,6 +12,8 @@ import java.util.Optional;
 @Builder
 @EqualsAndHashCode(exclude = {"url"})
 public class Title {
+    public static final int MISSING_YEAR = 0;
+
     private String originalTitle;
 
     private String title;

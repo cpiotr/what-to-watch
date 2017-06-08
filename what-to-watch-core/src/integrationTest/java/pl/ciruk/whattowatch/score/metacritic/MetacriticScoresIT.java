@@ -47,6 +47,25 @@ public class MetacriticScoresIT {
     }
 
     @Test
+    public void shouldRetrieveMeaningfulScoreForTitleWithSpecialChars() throws Exception {
+        Title title = Title.builder()
+                .title("T2: Trainspotting")
+                .year(2017)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .filter(ScoreMatchers::isMeaningful)
+                .findAny()
+                .orElseThrow(AssertionError::new);
+
+        assertThat(score, isMeaningful());
+    }
+
+    @Test
     public void shouldRetrieveMultipleScores() throws Exception {
         Title title = titleOfRespectfulFilm();
         Description description = Description.builder()

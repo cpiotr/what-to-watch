@@ -16,7 +16,8 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
     AVERAGE_GRADE(details -> details.select(".simple_summary .metascore_w.movie")
             .stream()
             .map(Element::text)
-            .findFirst()),
+            .findFirst()
+            .filter(MetacriticSelectors::isValidScore)),
     NUMBER_OF_GRADES(details -> Optional.of(String.valueOf(
             details.select(".simple_summary div.chart div.count")
                     .stream()
@@ -42,7 +43,17 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
     RELEASE_DATE(details -> details.select(".release_date .data")
             .stream()
             .map(Element::text)
+            .map(MetacriticSelectors::extractYear)
             .findFirst()),;
+
+    private static boolean isValidScore(String scoreAsText) {
+        return !scoreAsText.isEmpty() && !scoreAsText.equalsIgnoreCase("tbd");
+    }
+
+    private static String extractYear(String dateAsText) {
+        return dateAsText.replaceAll(".+, ", "");
+    }
+
     private Function<Element, Optional<String>> extractor;
 
     private MetacriticSelectors(Function<Element, Optional<String>> extractor) {

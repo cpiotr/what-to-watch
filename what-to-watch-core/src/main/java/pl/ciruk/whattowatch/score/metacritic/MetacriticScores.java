@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
-import com.google.common.base.Charsets;
+import com.squareup.okhttp.HttpUrl;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
@@ -8,16 +8,16 @@ import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoresProvider;
+import pl.ciruk.whattowatch.title.Title;
 
-import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static pl.ciruk.core.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
+import static pl.ciruk.whattowatch.title.Title.MISSING_YEAR;
 
 @Slf4j
 public class MetacriticScores implements ScoresProvider {
@@ -46,7 +46,7 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> scoresOf(Description description) {
         log.debug("scoresOf - Description: {}", description);
 
-        Optional<Element> htmlWithScores = metacriticSummaryOf(description.titleAsText(), description.getYear())
+        Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom)
                 .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
                 .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
@@ -72,11 +72,10 @@ public class MetacriticScores implements ScoresProvider {
     private Optional<Score> extractScoreFrom(Element htmlWithScores) {
         Optional<Double> averageGrade = averageGradeFrom(htmlWithScores);
         Optional<Double> numberOfReviews = numberOfReviewsFrom(htmlWithScores);
-        Optional<Score> score = mergeUsing(
+        return mergeUsing(
                 averageGrade,
                 numberOfReviews,
                 (rating, count) -> new Score(rating, count.intValue()));
-        return score;
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {
@@ -100,37 +99,37 @@ public class MetacriticScores implements ScoresProvider {
         return connection.connectToAndGet(url);
     }
 
-    private Optional<Element> metacriticSummaryOf(String title, int year) {
+    private Optional<Element> metacriticSummaryOf(Title title) {
         try {
-            Predicate<String> matchesTitle = matches(title);
+            HttpUrl url = new HttpUrl.Builder()
+                    .scheme("http")
+                    .host("www.metacritic.com")
+                    .addPathSegment("search")
+                    .addPathSegment("movie")
+                    .addPathSegment(title.asText())
+                    .addPathSegment("results")
+                    .build();
 
-            String searchUrl = String.format(
-                    METACRITIC_BASE_URL + "/search/movie/%s/results",
-                    URLEncoder.encode(title, Charsets.UTF_8.toString()));
-
-            return downloadPage(searchUrl)
+            return downloadPage(url.toString())
                     .flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
-                            .filter(e -> MetacriticSelectors.TITLE.extractFrom(e)
-                                    .filter(matchesTitle)
-                                    .isPresent()
-                            )
-                            .filter(e -> MetacriticSelectors.RELEASE_DATE.extractFrom(e)
-                                    .filter(date -> date.endsWith(String.valueOf(year)))
-                                    .isPresent()
-                            )
-                            .findFirst());
+                            .filter(e -> extractTitle(e).matches(title))
+                            .findFirst()
+                    );
         } catch (Exception e) {
             log.warn("Cannot find metacritic summary of {}", title, e);
             return Optional.empty();
         }
     }
 
-    private Predicate<String> matches(String title) {
-        String titleOnlyAlphaNum = replaceNonAlphaNumWithSpace(title);
-        return t -> replaceNonAlphaNumWithSpace(t).equalsIgnoreCase(titleOnlyAlphaNum);
-    }
+    private Title extractTitle(Element searchResult) {
+        String title = MetacriticSelectors.TITLE.extractFrom(searchResult).orElse("");
+        Integer year = MetacriticSelectors.RELEASE_DATE.extractFrom(searchResult)
+                .map(Integer::parseInt)
+                .orElse(MISSING_YEAR);
 
-    private static String replaceNonAlphaNumWithSpace(String text) {
-        return text.replaceAll("[^\\p{L}0-9 ]", " ");
+        return Title.builder()
+                .title(title)
+                .year(year)
+                .build();
     }
 }

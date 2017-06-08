@@ -26,7 +26,6 @@ import static pl.ciruk.whattowatch.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEA
 @Slf4j
 public class ImdbWebScores implements ScoresProvider {
     private static final int MAX_IMDB_SCORE = 10;
-    private static final int MISSING_YEAR = 0;
 
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
@@ -80,7 +79,7 @@ public class ImdbWebScores implements ScoresProvider {
     private Title extractTitleFrom(Element result) {
         return Title.builder()
                 .title(TITLE.extractFrom(result).orElse(""))
-                .year(extractYearFrom(result).orElse(MISSING_YEAR))
+                .year(extractYearFrom(result).orElse(Title.MISSING_YEAR))
                 .build();
     }
 
@@ -88,7 +87,7 @@ public class ImdbWebScores implements ScoresProvider {
         return Title.builder()
                 .title(TITLE.extractFrom(result).orElse(""))
                 .originalTitle(getOriginalTitle(result).orElse(""))
-                .year(extractYearFrom(result).orElse(MISSING_YEAR))
+                .year(extractYearFrom(result).orElse(Title.MISSING_YEAR))
                 .build();
     }
 
