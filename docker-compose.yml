@@ -7,6 +7,7 @@ w2w:
     build: ./what-to-watch-boot
     hostname: w2w-app
     environment:
-      - W2W_TITLES_CRAWLED_PAGES_LIMIT=10
+      - W2W_TITLES_CRAWLED_PAGES_LIMIT=20
+      - W2W_THREAD_POOL_SIZE=16
     links:
       - "cache:redis"

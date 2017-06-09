@@ -21,16 +21,22 @@ import pl.ciruk.core.net.json.JsonConnection;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Named;
 
 @Configuration
 @Slf4j
 public class Connections {
 
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.pool.maxActive:8}")
+    private Integer redisPoolMaxActive;
+
     @Bean
     OkHttpClient httpClient() {
-        OkHttpClient httpClient = new OkHttpClient();
-        return httpClient;
+        return new OkHttpClient();
     }
 
     @Bean
@@ -73,16 +79,8 @@ public class Connections {
     @Bean
     @Primary
     StringRedisTemplate stringRedisTemplate() {
-        RedisConnectionFactory connectionFactory = redisConnectionFactory();
-        log.debug("stringRedisTemplate - host: {}", redisHost);
-        return new StringRedisTemplate(connectionFactory);
+        return new StringRedisTemplate(redisConnectionFactory());
     }
-
-    @Value("${redis.host}")
-    private String redisHost;
-
-    @Value("${redis.pool.maxActive:8}")
-    private Integer redisPoolMaxActive;
 
     private RedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
@@ -92,5 +90,11 @@ public class Connections {
         jedisConnectionFactory.setPoolConfig(poolConfig);
         jedisConnectionFactory.setShardInfo(new JedisShardInfo(redisHost));
         return jedisConnectionFactory;
+    }
+
+    @PostConstruct
+    private void logConfiguration() {
+        log.info("Redis host: <{}>", redisHost);
+        log.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
     }
 }

@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,19 +18,21 @@ import pl.ciruk.whattowatch.suggest.FilmSuggestions;
 import pl.ciruk.whattowatch.title.TitleProvider;
 import pl.ciruk.whattowatch.title.ekino.EkinoTitles;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
+@Slf4j
 public class Beans {
 
     @Value("${w2w.pool.size:16}")
-    Integer filmPoolSize;
+    private Integer filmPoolSize;
 
     @Value("${w2w.titles.crawled.pages.limit:10}")
-    Integer titlesCrawledPagesLimit;
+    private Integer titlesCrawledPagesLimit;
 
     @Bean
     ExecutorService executorService() {
@@ -73,5 +76,11 @@ public class Beans {
             List<ScoresProvider> scoreProviders,
             ExecutorService executorService) {
         return new FilmSuggestions(titleProvider, descriptionProvider, scoreProviders, executorService);
+    }
+
+    @PostConstruct
+    private void logConfiguration() {
+        log.info("Thread pool size: <{}>", filmPoolSize);
+        log.info("Number of pages with titles to crawl: <{}>", titlesCrawledPagesLimit);
     }
 }
