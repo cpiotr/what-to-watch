@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.ciruk.core.concurrent.Threads;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
@@ -36,11 +37,14 @@ public class Beans {
 
     @Bean
     ExecutorService executorService() {
-        return Executors.newWorkStealingPool(filmPoolSize);
+        String threadPrefix = "WhatToWatch-";
+        ExecutorService pool = Executors.newWorkStealingPool(filmPoolSize);
+        Threads.setThreadNamePrefix(threadPrefix, pool);
+        return pool;
     }
 
     @Bean
-    TitleProvider ekinoTitles(@Named("allCookiesHtml") HttpConnection httpConnection) {
+    TitleProvider ekinoTitles(@Named("allCookiesHtml") HttpConnection<Element> httpConnection) {
         return new EkinoTitles(httpConnection, titlesCrawledPagesLimit);
     }
 

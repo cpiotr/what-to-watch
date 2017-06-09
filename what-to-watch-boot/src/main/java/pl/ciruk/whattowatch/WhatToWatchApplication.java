@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
+import pl.ciruk.core.concurrent.Threads;
 import pl.ciruk.core.net.AllCookies;
 import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
@@ -41,6 +42,7 @@ public class WhatToWatchApplication {
     public static void main(String[] args) {
         Properties properties = loadDevProperties();
         ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
+        Threads.setThreadNamePrefix("My-", threadPool);
 
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createEmptyJedisCache();
