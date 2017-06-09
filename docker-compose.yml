@@ -9,5 +9,6 @@ w2w:
     environment:
       - W2W_TITLES_CRAWLED_PAGES_LIMIT=20
       - W2W_THREAD_POOL_SIZE=16
+      - REDIS_HOST=redis
     links:
       - "cache:redis"
