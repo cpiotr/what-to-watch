@@ -17,7 +17,7 @@ import pl.ciruk.core.net.json.JsonConnection;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
-import pl.ciruk.whattowatch.score.imdb.ImdbScores;
+import pl.ciruk.whattowatch.score.imdb.ImdbWebScores;
 import pl.ciruk.whattowatch.score.metacritic.MetacriticScores;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.suggest.FilmSuggestions;
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WhatToWatchApplication {
 
-    public static final int POOL_SIZE = 32;
+    public static final int POOL_SIZE = 16;
 
     public static void main(String[] args) {
         Properties properties = loadDevProperties();
@@ -45,7 +45,7 @@ public class WhatToWatchApplication {
         Threads.setThreadNamePrefix("My-", threadPool);
 
         JedisPool jedisPool = createJedisPool(properties);
-        CacheProvider<String> cache = createEmptyJedisCache();
+        CacheProvider<String> cache = createJedisCache(jedisPool);
         JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
         JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
 
@@ -84,7 +84,7 @@ public class WhatToWatchApplication {
     private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {
         return Lists.newArrayList(
                 new FilmwebScores(new FilmwebProxy(connection), executorService),
-                new ImdbScores(jsonConnection, executorService),
+                new ImdbWebScores(connection, executorService),
                 new MetacriticScores(connection, executorService)
         );
     }
