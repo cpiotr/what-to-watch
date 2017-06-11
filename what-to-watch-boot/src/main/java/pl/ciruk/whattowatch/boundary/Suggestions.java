@@ -8,6 +8,7 @@ import org.glassfish.jersey.server.ManagedAsync;
 import pl.ciruk.core.concurrent.AsyncExecutionException;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.Film;
+import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
 
 import javax.inject.Inject;
@@ -73,6 +74,7 @@ public class Suggestions {
                 .poster(film.getDescription().getPoster())
                 .score(film.normalizedScore())
                 .numberOfScores(film.getScores().size())
+                .scores(film.getScores())
                 .genres(film.getDescription().getGenres())
                 .link(film.getDescription().getFoundFor().getUrl())
                 .build();
@@ -88,6 +90,7 @@ public class Suggestions {
         String poster;
         Double score;
         Integer numberOfScores;
+        List<Score> scores;
         List<String> genres;
     }
 }

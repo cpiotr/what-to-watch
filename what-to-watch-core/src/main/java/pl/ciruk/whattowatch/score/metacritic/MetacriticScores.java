@@ -46,6 +46,10 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> scoresOf(Description description) {
         log.debug("scoresOf - Description: {}", description);
 
+        if (description.titleAsText().contains("T2")) {
+            System.out.println();
+        }
+
         Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom)
                 .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
@@ -75,7 +79,7 @@ public class MetacriticScores implements ScoresProvider {
         return mergeUsing(
                 averageGrade,
                 numberOfReviews,
-                (rating, count) -> new Score(rating, count.intValue()));
+                (rating, count) -> new Score(rating, count.intValue(), "Metacritic"));
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {
@@ -92,7 +96,7 @@ public class MetacriticScores implements ScoresProvider {
     private Optional<Score> nytScoreFrom(Element htmlWithScores) {
         return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
                 .map(grade -> (Double.valueOf(grade) / 100.0))
-                .map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT));
+                .map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT, "New York Times"));
     }
 
     private Optional<Element> downloadPage(String url) {

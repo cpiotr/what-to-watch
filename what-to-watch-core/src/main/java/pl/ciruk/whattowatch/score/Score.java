@@ -7,11 +7,15 @@ import lombok.ToString;
 @ToString
 public class Score {
 
-    private double grade;
-    private long quantity;
+    private final String source;
 
-    public Score(double grade, long quantity) {
+    private final double grade;
+
+    private final long quantity;
+
+    public Score(double grade, long quantity, String source) {
         this.grade = grade;
         this.quantity = Math.toIntExact(quantity);
+        this.source = source;
     }
 }

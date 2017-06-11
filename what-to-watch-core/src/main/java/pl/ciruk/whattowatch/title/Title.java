@@ -39,11 +39,15 @@ public class Title {
     }
 
     private boolean matchesAlphanumerically(String first, String second) {
-        return unify(first).equals(unify(second));
+        if (first == null || second == null) {
+            return false;
+        } else {
+            return unify(first).equals(unify(second));
+        }
     }
 
     private String unify(String text) {
-        return Strings.nullToEmpty(text)
+        return text
                 .replaceAll("\\W", "")
                 .toLowerCase();
     }

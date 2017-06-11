@@ -14,29 +14,37 @@
 <div class="container">
     <div role="main">
         <div ng-controller="FilmListController">
-            <div class="row" >
+            <div class="row">
                 <div class="col-sm-6 col-md-4" ng-repeat-start="film in films">
-                        <div class="thumbnail">
-                            <a href="{{film.link}}}">
-                                <img src="{{film.poster}}" alt="{{film.title}}"/>
-                            </a>
-                            <div class="caption">
-                                <h3>
-                                    <a href="{{film.link}}">{{film.title}} ({{film.year}})</a>
-                                </h3>
-                                <p>{{film.plot}}</p>
-                                <p>
-                                <div class="btn btn-primary" role="button">
-                                    <span class="glyphicon glyphicon-star" aria-hidden="true"/>
-                                    <span class="badge">{{film.score * 100 | number: 1}}%   </span>
-                                </div>
-                                </p>
-
-                                <p class="genres">
-                                    <span class="label label-info" style="margin-right: 2px;" ng-repeat="genre in film.genres">{{genre}}</span>
-                                </p>
+                    <div class="thumbnail">
+                        <a href="{{film.link}}}">
+                            <img src="{{film.poster}}" alt="{{film.title}}"/>
+                        </a>
+                        <div class="caption">
+                            <h3>
+                                <a href="{{film.link}}">{{film.title}} ({{film.year}})</a>
+                            </h3>
+                            <p>{{film.plot}}</p>
+                            <p>
+                            <div class="btn btn-primary" role="button">
+                                <span class="glyphicon glyphicon-star" aria-hidden="true"/>
+                                <span class="badge">{{film.score * 100 | number: 1}}%   </span>
                             </div>
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="score in film.scores">
+                                    <span class="badge glyphicon glyphicon-user">{{score.quantity}}</span>
+                                    <span class="badge glyphicon glyphicon-star">{{score.grade * 100 | number: 1}}%</span>
+                                    {{score.source}}
+                                </li>
+                            </ul>
+                            </p>
+
+                            <p class="genres">
+                                <span class="label label-info" style="margin-right: 2px;"
+                                      ng-repeat="genre in film.genres">{{genre}}</span>
+                            </p>
                         </div>
+                    </div>
                 </div>
                 <div class="clearfix" ng-if="$index%3==2"></div>
                 <div ng-repeat-end=""></div>
@@ -44,5 +52,6 @@
         </div>
     </div>
 </div>
+
 </body>
 </html>

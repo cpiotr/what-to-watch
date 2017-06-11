@@ -8,9 +8,18 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
-    LINK_FROM_SEARCH_RESULT(result -> result.select(".hitDescWrapper .hitTitle")
+    LINK_FROM_SEARCH_RESULT(result -> result.select(".hitDescWrapper a.hitTitle")
             .stream()
             .map(link -> link.attr("href"))
+            .findFirst()),
+    TITLE_FROM_SEARCH_RESULT(result -> result.select(".hitDescWrapper a.hitTitle")
+            .stream()
+            .map(Element::text)
+            .findFirst()),
+    YEAR_FROM_SEARCH_RESULT(result -> result.select(".hitDescWrapper span.hitTitle")
+            .stream()
+            .map(Element::text)
+            .map(year -> year.replaceAll("\\W", ""))
             .findFirst()),
     SCORE_FROM_SEARCH_RESULT(result -> result.select(".rateInfo .box")
             .stream()

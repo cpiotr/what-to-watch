@@ -67,7 +67,7 @@ public class ImdbScores implements ScoresProvider {
                     json.path("imdbVotes").asText().replaceAll("[^0-9]", ""));
 
             return Optional.of(
-                    new Score(rating, quantity));
+                    new Score(rating, quantity, "IMDb"));
         } catch (NumberFormatException e) {
             log.error("retrieveImdbScore - Cannot get score from: {}", json, e);
             return Optional.empty();

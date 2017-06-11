@@ -121,7 +121,7 @@ public class ImdbWebScores implements ScoresProvider {
                 .map(NumberToken::asSimpleLong)
                 .orElse(-1L);
 
-        return Optional.of(new Score(asPercentage(grade), quantity))
+        return Optional.of(new Score(asPercentage(grade), quantity, "IMDb"))
                 .filter(score -> score.getGrade() > 0.0)
                 .filter(score -> score.getQuantity() > 0);
     }
