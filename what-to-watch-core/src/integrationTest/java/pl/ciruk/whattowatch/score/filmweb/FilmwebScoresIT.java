@@ -44,10 +44,32 @@ public class FilmwebScoresIT {
         assertThat(score, isMeaningful());
     }
 
+    @Test
+    public void shouldRetrieveMeaningfulScoreOfRecentFilm() throws Exception {
+        Title title = titleOfRecentAndRespectfulFilm();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .findAny()
+                .orElseThrow(AssertionError::new);
+
+        assertThat(score, isMeaningful());
+    }
+
+    private Title titleOfRecentAndRespectfulFilm() {
+        return Title.builder()
+                .originalTitle("La La Land")
+                .year(2016)
+                .build();
+    }
+
     private Title titleOfOldAndRespectfulFilm() {
         return Title.builder()
-                .title("Rambo")
-                .originalTitle("Rambo")
+                .title("Rambo: Pierwsza krew")
+                .originalTitle("First Blood")
                 .year(1982)
                 .build();
     }
