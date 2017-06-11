@@ -4,6 +4,7 @@ import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
@@ -40,7 +41,19 @@ public class HtmlConnection implements HttpConnection<String> {
 
         try {
             Response response = execute(to(url));
-            return Optional.ofNullable(response.body().string());
+            return Optional.ofNullable(response)
+                    .filter(Response::isSuccessful)
+                    .map(Response::body)
+                    .flatMap(responseBody -> extractBodyAsString(responseBody, url));
+        } catch (IOException e) {
+            log.warn("connectToAndGet - Could no get {}", url, e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> extractBodyAsString(ResponseBody responseBody, String url) {
+        try {
+            return Optional.of(responseBody.string());
         } catch (IOException e) {
             log.warn("connectToAndGet - Could no get {}", url, e);
             return Optional.empty();
@@ -64,8 +77,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private Response execute(Request.Builder requestBuilder) throws IOException {
         Request build = requestBuilder.build();
-        Response response = httpClient.newCall(build).execute();
-        return response;
+        return httpClient.newCall(build).execute();
     }
 
     private Request.Builder to(String url) {
