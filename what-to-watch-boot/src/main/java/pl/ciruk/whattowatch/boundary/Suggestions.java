@@ -46,7 +46,7 @@ public class Suggestions {
         asyncResponse.setTimeout(60, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar ->
                 ar.resume(
-                        Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()
+                        Response.status(SERVICE_UNAVAILABLE).entity("{\"error\":\"Request timed out\"}").build()
                 )
         );
 
