@@ -42,7 +42,7 @@ public class EkinoTitlesIT {
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
         OkHttpClient httpClient = new OkHttpClient();
         new AllCookies().applyTo(httpClient);
-        HtmlConnection connection = new HtmlConnection(httpClient);
+        HtmlConnection connection = new HtmlConnection(() -> httpClient);
         connection.init();
         return new JsoupConnection(connection);
     }

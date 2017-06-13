@@ -22,7 +22,7 @@ public class ImdbWebScoresIT {
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+        connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
 
         scores = new ImdbWebScores(connection, Executors.newSingleThreadExecutor());
     }

@@ -23,7 +23,7 @@ public class FilmwebScoresIT {
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+        connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
 
         connection.init();
         scores = new FilmwebScores(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());

@@ -23,7 +23,7 @@ public class ImdbScoresIT {
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsonConnection(new HtmlConnection(new OkHttpClient()));
+        connection = new JsonConnection(new HtmlConnection(OkHttpClient::new));
 
         scores = new ImdbScores(connection, Executors.newSingleThreadExecutor());
     }

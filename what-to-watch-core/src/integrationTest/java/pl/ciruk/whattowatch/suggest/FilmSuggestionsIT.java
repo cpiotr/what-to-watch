@@ -44,7 +44,7 @@ public class FilmSuggestionsIT {
 
     @Before
     public void setUp() throws Exception {
-        HtmlConnection htmlConnection = new HtmlConnection(new OkHttpClient());
+        HtmlConnection htmlConnection = new HtmlConnection(OkHttpClient::new);
         pool = Executors.newWorkStealingPool(NUMBER_OF_TITLES / 4);
         suggestions = new FilmSuggestions(
                 provideTitlesFromResource(),

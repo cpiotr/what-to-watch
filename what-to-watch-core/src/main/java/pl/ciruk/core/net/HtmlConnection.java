@@ -13,26 +13,19 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Slf4j
 public class HtmlConnection implements HttpConnection<String> {
-    private final OkHttpClient httpClient;
+    private final Supplier<OkHttpClient> httpClientSupplier;
 
-    public HtmlConnection(OkHttpClient httpClient) {
-        this.httpClient = httpClient;
+    public HtmlConnection(Supplier<OkHttpClient> httpClientSupplier) {
+        this.httpClientSupplier = httpClientSupplier;
     }
 
     @PostConstruct
     public void init() {
-        log.debug("init: HttpClient: {}", httpClient);
-        httpClient.interceptors().add(this::log);
-        setTimeouts();
-
-    }
-
-    private void setTimeouts() {
-        httpClient.setConnectTimeout(10, TimeUnit.SECONDS);
-        httpClient.setReadTimeout(10, TimeUnit.SECONDS);
+        log.debug("init: HttpClient: {}", httpClientSupplier);
     }
 
     @Override
@@ -41,7 +34,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
         try {
             Response response = execute(to(url));
-            return Optional.ofNullable(response)
+                return Optional.ofNullable(response)
                     .filter(Response::isSuccessful)
                     .map(Response::body)
                     .flatMap(responseBody -> extractBodyAsString(responseBody, url));
@@ -77,7 +70,9 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private Response execute(Request.Builder requestBuilder) throws IOException {
         Request build = requestBuilder.build();
-        return httpClient.newCall(build).execute();
+        OkHttpClient okHttpClient = httpClientSupplier.get();
+        setTimeouts(okHttpClient);
+        return okHttpClient.newCall(build).execute();
     }
 
     private Request.Builder to(String url) {
@@ -105,5 +100,10 @@ public class HtmlConnection implements HttpConnection<String> {
                 : "";
 
         return String.format("%s://%s%s/", uri.getScheme(), uri.getHost(), port);
+    }
+
+    private void setTimeouts(OkHttpClient httpClient) {
+        httpClient.setConnectTimeout(10, TimeUnit.SECONDS);
+        httpClient.setReadTimeout(10, TimeUnit.SECONDS);
     }
 }

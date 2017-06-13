@@ -24,7 +24,7 @@ public class MetacriticScoresIT {
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+        connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
 
         connection.init();
         scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());

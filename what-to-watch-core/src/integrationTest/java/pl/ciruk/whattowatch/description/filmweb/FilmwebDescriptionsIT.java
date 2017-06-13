@@ -21,7 +21,7 @@ public class FilmwebDescriptionsIT {
 
     @Before
     public void setUp() throws Exception {
-        JsoupConnection connection = new JsoupConnection(new HtmlConnection(new OkHttpClient()));
+        JsoupConnection connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
         descriptions = new FilmwebDescriptions(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
     }
 

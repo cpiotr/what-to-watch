@@ -33,11 +33,12 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @Slf4j
 public class WhatToWatchApplication {
 
-    public static final int POOL_SIZE = 16;
+    public static final int POOL_SIZE = 32;
 
     public static void main(String[] args) {
         Properties properties = loadDevProperties();
@@ -46,8 +47,9 @@ public class WhatToWatchApplication {
 
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createJedisCache(jedisPool);
-        JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
-        JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(new OkHttpClient())));
+        JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new)));
+
+        JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new)));
 
         connection.init();
 
@@ -95,9 +97,12 @@ public class WhatToWatchApplication {
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
-        OkHttpClient httpClient = new OkHttpClient();
-        new AllCookies().applyTo(httpClient);
-        return new JsoupConnection(new HtmlConnection(httpClient));
+        Supplier<OkHttpClient> httpClientSupplier = () -> {
+            OkHttpClient okHttpClient = new OkHttpClient();
+            new AllCookies().applyTo(okHttpClient);
+            return okHttpClient;
+        };
+        return new JsoupConnection(new HtmlConnection(httpClientSupplier));
     }
 
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
@@ -112,8 +117,7 @@ public class WhatToWatchApplication {
             @Override
             public Optional<String> get(String key) {
                 try (Jedis jedis = pool.getResource()) {
-                    return Optional.ofNullable(
-                            jedis.get(key));
+                    return Optional.ofNullable(jedis.get(key));
                 }
             }
         };
@@ -126,9 +130,6 @@ public class WhatToWatchApplication {
     private static JedisPool createJedisPool(Properties properties) {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(POOL_SIZE);
-        String maxActive = (String) properties.getOrDefault("redis.pool.maxActive", "8");
-        poolConfig.setMaxIdle(
-                Integer.parseInt(maxActive));
         return new JedisPool(poolConfig, properties.getProperty("redis.host"));
     }
 

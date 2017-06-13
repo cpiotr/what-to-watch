@@ -23,6 +23,7 @@ import redis.clients.jedis.JedisShardInfo;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
+import java.util.function.Supplier;
 
 @Configuration
 @Slf4j
@@ -35,26 +36,31 @@ public class Connections {
     private Integer redisPoolMaxActive;
 
     @Bean
-    OkHttpClient httpClient() {
-        return new OkHttpClient();
+    Supplier<OkHttpClient> httpClientSupplier() {
+        return OkHttpClient::new;
     }
 
     @Bean
     @Named("allCookies")
-    HttpConnection<String> allCookiesConnection(OkHttpClient client) {
-        new AllCookies().applyTo(client);
-        return new HtmlConnection(client);
+    HttpConnection<String> allCookiesConnection(Supplier<OkHttpClient> httpClientSupplier) {
+        return new HtmlConnection(() -> {
+            OkHttpClient okHttpClient = httpClientSupplier.get();
+            new AllCookies().applyTo(okHttpClient);
+            return okHttpClient;
+        });
     }
 
     @Bean
     @Named("noCookies")
-    HttpConnection<String> noCookiesConnection(OkHttpClient client) {
-        return new HtmlConnection(client);
+    HttpConnection<String> noCookiesConnection(Supplier<OkHttpClient> httpClientSupplier) {
+        return new HtmlConnection(httpClientSupplier);
     }
 
     @Bean
     @Named("cachedConnection")
-    HttpConnection<String> cachedConnection(CacheProvider<String> cacheProvider, @Named("noCookies") HttpConnection<String> connection) {
+    HttpConnection<String> cachedConnection(
+            CacheProvider<String> cacheProvider,
+            @Named("noCookies") HttpConnection<String> connection) {
         return new CachedConnection(cacheProvider, connection);
     }
 
@@ -87,6 +93,8 @@ public class Connections {
         jedisConnectionFactory.setHostName(redisHost);
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(redisPoolMaxActive);
+        poolConfig.setMaxWaitMillis(1_000);
+        poolConfig.setMinEvictableIdleTimeMillis(100);
         jedisConnectionFactory.setPoolConfig(poolConfig);
         jedisConnectionFactory.setShardInfo(new JedisShardInfo(redisHost));
         return jedisConnectionFactory;
