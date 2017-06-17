@@ -2,12 +2,17 @@ package pl.ciruk.whattowatch;
 
 import lombok.Builder;
 import lombok.Data;
+import pl.ciruk.core.math.Doubles;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
+import pl.ciruk.whattowatch.score.ScoreType;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static pl.ciruk.core.math.WilsonScore.confidenceIntervalLowerBound;
+import static pl.ciruk.core.stream.Optionals.asStream;
 
 @Builder
 @Data
@@ -29,18 +34,33 @@ public class Film {
     }
 
     public Double normalizedScore() {
-        long totalQuantity = scores.stream()
-                .mapToLong(Score::getQuantity)
-                .sum();
-        int positiveQuantity = (int) (score() * totalQuantity);
-        return confidenceIntervalLowerBound(positiveQuantity, totalQuantity, 0.95);
+        Optional<Score> amateur = calculateWeightedAverage(scoresOfType(ScoreType.AMATEUR)).map(Score::amateur);
+        Optional<Score> critic = calculateWeightedAverage(scoresOfType(ScoreType.CRITIC)).map(Score::critic);
+        Stream<Score> weightedScores = Stream.concat(
+                asStream(amateur),
+                asStream(critic)
+        );
+
+        return calculateWeightedAverage(weightedScores.collect(Collectors.toList()))
+                .orElse(0.0);
     }
 
-    public double score() {
+    private List<Score> scoresOfType(ScoreType type) {
         return scores.stream()
-                .mapToDouble(Score::getGrade)
-                .average()
-                .orElse(0.0);
+                .filter(score -> score.getType().equals(type))
+                .collect(Collectors.toList());
+    }
+
+    private Optional<Double> calculateWeightedAverage(List<Score> listOfScores) {
+        long totalQuantity = listOfScores.stream()
+                .mapToLong(Score::getQuantity)
+                .sum();
+
+        double weightedScore = listOfScores.stream()
+                .mapToDouble(score -> score.getGrade() * score.getQuantity() / totalQuantity)
+                .sum();
+        return Optional.of(weightedScore)
+                .filter(Doubles.isGreaterThan(0.0));
     }
 
     public boolean isNotEmpty() {

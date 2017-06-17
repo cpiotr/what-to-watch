@@ -6,6 +6,7 @@ import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
+import pl.ciruk.whattowatch.score.ScoreType;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
@@ -87,7 +88,12 @@ public class FilmwebScores implements ScoresProvider {
         NumberTokenizer numberTokenizer = new NumberTokenizer(s);
         double rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
         int quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
-        return new Score(rating/10.0, quantity, "Filmweb");
+        return Score.builder()
+                .grade(rating/10.0)
+                .quantity(quantity)
+                .source("Filmweb")
+                .type(ScoreType.AMATEUR)
+                .build();
     }
 
     private Consumer<Optional<?>> logIfMissing(Title title) {

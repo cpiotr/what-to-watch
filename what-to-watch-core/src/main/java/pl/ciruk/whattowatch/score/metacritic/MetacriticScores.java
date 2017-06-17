@@ -7,6 +7,7 @@ import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
+import pl.ciruk.whattowatch.score.ScoreType;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 
@@ -23,7 +24,7 @@ import static pl.ciruk.whattowatch.title.Title.MISSING_YEAR;
 public class MetacriticScores implements ScoresProvider {
     private static final String METACRITIC_BASE_URL = "http://www.metacritic.com";
 
-    private static final int NYT_SCORE_WEIGHT = 1_000;
+    private static final int NYT_SCORE_WEIGHT = 10;
 
     private final HttpConnection<Element> connection;
 
@@ -79,7 +80,16 @@ public class MetacriticScores implements ScoresProvider {
         return mergeUsing(
                 averageGrade,
                 numberOfReviews,
-                (rating, count) -> new Score(rating, count.intValue(), "Metacritic"));
+                this::createScore);
+    }
+
+    private Score createScore(Double rating, Double count) {
+        return Score.builder()
+                .grade(rating)
+                .quantity(count.intValue())
+                .source("Metacritic")
+                .type(ScoreType.CRITIC)
+                .build();
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {
@@ -96,7 +106,12 @@ public class MetacriticScores implements ScoresProvider {
     private Optional<Score> nytScoreFrom(Element htmlWithScores) {
         return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
                 .map(grade -> (Double.valueOf(grade) / 100.0))
-                .map(percentage -> new Score(percentage, NYT_SCORE_WEIGHT, "New York Times"));
+                .map(percentage -> Score.builder()
+                        .grade(percentage)
+                        .quantity(NYT_SCORE_WEIGHT)
+                        .source("New York Times")
+                        .type(ScoreType.CRITIC)
+                        .build());
     }
 
     private Optional<Element> downloadPage(String url) {

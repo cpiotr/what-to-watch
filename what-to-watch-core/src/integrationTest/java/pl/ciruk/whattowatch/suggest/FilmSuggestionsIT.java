@@ -8,12 +8,11 @@ import org.junit.Test;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
-import pl.ciruk.core.net.json.JsonConnection;
 import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
-import pl.ciruk.whattowatch.score.imdb.ImdbScores;
+import pl.ciruk.whattowatch.score.imdb.ImdbWebScores;
 import pl.ciruk.whattowatch.score.metacritic.MetacriticScores;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
@@ -78,11 +77,10 @@ public class FilmSuggestionsIT {
 
     private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
-        JsonConnection jsonConnection = new JsonConnection(connection);
         return Lists.newArrayList(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
                 new MetacriticScores(jsoupConnection, executorService),
-                new ImdbScores(jsonConnection, executorService)
+                new ImdbWebScores(jsoupConnection, executorService)
         );
     }
 

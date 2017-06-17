@@ -1,21 +1,35 @@
 package pl.ciruk.whattowatch.score;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString
+@Builder
 public class Score {
-
-    private final String source;
 
     private final double grade;
 
     private final long quantity;
 
-    public Score(double grade, long quantity, String source) {
-        this.grade = grade;
-        this.quantity = Math.toIntExact(quantity);
-        this.source = source;
+    private String source;
+
+    private ScoreType type;
+
+    public static Score amateur(double grade) {
+        return Score.builder()
+                .grade(grade)
+                .quantity(ScoreType.AMATEUR.getWeight())
+                .type(ScoreType.AMATEUR)
+                .build();
+    }
+
+    public static Score critic(double grade) {
+        return Score.builder()
+                .grade(grade)
+                .quantity(ScoreType.CRITIC.getWeight())
+                .type(ScoreType.CRITIC)
+                .build();
     }
 }

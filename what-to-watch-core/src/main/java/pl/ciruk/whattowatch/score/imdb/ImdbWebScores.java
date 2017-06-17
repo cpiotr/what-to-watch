@@ -9,6 +9,7 @@ import pl.ciruk.core.text.NumberToken;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
+import pl.ciruk.whattowatch.score.ScoreType;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 
@@ -121,7 +122,13 @@ public class ImdbWebScores implements ScoresProvider {
                 .map(NumberToken::asSimpleLong)
                 .orElse(-1L);
 
-        return Optional.of(new Score(asPercentage(grade), quantity, "IMDb"))
+        Score imdbScore = Score.builder()
+                .grade(asPercentage(grade))
+                .quantity(quantity)
+                .source("IMDb")
+                .type(ScoreType.AMATEUR)
+                .build();
+        return Optional.of(imdbScore)
                 .filter(score -> score.getGrade() > 0.0)
                 .filter(score -> score.getQuantity() > 0);
     }
