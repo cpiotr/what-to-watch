@@ -19,6 +19,7 @@ repositories {
 
 testSets {
     integrationTest
+    benchmark
 }
 
 dependencies {
@@ -34,6 +35,8 @@ dependencies {
     compile("com.netflix.hystrix:hystrix-core:$hystrixVersion")
     compile project(":what-to-watch-core")
     testCompile("org.springframework.boot:spring-boot-starter-test")
+    benchmarkCompile "org.openjdk.jmh:jmh-core:$jmhVersion"
+    benchmarkCompile "org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion"
 }
 
 task wrapper(type: Wrapper) {
