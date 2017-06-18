@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.boundary;
 
-import com.google.common.base.Stopwatch;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
@@ -31,10 +33,13 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 @Slf4j
 public class Suggestions {
     private final FilmSuggestionProvider suggestions;
+    private final Timer responses;
 
     @Inject
-    public Suggestions(FilmSuggestionProvider suggestions) {
+    public Suggestions(FilmSuggestionProvider suggestions, MetricRegistry metricRegistry) {
         this.suggestions = suggestions;
+
+        responses = metricRegistry.timer(name(Suggestions.class, "responses"));
     }
 
     @GET
@@ -50,19 +55,19 @@ public class Suggestions {
                 )
         );
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        Timer.Context time = responses.time();
         try {
             List<FilmResult> films = CompletableFutures.getAllOf(suggestions.suggestFilms())
+                    .distinct()
                     .filter(Film::isWorthWatching)
                     .map(this::toFilmResult)
                     .collect(toList());
-            stopwatch.stop();
 
             asyncResponse.resume(Response.ok(films).build());
         } catch (AsyncExecutionException e) {
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
         } finally {
-            log.info("get - Request processed in {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            time.stop();
         }
     }
 

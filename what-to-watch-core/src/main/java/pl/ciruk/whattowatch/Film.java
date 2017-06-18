@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import pl.ciruk.core.math.Doubles;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -16,6 +17,7 @@ import static pl.ciruk.core.stream.Optionals.asStream;
 
 @Builder
 @Data
+@EqualsAndHashCode(of = "description")
 public class Film {
     static final Film EMPTY = Film.builder().build();
 

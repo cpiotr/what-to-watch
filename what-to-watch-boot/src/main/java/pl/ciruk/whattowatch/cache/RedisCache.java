@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.cache;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import com.netflix.hystrix.HystrixCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,13 +19,21 @@ public class RedisCache implements CacheProvider<String> {
 
     private final StringRedisTemplate cache;
 
-    private final AtomicLong hitCounter = new AtomicLong();
+    private final AtomicLong missCounter = new AtomicLong();
 
     private final AtomicLong requestCounter = new AtomicLong();
 
     @Inject
-    public RedisCache(StringRedisTemplate cache) {
+    public RedisCache(StringRedisTemplate cache, MetricRegistry metricRegistry) {
         this.cache = cache;
+
+        metricRegistry.register(
+                MetricRegistry.name(RedisCache.class, "missCounter"),
+                (Gauge<Long>) missCounter::get);
+
+            metricRegistry.register(
+                    MetricRegistry.name(RedisCache.class, "requestCounter"),
+                    (Gauge<Long>) requestCounter::get);
     }
 
     @PostConstruct
@@ -36,8 +46,8 @@ public class RedisCache implements CacheProvider<String> {
         requestCounter.incrementAndGet();
 
         Optional<String> optional = createGetCommand(key).execute();
-        if (optional.isPresent()) {
-            hitCounter.incrementAndGet();
+        if (!optional.isPresent()) {
+            missCounter.incrementAndGet();
         }
         return optional;
     }

@@ -26,17 +26,19 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jersey")
     compile("org.springframework.boot:spring-boot-starter-data-redis")
-    compile("org.springframework.boot:spring-boot-starter-websocket")
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.projectlombok:lombok:$lombokVersion")
     compile("com.google.guava:guava:$guavaVersion")
     compile("redis.clients:jedis:$jedisVersion")
     compile("org.jsoup:jsoup:$jsoupVersion")
     compile("com.netflix.hystrix:hystrix-core:$hystrixVersion")
+    compile("io.dropwizard.metrics:metrics-core:$metricsVersion")
     compile project(":what-to-watch-core")
+
     testCompile("org.springframework.boot:spring-boot-starter-test")
-    benchmarkCompile "org.openjdk.jmh:jmh-core:$jmhVersion"
-    benchmarkCompile "org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion"
+
+    benchmarkCompile("org.openjdk.jmh:jmh-core:$jmhVersion")
+    benchmarkCompile("org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion")
 }
 
 task wrapper(type: Wrapper) {
@@ -45,4 +47,12 @@ task wrapper(type: Wrapper) {
 
 springBoot {
     mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
+}
+
+findbugs {
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest]
+}
+
+pmd {
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest]
 }

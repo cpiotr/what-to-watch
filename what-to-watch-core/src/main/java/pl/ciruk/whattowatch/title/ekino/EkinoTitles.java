@@ -45,7 +45,6 @@ public class EkinoTitles implements TitleProvider {
                 .flatMap(Optionals::asStream)
                 .flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
                 .map(this::parseToTitle)
-                .distinct()
                 .peek(__ -> numberOfTitles.incrementAndGet());
     }
 

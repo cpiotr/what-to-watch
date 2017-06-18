@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.description;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import pl.ciruk.whattowatch.title.Title;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Getter
 @Builder
+@EqualsAndHashCode(of = "title")
 public class Description {
     private static final Description EMPTY = Description.builder().build();
 
