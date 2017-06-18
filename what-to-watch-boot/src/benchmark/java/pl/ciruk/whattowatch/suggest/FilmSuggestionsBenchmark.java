@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.suggest;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.OkHttpClient;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -124,7 +125,10 @@ public class FilmSuggestionsBenchmark {
     }
 
     private FilmwebDescriptions sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
-        return new FilmwebDescriptions(new FilmwebProxy(new JsoupConnection(htmlConnection)), pool);
+        return new FilmwebDescriptions(
+                new FilmwebProxy(new JsoupConnection(htmlConnection)),
+                new MetricRegistry(),
+                pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection, ExecutorService executorService) {

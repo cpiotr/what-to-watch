@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.description.filmweb;
 
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import java.util.concurrent.Executors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static pl.ciruk.whattowatch.description.DescriptionMatchers.ofTitle;
 
 public class FilmwebDescriptionsIT {
@@ -22,7 +24,10 @@ public class FilmwebDescriptionsIT {
     @Before
     public void setUp() throws Exception {
         JsoupConnection connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
-        descriptions = new FilmwebDescriptions(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
+        descriptions = new FilmwebDescriptions(
+                new FilmwebProxy(connection),
+                mock(MetricRegistry.class),
+                Executors.newSingleThreadExecutor());
     }
 
     @Test

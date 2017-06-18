@@ -57,8 +57,8 @@ public class Beans {
     }
 
     @Bean
-    DescriptionProvider filmwebDescriptions(FilmwebProxy filmwebProxy, ExecutorService executorService) {
-        return new FilmwebDescriptions(filmwebProxy, executorService);
+    DescriptionProvider filmwebDescriptions(FilmwebProxy filmwebProxy, MetricRegistry metricRegistry, ExecutorService executorService) {
+        return new FilmwebDescriptions(filmwebProxy, metricRegistry, executorService);
     }
 
     @Bean

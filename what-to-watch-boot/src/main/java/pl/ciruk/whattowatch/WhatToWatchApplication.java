@@ -81,7 +81,10 @@ public class WhatToWatchApplication {
     }
 
     private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
-        return new FilmwebDescriptions(new FilmwebProxy(connection), executorService);
+        return new FilmwebDescriptions(
+                new FilmwebProxy(connection),
+                new MetricRegistry(),
+                executorService);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {

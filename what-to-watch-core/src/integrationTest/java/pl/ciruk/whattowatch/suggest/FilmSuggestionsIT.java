@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.suggest;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.After;
@@ -34,6 +35,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class FilmSuggestionsIT {
     private static final int NUMBER_OF_TITLES = 50;
@@ -72,7 +74,10 @@ public class FilmSuggestionsIT {
     }
 
     private FilmwebDescriptions sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
-        return new FilmwebDescriptions(new FilmwebProxy(new JsoupConnection(htmlConnection)), pool);
+        return new FilmwebDescriptions(
+                new FilmwebProxy(new JsoupConnection(htmlConnection)),
+                mock(MetricRegistry.class),
+                pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {
