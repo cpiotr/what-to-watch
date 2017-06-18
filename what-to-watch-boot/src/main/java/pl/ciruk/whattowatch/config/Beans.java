@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.config;
 
+import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,8 +45,10 @@ public class Beans {
     }
 
     @Bean
-    TitleProvider ekinoTitles(@Named("allCookiesHtml") HttpConnection<Element> httpConnection) {
-        return new EkinoTitles(httpConnection, titlesCrawledPagesLimit);
+    TitleProvider ekinoTitles(
+            @Named("allCookiesHtml") HttpConnection<Element> httpConnection,
+            MetricRegistry metricRegistry) {
+        return new EkinoTitles(httpConnection, titlesCrawledPagesLimit, metricRegistry);
     }
 
     @Bean

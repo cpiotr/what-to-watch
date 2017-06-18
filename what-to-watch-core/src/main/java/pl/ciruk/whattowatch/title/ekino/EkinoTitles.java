@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.title.ekino;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
@@ -11,6 +13,8 @@ import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 @Slf4j
 public class EkinoTitles implements TitleProvider {
@@ -25,9 +29,13 @@ public class EkinoTitles implements TitleProvider {
 
     private final AtomicLong numberOfTitles = new AtomicLong();
 
-    public EkinoTitles(HttpConnection<Element> connection, int crawledPagesLimit) {
+    public EkinoTitles(HttpConnection<Element> connection, int crawledPagesLimit, MetricRegistry metricRegistry) {
         this.connection = connection;
         this.crawledPagesLimit = crawledPagesLimit;
+
+        metricRegistry.register(
+                name(EkinoTitles.class, "numberOfTitles"),
+                (Gauge<Long>) numberOfTitles::get);
     }
 
     @PostConstruct

@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.title.ekino;
 
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.OkHttpClient;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -20,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class EkinoTitlesIT {
 
@@ -36,7 +38,7 @@ public class EkinoTitlesIT {
     }
 
     private void givenCredentialsArePresent() {
-        provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies(), 1);
+        provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies(), 1, mock(MetricRegistry.class));
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

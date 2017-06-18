@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.squareup.okhttp.OkHttpClient;
@@ -93,7 +94,7 @@ public class WhatToWatchApplication {
 
     private static TitleProvider sampleTitleProvider(Properties properties, ExecutorService executorService) {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new EkinoTitles(keepCookiesConnection, 10);
+        return new EkinoTitles(keepCookiesConnection, 10, new MetricRegistry());
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
