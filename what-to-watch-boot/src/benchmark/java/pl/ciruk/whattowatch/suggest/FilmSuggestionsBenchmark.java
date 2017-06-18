@@ -139,7 +139,7 @@ public class FilmSuggestionsBenchmark {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return Lists.newArrayList(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
-                new MetacriticScores(jsoupConnection, executorService),
+                new MetacriticScores(jsoupConnection, metricRegistry, executorService),
                 new ImdbWebScores(jsoupConnection, metricRegistry, executorService)
         );
     }

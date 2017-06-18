@@ -81,8 +81,11 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider metacriticScores(@Named("noCookiesHtml") HttpConnection<Element> httpConnection, ExecutorService executorService) {
-        return new MetacriticScores(httpConnection, executorService);
+    ScoresProvider metacriticScores(
+            @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
+            MetricRegistry metricRegistry,
+            ExecutorService executorService) {
+        return new MetacriticScores(httpConnection, metricRegistry, executorService);
     }
 
     @Bean

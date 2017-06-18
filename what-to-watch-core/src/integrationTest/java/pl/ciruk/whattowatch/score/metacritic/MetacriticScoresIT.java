@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,18 +17,18 @@ import java.util.stream.Stream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class MetacriticScoresIT {
-    private JsoupConnection connection;
     private MetacriticScores scores;
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
-
+        JsoupConnection connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
         connection.init();
-        scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
+
+        scores = new MetacriticScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
     }
 
     @Test

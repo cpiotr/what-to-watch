@@ -90,7 +90,7 @@ public class WhatToWatchApplication {
         return Lists.newArrayList(
                 new FilmwebScores(new FilmwebProxy(connection), metricRegistry, executorService),
                 new ImdbWebScores(connection, metricRegistry, executorService),
-                new MetacriticScores(connection, executorService)
+                new MetacriticScores(connection, metricRegistry, executorService)
         );
     }
 

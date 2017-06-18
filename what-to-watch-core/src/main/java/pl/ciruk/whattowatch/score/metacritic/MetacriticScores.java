@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.HttpUrl;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
@@ -14,8 +16,10 @@ import pl.ciruk.whattowatch.title.Title;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static pl.ciruk.core.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.title.Title.MISSING_YEAR;
@@ -30,9 +34,26 @@ public class MetacriticScores implements ScoresProvider {
 
     private final ExecutorService executorService;
 
-    public MetacriticScores(HttpConnection<Element> connection, ExecutorService executorService) {
+    private final AtomicLong missingMetacriticScores = new AtomicLong();
+
+    private final AtomicLong missingNewYorkTimesScores = new AtomicLong();
+
+    public MetacriticScores(
+            HttpConnection<Element> connection,
+            MetricRegistry metricRegistry,
+            ExecutorService executorService) {
         this.connection = connection;
         this.executorService = executorService;
+
+        metricRegistry.register(
+                name(MetacriticScores.class, "missingMetacriticScores"),
+                (Gauge<Long>) missingMetacriticScores::get
+        );
+
+        metricRegistry.register(
+                name(MetacriticScores.class, "missingNewYorkTimesScores"),
+                (Gauge<Long>) missingNewYorkTimesScores::get
+        );
     }
 
     @Override
@@ -47,10 +68,6 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> scoresOf(Description description) {
         log.debug("scoresOf - Description: {}", description);
 
-        if (description.titleAsText().contains("T2")) {
-            System.out.println();
-        }
-
         Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom)
                 .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
@@ -61,11 +78,13 @@ public class MetacriticScores implements ScoresProvider {
         Optional<Score> metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
         if (!metacriticScore.isPresent()) {
             log.warn("scoresOf - Missing Metacritic score for: {}", description.getTitle());
+            missingMetacriticScores.incrementAndGet();
         }
 
         Optional<Score> nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
         if (!nytScore.isPresent()) {
             log.warn("scoresOf - Missing NYT score for: {}", description.getTitle());
+            missingNewYorkTimesScores.incrementAndGet();
         }
 
         Stream<Score> averageScoreStream = Optionals.asStream(metacriticScore);
