@@ -50,7 +50,7 @@ public class FilmSuggestionsIT {
         suggestions = new FilmSuggestions(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(htmlConnection, pool),
-                sampleScoreProviders(htmlConnection, pool),
+                sampleScoreProviders(htmlConnection, mock(MetricRegistry.class), pool),
                 pool
         );
     }
@@ -80,10 +80,10 @@ public class FilmSuggestionsIT {
                 pool);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {
+    private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, MetricRegistry metricRegistry, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return Lists.newArrayList(
-                new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
+                new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
                 new MetacriticScores(jsoupConnection, executorService),
                 new ImdbWebScores(jsoupConnection, executorService)
         );

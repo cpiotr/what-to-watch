@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.stream.Optionals;
@@ -14,19 +16,29 @@ import pl.ciruk.whattowatch.title.Title;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static pl.ciruk.core.stream.Predicates.not;
 
 @Slf4j
 public class FilmwebScores implements ScoresProvider {
     private final FilmwebProxy filmwebProxy;
+
     private final ExecutorService executorService;
 
-    public FilmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
+    private final AtomicLong missingScores = new AtomicLong();
+
+    public FilmwebScores(FilmwebProxy filmwebProxy, MetricRegistry metricRegistry, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
         this.executorService = executorService;
+
+        metricRegistry.register(
+                name(FilmwebScores.class, "missingScores"),
+                (Gauge<Long>) missingScores::get
+        );
     }
 
     @Override
@@ -100,6 +112,7 @@ public class FilmwebScores implements ScoresProvider {
         return score -> {
             if (!score.isPresent()) {
                 log.warn("Missing score for: {}", title);
+                missingScores.incrementAndGet();
             }
         };
     }

@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,19 +15,22 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class FilmwebScoresIT {
 
-    private JsoupConnection connection;
     private FilmwebScores scores;
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
-
+        JsoupConnection connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
         connection.init();
-        scores = new FilmwebScores(new FilmwebProxy(connection), Executors.newSingleThreadExecutor());
+
+        scores = new FilmwebScores(
+                new FilmwebProxy(connection),
+                mock(MetricRegistry.class),
+                Executors.newSingleThreadExecutor());
     }
 
     @Test

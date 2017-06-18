@@ -56,8 +56,8 @@ import static java.util.stream.Collectors.toList;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 10, time = 5, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 10, time = 5, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 10, time = 5)
+@Measurement(iterations = 10, time = 5)
 @Fork(1)
 @State(Scope.Thread)
 public class FilmSuggestionsBenchmark {
@@ -73,12 +73,13 @@ public class FilmSuggestionsBenchmark {
     @Setup(Level.Trial)
     public void initialize() {
         HttpConnection<String> connection = new CachedConnection(createJedisCache(createJedisPool()), new HtmlConnection(OkHttpClient::new));
+        MetricRegistry metricRegistry = new MetricRegistry();
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
         suggestionsWorkStealing = new FilmSuggestions(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, workStealingPool),
-                sampleScoreProviders(connection, workStealingPool),
+                sampleScoreProviders(connection, metricRegistry, workStealingPool),
                 workStealingPool
         );
 
@@ -86,7 +87,7 @@ public class FilmSuggestionsBenchmark {
         suggestionsFixedPool= new FilmSuggestions(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, fixedPool),
-                sampleScoreProviders(connection, fixedPool),
+                sampleScoreProviders(connection, metricRegistry, fixedPool),
                 fixedPool
         );
     }
@@ -131,10 +132,13 @@ public class FilmSuggestionsBenchmark {
                 pool);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection, ExecutorService executorService) {
+    private static List<ScoresProvider> sampleScoreProviders(
+            HttpConnection<String> connection,
+            MetricRegistry metricRegistry,
+            ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return Lists.newArrayList(
-                new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
+                new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
                 new MetacriticScores(jsoupConnection, executorService),
                 new ImdbWebScores(jsoupConnection, executorService)
         );

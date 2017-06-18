@@ -14,7 +14,6 @@ import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
-import pl.ciruk.core.net.json.JsonConnection;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
@@ -39,7 +38,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class WhatToWatchApplication {
 
-    public static final int POOL_SIZE = 32;
+    private static final int POOL_SIZE = 32;
 
     public static void main(String[] args) {
         Properties properties = loadDevProperties();
@@ -49,15 +48,12 @@ public class WhatToWatchApplication {
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createJedisCache(jedisPool);
         JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new)));
-
-        JsonConnection jsonConnection = new JsonConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new)));
-
         connection.init();
 
         FilmSuggestions suggestions = new FilmSuggestions(
-                sampleTitleProvider(properties, threadPool),
+                sampleTitleProvider(),
                 sampleDescriptionProvider(threadPool, connection),
-                sampleScoreProviders(threadPool, connection, jsonConnection),
+                sampleScoreProviders(threadPool, connection, new MetricRegistry()),
                 threadPool);
 
         Stopwatch started = Stopwatch.createStarted();
@@ -87,15 +83,18 @@ public class WhatToWatchApplication {
                 executorService);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(ExecutorService executorService, JsoupConnection connection, JsonConnection jsonConnection) {
+    private static List<ScoresProvider> sampleScoreProviders(
+            ExecutorService executorService,
+            JsoupConnection connection,
+            MetricRegistry metricRegistry) {
         return Lists.newArrayList(
-                new FilmwebScores(new FilmwebProxy(connection), executorService),
+                new FilmwebScores(new FilmwebProxy(connection), metricRegistry, executorService),
                 new ImdbWebScores(connection, executorService),
                 new MetacriticScores(connection, executorService)
         );
     }
 
-    private static TitleProvider sampleTitleProvider(Properties properties, ExecutorService executorService) {
+    private static TitleProvider sampleTitleProvider() {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
         return new EkinoTitles(keepCookiesConnection, 10, new MetricRegistry());
     }
@@ -125,10 +124,6 @@ public class WhatToWatchApplication {
                 }
             }
         };
-    }
-
-    private static CacheProvider<String> createEmptyJedisCache() {
-        return CacheProvider.empty();
     }
 
     private static JedisPool createJedisPool(Properties properties) {

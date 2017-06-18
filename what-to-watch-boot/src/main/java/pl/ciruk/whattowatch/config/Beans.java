@@ -57,18 +57,26 @@ public class Beans {
     }
 
     @Bean
-    DescriptionProvider filmwebDescriptions(FilmwebProxy filmwebProxy, MetricRegistry metricRegistry, ExecutorService executorService) {
+    DescriptionProvider filmwebDescriptions(
+            FilmwebProxy filmwebProxy,
+            MetricRegistry metricRegistry,
+            ExecutorService executorService) {
         return new FilmwebDescriptions(filmwebProxy, metricRegistry, executorService);
     }
 
     @Bean
-    ScoresProvider imdbScores(@Named("noCookiesHtml") HttpConnection<Element> httpConnection, ExecutorService executorService) {
+    ScoresProvider imdbScores(
+            @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
+            ExecutorService executorService) {
         return new ImdbWebScores(httpConnection, executorService);
     }
 
     @Bean
-    ScoresProvider filmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
-        return new FilmwebScores(filmwebProxy, executorService);
+    ScoresProvider filmwebScores(
+            FilmwebProxy filmwebProxy,
+            MetricRegistry metricRegistry,
+            ExecutorService executorService) {
+        return new FilmwebScores(filmwebProxy, metricRegistry, executorService);
     }
 
     @Bean
