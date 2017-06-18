@@ -89,7 +89,7 @@ public class WhatToWatchApplication {
             MetricRegistry metricRegistry) {
         return Lists.newArrayList(
                 new FilmwebScores(new FilmwebProxy(connection), metricRegistry, executorService),
-                new ImdbWebScores(connection, executorService),
+                new ImdbWebScores(connection, metricRegistry, executorService),
                 new MetacriticScores(connection, executorService)
         );
     }

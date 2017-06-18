@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.score.imdb;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.HttpUrl;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
@@ -16,8 +18,10 @@ import pl.ciruk.whattowatch.title.Title;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static pl.ciruk.whattowatch.score.imdb.ImdbSelectors.NUMBER_OF_SCORES;
 import static pl.ciruk.whattowatch.score.imdb.ImdbSelectors.SCORE;
 import static pl.ciruk.whattowatch.score.imdb.ImdbSelectors.TITLE;
@@ -29,11 +33,22 @@ public class ImdbWebScores implements ScoresProvider {
     private static final int MAX_IMDB_SCORE = 10;
 
     private final HttpConnection<Element> httpConnection;
+
     private final ExecutorService executorService;
 
-    public ImdbWebScores(HttpConnection<Element> httpConnection, ExecutorService executorService) {
+    private final AtomicLong missingScores = new AtomicLong();
+
+    public ImdbWebScores(
+            HttpConnection<Element> httpConnection,
+            MetricRegistry metricRegistry,
+            ExecutorService executorService) {
         this.httpConnection = httpConnection;
         this.executorService = executorService;
+
+        metricRegistry.register(
+                name(ImdbWebScores.class, "missingScores"),
+                (Gauge<Long>) missingScores::get
+        );
     }
 
     @Override
@@ -65,6 +80,7 @@ public class ImdbWebScores implements ScoresProvider {
         if (!firstResult.isPresent()) {
             log.warn("scoresOf - Missing score for {}", description);
             log.trace("scoresOf - Search query: {}", url.toString());
+            missingScores.incrementAndGet();
         }
 
         return Optionals.asStream(firstResult)

@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.score.imdb;
 
+import com.codahale.metrics.MetricRegistry;
 import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class ImdbWebScoresIT {
@@ -24,7 +26,7 @@ public class ImdbWebScoresIT {
     public void setUp() throws Exception {
         connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
 
-        scores = new ImdbWebScores(connection, Executors.newSingleThreadExecutor());
+        scores = new ImdbWebScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
     }
 
     @Test

@@ -85,7 +85,7 @@ public class FilmSuggestionsIT {
         return Lists.newArrayList(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
                 new MetacriticScores(jsoupConnection, executorService),
-                new ImdbWebScores(jsoupConnection, executorService)
+                new ImdbWebScores(jsoupConnection, metricRegistry, executorService)
         );
     }
 

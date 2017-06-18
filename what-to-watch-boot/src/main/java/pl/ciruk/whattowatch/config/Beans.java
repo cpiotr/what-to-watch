@@ -67,8 +67,9 @@ public class Beans {
     @Bean
     ScoresProvider imdbScores(
             @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
+            MetricRegistry metricRegistry,
             ExecutorService executorService) {
-        return new ImdbWebScores(httpConnection, executorService);
+        return new ImdbWebScores(httpConnection, metricRegistry, executorService);
     }
 
     @Bean
