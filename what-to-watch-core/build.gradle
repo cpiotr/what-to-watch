@@ -26,11 +26,13 @@ dependencies {
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    compile("io.dropwizard.metrics:metrics-core:$metricsVersion")
+    compile "io.dropwizard.metrics:metrics-core:$metricsVersion"
 
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.hamcrest:java-hamcrest:$hamcrestVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "org.assertj:assertj-core:$assertjVersion"
+
     integrationTestCompile sourceSets.test.output
 }

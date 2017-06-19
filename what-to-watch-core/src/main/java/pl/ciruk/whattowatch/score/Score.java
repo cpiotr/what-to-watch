@@ -18,17 +18,25 @@ public class Score {
     private ScoreType type;
 
     public static Score amateur(double grade) {
+        return amateur(grade, ScoreType.AMATEUR.getWeight());
+    }
+
+    public static Score amateur(double grade, long quantity) {
         return Score.builder()
                 .grade(grade)
-                .quantity(ScoreType.AMATEUR.getWeight())
+                .quantity(quantity)
                 .type(ScoreType.AMATEUR)
                 .build();
     }
 
     public static Score critic(double grade) {
+        return critic(grade, ScoreType.CRITIC.getWeight());
+    }
+
+    public static Score critic(double grade, long quantity) {
         return Score.builder()
                 .grade(grade)
-                .quantity(ScoreType.CRITIC.getWeight())
+                .quantity(quantity)
                 .type(ScoreType.CRITIC)
                 .build();
     }

@@ -36,8 +36,12 @@ public class Film {
     }
 
     public Double normalizedScore() {
-        Optional<Score> amateur = calculateWeightedAverage(scoresOfType(ScoreType.AMATEUR)).map(Score::amateur);
-        Optional<Score> critic = calculateWeightedAverage(scoresOfType(ScoreType.CRITIC)).map(Score::critic);
+        Optional<Score> amateur = calculateWeightedAverage(scoresOfType(ScoreType.AMATEUR))
+                .map(score -> Doubles.normalizeScore(score, countQuantity(ScoreType.AMATEUR)))
+                .map(Score::amateur);
+        Optional<Score> critic = calculateWeightedAverage(scoresOfType(ScoreType.CRITIC))
+                .map(score -> Doubles.normalizeScore(score, countQuantity(ScoreType.CRITIC)))
+                .map(Score::critic);
         Stream<Score> weightedScores = Stream.concat(
                 asStream(amateur),
                 asStream(critic)
@@ -45,6 +49,13 @@ public class Film {
 
         return calculateWeightedAverage(weightedScores.collect(Collectors.toList()))
                 .orElse(0.0);
+    }
+
+    private long countQuantity(ScoreType type) {
+        return scores.stream()
+                .filter(score -> score.getType().equals(type))
+                .mapToLong(Score::getQuantity)
+                .sum();
     }
 
     private List<Score> scoresOfType(ScoreType type) {
@@ -59,9 +70,9 @@ public class Film {
                 .sum();
 
         double weightedScore = listOfScores.stream()
-                .mapToDouble(score -> score.getGrade() * score.getQuantity() / totalQuantity)
+                .mapToDouble(score -> score.getGrade() * score.getQuantity())
                 .sum();
-        return Optional.of(weightedScore)
+        return Optional.of(weightedScore / totalQuantity)
                 .filter(Doubles.isGreaterThan(0.0));
     }
 

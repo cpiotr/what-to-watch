@@ -10,6 +10,10 @@ public final class Doubles {
         return value -> Math.abs(value - threshold) > EPSILON;
     }
 
+    public static double normalizeScore(double percentage, long totalQuantity) {
+        return WilsonScore.confidenceIntervalLowerBound(percentage, totalQuantity, 0.5);
+    }
+
     private Doubles() {
         throw new AssertionError();
     }
