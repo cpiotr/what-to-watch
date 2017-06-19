@@ -18,7 +18,6 @@ repositories {
 }
 
 testSets {
-    integrationTest
     benchmark
 }
 
@@ -50,9 +49,9 @@ springBoot {
 }
 
 findbugs {
-    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest]
+    sourceSets = [sourceSets.main, sourceSets.test]
 }
 
 pmd {
-    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest]
+    sourceSets = [sourceSets.main, sourceSets.test]
 }
