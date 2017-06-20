@@ -8,9 +8,8 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 public class Threads {
     public static void setThreadNamePrefix(String threadPrefix, ExecutorService pool) {
-        Field workerNamePrefix = null;
         try {
-            workerNamePrefix = pool.getClass().getDeclaredField("workerNamePrefix");
+            Field workerNamePrefix = pool.getClass().getDeclaredField("workerNamePrefix");
             workerNamePrefix.setAccessible(true);
             workerNamePrefix.set(pool, threadPrefix);
         } catch (NoSuchFieldException | IllegalAccessException e) {

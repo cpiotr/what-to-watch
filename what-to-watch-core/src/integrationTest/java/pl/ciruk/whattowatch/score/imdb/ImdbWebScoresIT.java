@@ -19,12 +19,11 @@ import static org.mockito.Mockito.mock;
 import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class ImdbWebScoresIT {
-    private JsoupConnection connection;
     private ScoresProvider scores;
 
     @Before
     public void setUp() throws Exception {
-        connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
+        JsoupConnection connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
 
         scores = new ImdbWebScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
     }

@@ -26,7 +26,7 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
             .map(EkinoSelectors::trimToYear));
     private Function<Element, Optional<String>> extractor;
 
-    private EkinoSelectors(Function<Element, Optional<String>> extractor) {
+    EkinoSelectors(Function<Element, Optional<String>> extractor) {
         this.extractor = extractor;
     }
 

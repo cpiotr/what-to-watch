@@ -13,7 +13,7 @@ public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
 
     private Function<Element, Stream<Element>> extractor;
 
-    private MetacriticStreamSelectors(Function<Element, Stream<Element>> extractor) {
+    MetacriticStreamSelectors(Function<Element, Stream<Element>> extractor) {
         this.extractor = extractor;
     }
 

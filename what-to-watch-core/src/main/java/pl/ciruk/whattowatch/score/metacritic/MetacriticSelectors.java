@@ -56,7 +56,7 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
 
     private Function<Element, Optional<String>> extractor;
 
-    private MetacriticSelectors(Function<Element, Optional<String>> extractor) {
+    MetacriticSelectors(Function<Element, Optional<String>> extractor) {
         this.extractor = extractor;
     }
 

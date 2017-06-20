@@ -37,10 +37,9 @@ public class Descriptions {
                         .build()
         );
 
-        Response response = description.map(Response::ok)
+        return description.map(Response::ok)
                 .orElse(Response.status(Response.Status.NOT_FOUND))
                 .build();
-        return response;
     }
 
 }
