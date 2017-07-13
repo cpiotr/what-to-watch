@@ -47,7 +47,8 @@ public class WhatToWatchApplication {
 
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createJedisCache(jedisPool);
-        JsoupConnection connection = new JsoupConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new)));
+        JsoupConnection connection =
+                new JsoupConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new, new MetricRegistry())));
         connection.init();
 
         FilmSuggestions suggestions = new FilmSuggestions(
@@ -105,7 +106,7 @@ public class WhatToWatchApplication {
             new AllCookies().applyTo(okHttpClient);
             return okHttpClient;
         };
-        return new JsoupConnection(new HtmlConnection(httpClientSupplier));
+        return new JsoupConnection(new HtmlConnection(httpClientSupplier, new MetricRegistry()));
     }
 
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {

@@ -2,11 +2,11 @@ package pl.ciruk.whattowatch.suggest;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
-import com.squareup.okhttp.OkHttpClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.concurrent.CompletableFutures;
+import pl.ciruk.core.net.Connections;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.Film;
@@ -45,7 +45,7 @@ public class FilmSuggestionsIT {
 
     @Before
     public void setUp() throws Exception {
-        HtmlConnection htmlConnection = new HtmlConnection(OkHttpClient::new);
+        HtmlConnection htmlConnection = Connections.html();
         pool = Executors.newWorkStealingPool(32);
         suggestions = new FilmSuggestions(
                 provideTitlesFromResource(),

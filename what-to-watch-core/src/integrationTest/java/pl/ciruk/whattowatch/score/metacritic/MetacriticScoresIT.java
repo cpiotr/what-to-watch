@@ -1,10 +1,9 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
 import com.codahale.metrics.MetricRegistry;
-import com.squareup.okhttp.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
-import pl.ciruk.core.net.HtmlConnection;
+import pl.ciruk.core.net.Connections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -25,7 +24,7 @@ public class MetacriticScoresIT {
 
     @Before
     public void setUp() throws Exception {
-        JsoupConnection connection = new JsoupConnection(new HtmlConnection(OkHttpClient::new));
+        JsoupConnection connection = Connections.jsoup();
         connection.init();
 
         scores = new MetacriticScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());

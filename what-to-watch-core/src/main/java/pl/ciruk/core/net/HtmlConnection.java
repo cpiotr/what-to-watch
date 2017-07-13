@@ -1,5 +1,7 @@
 package pl.ciruk.core.net;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -15,12 +17,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 @Slf4j
 public class HtmlConnection implements HttpConnection<String> {
     private final Supplier<OkHttpClient> httpClientSupplier;
 
-    public HtmlConnection(Supplier<OkHttpClient> httpClientSupplier) {
+    private final Timer requests;
+
+    public HtmlConnection(Supplier<OkHttpClient> httpClientSupplier, MetricRegistry metricRegistry) {
         this.httpClientSupplier = httpClientSupplier;
+
+        this.requests = metricRegistry.timer(name(HtmlConnection.class, "requests"));
     }
 
     @PostConstruct
@@ -72,7 +80,13 @@ public class HtmlConnection implements HttpConnection<String> {
         Request build = requestBuilder.build();
         OkHttpClient okHttpClient = httpClientSupplier.get();
         setTimeouts(okHttpClient);
-        return okHttpClient.newCall(build).execute();
+
+        Timer.Context time = requests.time();
+        try {
+            return okHttpClient.newCall(build).execute();
+        } finally {
+            time.stop();
+        }
     }
 
     private Request.Builder to(String url) {

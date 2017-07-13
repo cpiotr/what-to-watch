@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.config;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
@@ -42,18 +43,20 @@ public class Connections {
 
     @Bean
     @Named("allCookies")
-    HttpConnection<String> allCookiesConnection(Supplier<OkHttpClient> httpClientSupplier) {
-        return new HtmlConnection(() -> {
-            OkHttpClient okHttpClient = httpClientSupplier.get();
-            new AllCookies().applyTo(okHttpClient);
-            return okHttpClient;
-        });
+    HttpConnection<String> allCookiesConnection(Supplier<OkHttpClient> httpClientSupplier, MetricRegistry metricRegistry) {
+        return new HtmlConnection(
+                () -> {
+                    OkHttpClient okHttpClient = httpClientSupplier.get();
+                    new AllCookies().applyTo(okHttpClient);
+                    return okHttpClient;
+                },
+                metricRegistry);
     }
 
     @Bean
     @Named("noCookies")
-    HttpConnection<String> noCookiesConnection(Supplier<OkHttpClient> httpClientSupplier) {
-        return new HtmlConnection(httpClientSupplier);
+    HttpConnection<String> noCookiesConnection(Supplier<OkHttpClient> httpClientSupplier, MetricRegistry metricRegistry) {
+        return new HtmlConnection(httpClientSupplier, metricRegistry);
     }
 
     @Bean

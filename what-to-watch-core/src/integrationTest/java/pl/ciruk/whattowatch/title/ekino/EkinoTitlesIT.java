@@ -1,16 +1,11 @@
 package pl.ciruk.whattowatch.title.ekino;
 
 import com.codahale.metrics.MetricRegistry;
-import com.squareup.okhttp.OkHttpClient;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.jsoup.nodes.Element;
 import org.junit.Test;
-import pl.ciruk.core.net.AllCookies;
-import pl.ciruk.core.net.HtmlConnection;
-import pl.ciruk.core.net.HttpConnection;
-import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.core.net.Connections;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
@@ -38,15 +33,7 @@ public class EkinoTitlesIT {
     }
 
     private void givenCredentialsArePresent() {
-        provider = new EkinoTitles(createDirectConnectionWhichKeepsCookies(), 1, mock(MetricRegistry.class));
-    }
-
-    private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
-        OkHttpClient httpClient = new OkHttpClient();
-        new AllCookies().applyTo(httpClient);
-        HtmlConnection connection = new HtmlConnection(() -> httpClient);
-        connection.init();
-        return new JsoupConnection(connection);
+        provider = new EkinoTitles(Connections.jsoup(), 1, mock(MetricRegistry.class));
     }
 
     private <T> Matcher<Collection<T>> empty() {

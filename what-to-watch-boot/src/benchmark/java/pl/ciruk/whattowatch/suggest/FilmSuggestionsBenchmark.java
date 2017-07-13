@@ -72,7 +72,9 @@ public class FilmSuggestionsBenchmark {
 
     @Setup(Level.Trial)
     public void initialize() {
-        HttpConnection<String> connection = new CachedConnection(createJedisCache(createJedisPool()), new HtmlConnection(OkHttpClient::new));
+        HttpConnection<String> connection = new CachedConnection(
+                createJedisCache(createJedisPool()),
+                new HtmlConnection(OkHttpClient::new, new MetricRegistry()));
         MetricRegistry metricRegistry = new MetricRegistry();
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
