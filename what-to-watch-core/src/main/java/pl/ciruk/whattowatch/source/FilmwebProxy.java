@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.source;
 
-import com.squareup.okhttp.HttpUrl;
+import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 

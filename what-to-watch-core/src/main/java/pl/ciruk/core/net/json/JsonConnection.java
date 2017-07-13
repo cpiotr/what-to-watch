@@ -2,8 +2,8 @@ package pl.ciruk.core.net.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.Request;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Request;
 import pl.ciruk.core.net.HttpConnection;
 
 import java.io.IOException;

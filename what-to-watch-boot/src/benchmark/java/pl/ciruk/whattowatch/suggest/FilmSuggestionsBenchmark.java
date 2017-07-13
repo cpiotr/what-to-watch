@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.suggest;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
-import com.squareup.okhttp.OkHttpClient;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -22,11 +21,10 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
-import pl.ciruk.core.net.CachedConnection;
-import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.Film;
+import pl.ciruk.whattowatch.WhatToWatchApplication;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.score.filmweb.FilmwebScores;
@@ -72,9 +70,7 @@ public class FilmSuggestionsBenchmark {
 
     @Setup(Level.Trial)
     public void initialize() {
-        HttpConnection<String> connection = new CachedConnection(
-                createJedisCache(createJedisPool()),
-                new HtmlConnection(OkHttpClient::new, new MetricRegistry()));
+        HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection();
         MetricRegistry metricRegistry = new MetricRegistry();
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);

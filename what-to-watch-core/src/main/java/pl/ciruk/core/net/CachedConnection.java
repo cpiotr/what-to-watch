@@ -1,7 +1,7 @@
 package pl.ciruk.core.net;
 
-import com.squareup.okhttp.Request;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Request;
 import pl.ciruk.core.cache.CacheProvider;
 
 import java.util.Optional;

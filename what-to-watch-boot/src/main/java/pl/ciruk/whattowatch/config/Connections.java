@@ -2,8 +2,9 @@ package pl.ciruk.whattowatch.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +14,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
-import pl.ciruk.core.net.AllCookies;
 import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
@@ -24,7 +24,7 @@ import redis.clients.jedis.JedisShardInfo;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
-import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @Slf4j
@@ -36,27 +36,30 @@ public class Connections {
     @Value("${redis.pool.maxActive:8}")
     private Integer redisPoolMaxActive;
 
+    @Value("${http.pool.maxIdle:32}")
+    private Integer httpPoolMaxIdle;
+
     @Bean
-    Supplier<OkHttpClient> httpClientSupplier() {
-        return OkHttpClient::new;
+    OkHttpClient httpClient() {
+        ConnectionPool connectionPool = new ConnectionPool(httpPoolMaxIdle, 20_000, TimeUnit.SECONDS);
+        return new OkHttpClient.Builder()
+                .connectionPool(connectionPool)
+                .retryOnConnectionFailure(true)
+                .readTimeout(5_000, TimeUnit.MILLISECONDS)
+                .connectTimeout(1_000, TimeUnit.MILLISECONDS)
+                .build();
     }
 
     @Bean
     @Named("allCookies")
-    HttpConnection<String> allCookiesConnection(Supplier<OkHttpClient> httpClientSupplier, MetricRegistry metricRegistry) {
-        return new HtmlConnection(
-                () -> {
-                    OkHttpClient okHttpClient = httpClientSupplier.get();
-                    new AllCookies().applyTo(okHttpClient);
-                    return okHttpClient;
-                },
-                metricRegistry);
+    HttpConnection<String> allCookiesConnection(OkHttpClient httpClient, MetricRegistry metricRegistry) {
+        return new HtmlConnection(httpClient, metricRegistry);
     }
 
     @Bean
     @Named("noCookies")
-    HttpConnection<String> noCookiesConnection(Supplier<OkHttpClient> httpClientSupplier, MetricRegistry metricRegistry) {
-        return new HtmlConnection(httpClientSupplier, metricRegistry);
+    HttpConnection<String> noCookiesConnection(OkHttpClient okHttpClient, MetricRegistry metricRegistry) {
+        return new HtmlConnection(okHttpClient, metricRegistry);
     }
 
     @Bean
@@ -107,5 +110,6 @@ public class Connections {
     private void logConfiguration() {
         log.info("Redis host: <{}>", redisHost);
         log.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
+        log.info("HttpClient pool max idle: <{}>", httpPoolMaxIdle);
     }
 }

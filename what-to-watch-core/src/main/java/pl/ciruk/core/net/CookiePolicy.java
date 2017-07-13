@@ -1,6 +1,7 @@
 package pl.ciruk.core.net;
 
-import com.squareup.okhttp.OkHttpClient;
+
+import okhttp3.OkHttpClient;
 
 public interface CookiePolicy {
     void applyTo(OkHttpClient client);

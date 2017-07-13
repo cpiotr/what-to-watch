@@ -3,13 +3,13 @@ package pl.ciruk.whattowatch;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.core.concurrent.Threads;
-import pl.ciruk.core.net.AllCookies;
 import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
@@ -33,7 +33,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 @Slf4j
 public class WhatToWatchApplication {
@@ -47,8 +46,7 @@ public class WhatToWatchApplication {
 
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createJedisCache(jedisPool);
-        JsoupConnection connection =
-                new JsoupConnection(new CachedConnection(cache, new HtmlConnection(OkHttpClient::new, new MetricRegistry())));
+        JsoupConnection connection = createJsoupConnection(cache);
         connection.init();
 
         FilmSuggestions suggestions = new FilmSuggestions(
@@ -77,6 +75,21 @@ public class WhatToWatchApplication {
         }
     }
 
+    private static JsoupConnection createJsoupConnection(CacheProvider<String> cache) {
+        return new JsoupConnection(new CachedConnection(cache, createHttpConnection()));
+    }
+
+    public static HtmlConnection createHttpConnection() {
+        return new HtmlConnection(createHttpClient(), new MetricRegistry());
+    }
+
+    private static OkHttpClient createHttpClient() {
+        ConnectionPool connectionPool = new ConnectionPool(32, 12_000, TimeUnit.SECONDS);
+        return new OkHttpClient.Builder()
+                .connectionPool(connectionPool)
+                .build();
+    }
+
     private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
         return new FilmwebDescriptions(
                 new FilmwebProxy(connection),
@@ -97,16 +110,11 @@ public class WhatToWatchApplication {
 
     private static TitleProvider sampleTitleProvider() {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new EkinoTitles(keepCookiesConnection, 10, new MetricRegistry());
+        return new EkinoTitles(keepCookiesConnection, 20, new MetricRegistry());
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
-        Supplier<OkHttpClient> httpClientSupplier = () -> {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            new AllCookies().applyTo(okHttpClient);
-            return okHttpClient;
-        };
-        return new JsoupConnection(new HtmlConnection(httpClientSupplier, new MetricRegistry()));
+        return new JsoupConnection(createHttpConnection());
     }
 
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {

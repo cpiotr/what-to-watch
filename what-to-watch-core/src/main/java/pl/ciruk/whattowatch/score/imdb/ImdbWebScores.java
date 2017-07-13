@@ -2,8 +2,8 @@ package pl.ciruk.whattowatch.score.imdb;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import com.squareup.okhttp.HttpUrl;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.stream.Optionals;

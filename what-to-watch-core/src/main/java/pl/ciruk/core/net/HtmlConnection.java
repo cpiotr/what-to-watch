@@ -2,43 +2,41 @@ package pl.ciruk.core.net;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
 @Slf4j
 public class HtmlConnection implements HttpConnection<String> {
-    private final Supplier<OkHttpClient> httpClientSupplier;
+    private final OkHttpClient okHttpClient;
 
     private final Timer requests;
 
-    public HtmlConnection(Supplier<OkHttpClient> httpClientSupplier, MetricRegistry metricRegistry) {
-        this.httpClientSupplier = httpClientSupplier;
+    public HtmlConnection(OkHttpClient httpClientSupplier, MetricRegistry metricRegistry) {
+        this.okHttpClient = httpClientSupplier;
 
         this.requests = metricRegistry.timer(name(HtmlConnection.class, "requests"));
     }
 
     @PostConstruct
     public void init() {
-        log.debug("init: HttpClient: {}", httpClientSupplier);
+        log.debug("init: HttpClient: {}", okHttpClient);
     }
 
     @Override
     public Optional<String> connectToAndGet(String url) {
-        log.trace("connectToAndGet- Url: {}", url);
+        log.trace("connectToAndGet - Url: {}", url);
 
         try {
             Response response = execute(to(url));
@@ -78,8 +76,6 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private Response execute(Request.Builder requestBuilder) throws IOException {
         Request build = requestBuilder.build();
-        OkHttpClient okHttpClient = httpClientSupplier.get();
-        setTimeouts(okHttpClient);
 
         Timer.Context time = requests.time();
         try {
@@ -114,10 +110,5 @@ public class HtmlConnection implements HttpConnection<String> {
                 : "";
 
         return String.format("%s://%s%s/", uri.getScheme(), uri.getHost(), port);
-    }
-
-    private void setTimeouts(OkHttpClient httpClient) {
-        httpClient.setConnectTimeout(10, TimeUnit.SECONDS);
-        httpClient.setReadTimeout(10, TimeUnit.SECONDS);
     }
 }

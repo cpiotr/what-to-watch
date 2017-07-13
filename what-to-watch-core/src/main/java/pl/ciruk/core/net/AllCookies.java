@@ -1,10 +1,10 @@
 package pl.ciruk.core.net;
 
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.net.CookieManager;
@@ -21,9 +21,7 @@ public class AllCookies implements CookiePolicy {
     public void applyTo(OkHttpClient client) {
         CookieManager cookieManager = new CookieManager();
         cookieManager.setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL);
-        client.setCookieHandler(cookieManager);
         client.networkInterceptors().add(this::handleCookies);
-        client.setFollowRedirects(true);
     }
 
     public Response handleCookies(Interceptor.Chain chain) throws IOException {

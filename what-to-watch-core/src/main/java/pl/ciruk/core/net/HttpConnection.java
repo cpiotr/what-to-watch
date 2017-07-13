@@ -1,6 +1,7 @@
 package pl.ciruk.core.net;
 
-import com.squareup.okhttp.Request;
+
+import okhttp3.Request;
 
 import java.util.Optional;
 import java.util.function.Consumer;
