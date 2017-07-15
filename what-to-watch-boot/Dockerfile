@@ -11,7 +11,7 @@ ENV REDIS_HOST 172.17.0.2
 ENV LOGGING_LEVEL=INFO
 ENV W2W_LOGGING_LEVEL=INFO
 
-ENV JVM_OPTS="-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=75 -Xmx1G -Xms1G"
+ENV JVM_OPTS="-XX:+UnlockExperimentalVMOptions -Xmx1G -Xms1G"
 
 COPY ./build/libs/what-to-watch-boot-$W2W_VERSION.jar w2w.jar
 RUN sh -c 'touch /w2w.jar'
