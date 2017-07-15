@@ -1,5 +1,5 @@
 cache:
-  image: redis:3.0.3
+  image: redis:4.0.0-alpine
   hostname: redis
   ports:
     - "6379:6379"
@@ -8,7 +8,7 @@ w2w:
     hostname: w2w-app
     environment:
       - W2W_TITLES_CRAWLED_PAGES_LIMIT=20
-      - W2W_THREAD_POOL_SIZE=16
+      - W2W_THREAD_POOL_SIZE=32
       - REDIS_HOST=redis
       - W2W_LOGGING_LEVEL=INFO
     ports:
