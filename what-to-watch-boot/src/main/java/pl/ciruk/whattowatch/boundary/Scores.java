@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -47,7 +48,7 @@ public class Scores {
 
     @GET
     @ManagedAsync
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public void scoresFor(
             @Suspended final AsyncResponse asyncResponse,
             @QueryParam("title") String title,
