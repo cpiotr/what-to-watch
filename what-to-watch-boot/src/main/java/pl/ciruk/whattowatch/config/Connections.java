@@ -65,7 +65,7 @@ public class Connections {
     @Bean
     @Named("cachedConnection")
     HttpConnection<String> cachedConnection(
-            CacheProvider<String> cacheProvider,
+            @Named("redisCache") CacheProvider<String> cacheProvider,
             @Named("noCookies") HttpConnection<String> connection) {
         return new CachedConnection(cacheProvider, connection);
     }

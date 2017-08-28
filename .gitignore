@@ -1,6 +1,7 @@
 **/application-dev.properties
 classes/
 build/
+.idea/
 .idea/compiler.xml
 .idea/encodings.xml
 .idea/kotlinc.xml

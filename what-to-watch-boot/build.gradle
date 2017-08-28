@@ -30,7 +30,7 @@ dependencies {
     compile("com.google.guava:guava:$guavaVersion")
     compile("redis.clients:jedis:$jedisVersion")
     compile("org.jsoup:jsoup:$jsoupVersion")
-    compile("com.netflix.hystrix:hystrix-core:$hystrixVersion")
+    compile("net.jodah:failsafe:$failsafeVersion")
     compile("io.dropwizard.metrics:metrics-core:$metricsVersion")
     compile project(":what-to-watch-core")
 
