@@ -40,4 +40,8 @@ public class Score {
                 .type(ScoreType.CRITIC)
                 .build();
     }
+
+    public boolean isSignificant() {
+        return quantity >= type.getSignificantQuantityThreshold();
+    }
 }

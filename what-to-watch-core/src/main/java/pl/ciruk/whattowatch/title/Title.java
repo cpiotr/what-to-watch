@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Getter
@@ -33,7 +32,7 @@ public class Title {
                 || matchesAlphanumerically(otherTitle.getTitle(), title)
                 || matchesAlphanumerically(otherTitle.getOriginalTitle(), originalTitle)
                 || matchesAlphanumerically(otherTitle.getTitle(), originalTitle);
-        boolean hasMatchingYear = Objects.equals(otherTitle.year, year);
+        boolean hasMatchingYear = Math.abs(otherTitle.year - year) <= 1;
 
         return hasMatchingTitle && hasMatchingYear;
     }

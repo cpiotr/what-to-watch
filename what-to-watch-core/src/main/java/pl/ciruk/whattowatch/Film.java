@@ -32,7 +32,8 @@ public class Film {
     public boolean isWorthWatching() {
         return isNotEmpty()
                 && normalizedScore() > 0.65
-                && scores.size() > 2;
+                && !scoresOfType(ScoreType.AMATEUR).isEmpty()
+                && !scoresOfType(ScoreType.CRITIC).isEmpty();
     }
 
     public Double normalizedScore() {
@@ -52,19 +53,24 @@ public class Film {
     }
 
     private long countQuantity(ScoreType type) {
-        return scores.stream()
+        return significantScores()
                 .filter(score -> score.getType().equals(type))
                 .mapToLong(Score::getQuantity)
                 .sum();
     }
 
     private List<Score> scoresOfType(ScoreType type) {
-        return scores.stream()
+        return significantScores()
                 .filter(score -> score.getType().equals(type))
                 .collect(Collectors.toList());
     }
 
-    private Optional<Double> calculateWeightedAverage(List<Score> listOfScores) {
+    private Stream<Score> significantScores() {
+        return scores.stream()
+                .filter(Score::isSignificant);
+    }
+
+    private static Optional<Double> calculateWeightedAverage(List<Score> listOfScores) {
         long totalQuantity = listOfScores.stream()
                 .mapToLong(Score::getQuantity)
                 .sum();
