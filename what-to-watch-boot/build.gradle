@@ -21,11 +21,16 @@ testSets {
     benchmark
 }
 
+configurations {
+    compile.exclude module: "spring-boot-starter-tomcat"
+}
+
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jersey")
     compile("org.springframework.boot:spring-boot-starter-data-redis")
     compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-undertow:$springBootVersion")
     compile("org.projectlombok:lombok:$lombokVersion")
     compile("com.google.guava:guava:$guavaVersion")
     compile("redis.clients:jedis:$jedisVersion")
