@@ -36,3 +36,6 @@ dependencies {
 
     integrationTestCompile sourceSets.test.output
 }
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
