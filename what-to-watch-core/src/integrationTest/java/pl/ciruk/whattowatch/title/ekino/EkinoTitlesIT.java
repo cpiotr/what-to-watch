@@ -26,7 +26,7 @@ public class EkinoTitlesIT {
     public void shouldFetchTitlesForValidUser() throws Exception {
         givenCredentialsArePresent();
 
-        List<Title> titles = provider.streamOfTitles()
+        List<Title> titles = provider.streamOfTitles(1)
                 .collect(toList());
 
         assertThat(titles, is(not(empty())));

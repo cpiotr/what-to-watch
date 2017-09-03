@@ -25,13 +25,13 @@ public class EkinoTitles implements TitleProvider {
 
     private final HttpConnection<Element> connection;
 
-    private final int crawledPagesLimit;
+    private final int pagesPerRequest;
 
     private final AtomicLong numberOfTitles = new AtomicLong();
 
-    public EkinoTitles(HttpConnection<Element> connection, int crawledPagesLimit, MetricRegistry metricRegistry) {
+    public EkinoTitles(HttpConnection<Element> connection, int pagesPerRequest, MetricRegistry metricRegistry) {
         this.connection = connection;
-        this.crawledPagesLimit = crawledPagesLimit;
+        this.pagesPerRequest = pagesPerRequest;
 
         metricRegistry.register(
                 name(EkinoTitles.class, "numberOfTitles"),
@@ -40,14 +40,14 @@ public class EkinoTitles implements TitleProvider {
 
     @PostConstruct
     public void init() {
-        log.info("Crawled pages limit: {}", crawledPagesLimit);
+        log.info("Pages per request: {}", pagesPerRequest);
     }
 
     @Override
-    public Stream<Title> streamOfTitles() {
-        log.debug("streamOfTitles");
+    public Stream<Title> streamOfTitles(int pageNumber) {
+        log.debug("streamOfTitles - Page number: {}", pageNumber);
 
-        return generateSomePages(TITLES_PAGE_PATTERN)
+        return generatePageUrlsForRequest(pageNumber)
                 .peek(url -> log.debug("Loading films from: {}", url))
                 .map(connection::connectToAndGet)
                 .flatMap(Optionals::asStream)
@@ -56,14 +56,13 @@ public class EkinoTitles implements TitleProvider {
                 .peek(__ -> numberOfTitles.incrementAndGet());
     }
 
-    private Stream<String> generateSomePages(String pattern) {
-        if (pattern.contains("%d")) {
-            AtomicInteger i = new AtomicInteger(0);
-            return Stream.generate(() -> String.format(pattern, i.incrementAndGet()))
-                    .limit(crawledPagesLimit);
-        } else {
-            return Stream.of(pattern);
-        }
+    private Stream<String> generatePageUrlsForRequest(int requestNumber) {
+        AtomicInteger i = new AtomicInteger(0);
+        int startFromPage = (requestNumber - 1) * pagesPerRequest;
+        log.debug("generatePageUrlsForRequest - Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
+        return Stream.generate(() -> String.format(TITLES_PAGE_PATTERN, i.incrementAndGet()))
+                .skip(startFromPage)
+                .limit(pagesPerRequest);
     }
 
     private Title parseToTitle(Element linkToTitle) {

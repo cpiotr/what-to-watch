@@ -58,7 +58,7 @@ public class WhatToWatchApplication {
         Stopwatch started = Stopwatch.createStarted();
 
         try {
-            CompletableFutures.getAllOf(suggestions.suggestFilms())
+            CompletableFutures.getAllOf(suggestions.suggestFilms(1))
                     .limit(100)
                     .filter(Film::isNotEmpty)
                     .forEach(System.out::println);

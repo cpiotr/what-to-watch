@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
@@ -44,10 +45,13 @@ public class Suggestions {
     }
 
     @GET
+    @Path("{pageNumber}")
     @Produces(MediaType.APPLICATION_JSON)
     @ManagedAsync
-    public void get(@Suspended final AsyncResponse asyncResponse) {
-        log.info("get");
+    public void get(
+            @Suspended final AsyncResponse asyncResponse,
+            @PathParam("pageNumber") int pageNumber) {
+        log.info("get - Page number: {}", pageNumber);
 
         asyncResponse.setTimeout(60, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar ->
@@ -58,7 +62,7 @@ public class Suggestions {
 
         Timer.Context time = responses.time();
         try {
-            List<FilmResult> films = CompletableFutures.getAllOf(suggestions.suggestFilms())
+            List<FilmResult> films = CompletableFutures.getAllOf(suggestions.suggestFilms(pageNumber))
                     .distinct()
                     .filter(Film::isWorthWatching)
                     .map(this::toFilmResult)

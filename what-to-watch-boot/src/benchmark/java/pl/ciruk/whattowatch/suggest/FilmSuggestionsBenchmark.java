@@ -102,7 +102,7 @@ public class FilmSuggestionsBenchmark {
     @Benchmark
     public void workStealing(Blackhole bh) {
         Stream<Film> films = CompletableFutures.getAllOf(
-                suggestionsWorkStealing.suggestFilms());
+                suggestionsWorkStealing.suggestFilms(1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
@@ -114,7 +114,7 @@ public class FilmSuggestionsBenchmark {
     @Benchmark
     public void fixedPool(Blackhole bh) {
         Stream<Film> films = CompletableFutures.getAllOf(
-                suggestionsFixedPool.suggestFilms());
+                suggestionsFixedPool.suggestFilms(1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
@@ -150,7 +150,7 @@ public class FilmSuggestionsBenchmark {
                     .map(line -> line.split(";"))
                     .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build())
                     .collect(toList());
-            return titles::stream;
+            return (int pageNumber) -> titles.stream();
         } catch (IOException e) {
             throw new AssertionError(e);
         }

@@ -58,7 +58,7 @@ public class FilmSuggestionsIT {
     @Test
     public void shouldSuggestAllFilmsFromSampleTitleProvider() throws Exception {
         Stream<Film> films = CompletableFutures.getAllOf(
-                suggestions.suggestFilms());
+                suggestions.suggestFilms(1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
@@ -97,7 +97,7 @@ public class FilmSuggestionsIT {
                     .map(line -> line.split(";"))
                     .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build())
                     .collect(toList());
-            return titles::stream;
+            return (int pageNumber) -> titles.stream();
         } catch (IOException e) {
             throw new AssertionError(e);
         }

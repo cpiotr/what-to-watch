@@ -5,17 +5,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0/css/bootstrap.min.css"
           rel="stylesheet" media="screen"/>
+    <link href="css/style.css" rel="stylesheet" media="screen"/>
 
     <script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="js/ng-infinite-scroll.min.js"></script>
     <script src="js/script.js"></script>
 </head>
 <body>
 <div class="container">
     <div role="main">
         <div ng-controller="FilmListController">
-            <div class="row">
-                <div class="col-sm-6 col-md-4" ng-repeat-start="film in films">
+            <div class="row" infinite-scroll='filmList.nextPage()' infinite-scroll-disabled='filmList.busy' >
+                <div class="col-sm-6 col-md-4" ng-repeat-start="film in filmList.items">
                     <div class="thumbnail">
                         <a href="{{film.link}}">
                             <img src="{{film.poster}}" alt="{{film.title}}"/>
@@ -48,6 +50,9 @@
                 </div>
                 <div class="clearfix" ng-if="$index%3==2"></div>
                 <div ng-repeat-end=""></div>
+            </div>
+            <div class="row" ng-show='filmList.busy'>
+                <div class="center-block loader"></div>
             </div>
         </div>
     </div>

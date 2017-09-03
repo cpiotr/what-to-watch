@@ -33,8 +33,8 @@ public class Beans {
     @Value("${w2w.pool.size:16}")
     private Integer filmPoolSize;
 
-    @Value("${w2w.titles.crawled.pages.limit:10}")
-    private Integer titlesCrawledPagesLimit;
+    @Value("${w2w.titles.pagesPerRequest:10}")
+    private Integer titlePagesPerRequest;
 
     @Bean
     ExecutorService executorService() {
@@ -48,7 +48,7 @@ public class Beans {
     TitleProvider ekinoTitles(
             @Named("allCookiesHtml") HttpConnection<Element> httpConnection,
             MetricRegistry metricRegistry) {
-        return new EkinoTitles(httpConnection, titlesCrawledPagesLimit, metricRegistry);
+        return new EkinoTitles(httpConnection, titlePagesPerRequest, metricRegistry);
     }
 
     @Bean
@@ -100,6 +100,6 @@ public class Beans {
     @PostConstruct
     private void logConfiguration() {
         log.info("Thread pool size: <{}>", filmPoolSize);
-        log.info("Number of pages with titles to crawl: <{}>", titlesCrawledPagesLimit);
+        log.info("Number of title pages crawled per request: <{}>", titlePagesPerRequest);
     }
 }
