@@ -11,7 +11,20 @@ ENV REDIS_HOST 172.17.0.2
 ENV LOGGING_LEVEL=INFO
 ENV W2W_LOGGING_LEVEL=INFO
 
-ENV JVM_OPTS="-XX:+UnlockExperimentalVMOptions -Xmx1G -Xms1G"
+ENV JMX_OPTS="-Dcom.sun.management.jmxremote \
+	-Dcom.sun.management.jmxremote.local.only=false \
+	-Dcom.sun.management.jmxremote.authenticate=false \
+	-Dcom.sun.management.jmxremote.port=9999 \
+	-Dcom.sun.management.jmxremote.ssl=false"
+
+ENV JVM_OPTS="-Xmx1G -Xms1G \
+	-Xss256k \
+	-XX:+TieredCompilation \
+	-XX:InitialCodeCacheSize=128m \
+	-XX:ReservedCodeCacheSize=128m \
+	-XX:-UseBiasedLocking \
+	-XX:+AggressiveOpts \
+	-XX:+PreserveFramePointer"
 
 COPY ./build/libs/what-to-watch-boot-$W2W_VERSION.jar w2w.jar
 RUN sh -c 'touch /w2w.jar'
@@ -26,10 +39,6 @@ CMD sh -c "java \
 		-Dredis.host=$REDIS_HOST \
 		-Dlogging.level.root=$LOGGING_LEVEL\
 		-Dlogging.level.pl.ciruk=$W2W_LOGGING_LEVEL\
-		-Dcom.sun.management.jmxremote \
-		-Dcom.sun.management.jmxremote.local.only=false \
-		-Dcom.sun.management.jmxremote.authenticate=false \
-		-Dcom.sun.management.jmxremote.port=9999 \
-		-Dcom.sun.management.jmxremote.ssl=false \
+		$JMX_OPTS \
 		$JVM_OPTS \
 		-jar /w2w.jar"
