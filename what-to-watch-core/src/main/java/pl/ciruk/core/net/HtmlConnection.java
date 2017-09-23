@@ -38,14 +38,27 @@ public class HtmlConnection implements HttpConnection<String> {
     public Optional<String> connectToAndGet(String url) {
         log.trace("connectToAndGet - Url: {}", url);
 
-        try {
-            Response response = execute(to(url));
-                return Optional.ofNullable(response)
+        Request.Builder requestBuilder = buildRequestTo(url);
+        return connectToAndGet(requestBuilder);
+    }
+
+    @Override
+    public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+        log.trace("connectToAndConsume - Url: {}", url);
+        Request.Builder builder = buildRequestTo(url);
+
+        action.accept(builder);
+        return connectToAndGet(builder);
+    }
+
+    private Optional<String> connectToAndGet(Request.Builder requestBuilder) {
+        try (Response response = execute(requestBuilder)) {
+            return Optional.ofNullable(response)
                     .filter(Response::isSuccessful)
                     .map(Response::body)
-                    .flatMap(responseBody -> extractBodyAsString(responseBody, url));
+                    .flatMap(responseBody -> extractBodyAsString(responseBody, requestBuilder.toString()));
         } catch (IOException e) {
-            log.warn("connectToAndGet - Could no get {}", url, e);
+            log.warn("connectToAndGet - Could no get {}", requestBuilder.toString(), e);
             return Optional.empty();
         }
     }
@@ -55,21 +68,6 @@ public class HtmlConnection implements HttpConnection<String> {
             return Optional.of(responseBody.string());
         } catch (IOException e) {
             log.warn("connectToAndGet - Could no get {}", url, e);
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-        log.trace("connectToAndConsume - Url: {}", url);
-        Request.Builder builder = to(url);
-
-        action.accept(builder);
-        try {
-            Response response = execute(builder);
-            return Optional.ofNullable(response.body().string());
-        } catch (IOException e) {
-            log.warn("Cannot process request to {}", url, e);
             return Optional.empty();
         }
     }
@@ -85,7 +83,7 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    private Request.Builder to(String url) {
+    private Request.Builder buildRequestTo(String url) {
         return new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", UserAgents.next())
