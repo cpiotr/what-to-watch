@@ -53,7 +53,7 @@ public class Suggestions {
             @PathParam("pageNumber") int pageNumber) {
         log.info("get - Page number: {}", pageNumber);
 
-        asyncResponse.setTimeout(60, TimeUnit.SECONDS);
+        asyncResponse.setTimeout(90, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar ->
                 ar.resume(
                         Response.status(SERVICE_UNAVAILABLE).entity("{\"error\":\"Request timed out\"}").build()
