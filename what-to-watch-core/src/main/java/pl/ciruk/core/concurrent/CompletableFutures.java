@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
@@ -19,7 +18,7 @@ public class CompletableFutures {
         );
 
         return CompletableFuture.supplyAsync(
-                () -> futures.stream().map(CompletableFutures::get)
+                () -> futures.stream().map(CompletableFuture::join)
         );
     }
 
@@ -32,7 +31,7 @@ public class CompletableFutures {
                 futures.toArray(new CompletableFuture[futures.size()])
         );
 
-        return futures.stream().map(CompletableFutures::get);
+        return futures.stream().map(CompletableFuture::join);
     }
 
     public static <T> Stream<T> getAllOf(Stream<CompletableFuture<T>> futures) {
@@ -40,19 +39,22 @@ public class CompletableFutures {
     }
 
     public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(BiFunction<T, T, T> combinator) {
-        return (cf1, cf2) -> cf1.thenCombineAsync(cf2, combinator);
+        return (cf1, cf2) -> cf1.thenCombine(cf2, combinator);
     }
 
-    public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(BiFunction<T, T, T> combinator, ExecutorService executorService) {
-        return (cf1, cf2) -> cf1.thenCombineAsync(cf2, combinator, executorService);
+    public static <T> BinaryOperator<CompletableFuture<T>> combineUsing(
+            BiFunction<T, T, T> combinator,
+            ExecutorService executorService) {
+        return (first, second) -> first.thenCombineAsync(second, combinator, executorService);
     }
 
-    public static <T> T get(CompletableFuture<T> future) {
-        try {
-            return future.get(1, TimeUnit.MINUTES);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            future.completeExceptionally(e);
-            return null;
-        }
+    public static <T> CompletableFuture<T> of(Future<T> future) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new IllegalArgumentException(e);
+            }
+        });
     }
 }
