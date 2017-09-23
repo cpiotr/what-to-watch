@@ -24,6 +24,7 @@ public class RedisCache implements CacheProvider<String> {
     private final AtomicLong missCounter = new AtomicLong();
 
     private final AtomicLong requestCounter = new AtomicLong();
+
     private final CircuitBreaker circuitBreaker;
 
     @Inject
