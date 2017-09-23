@@ -70,6 +70,7 @@ public class ImdbWebScores implements ScoresProvider {
                 .addPathSegment("title")
                 .addQueryParameter("title", description.titleAsText())
                 .addQueryParameter("release_date", String.valueOf(description.getYear()))
+                .addQueryParameter("title_type", "feature,tv_movie")
                 .build();
 
         Optional<Score> firstResult = Optionals.asStream(httpConnection.connectToAndGet(url.toString()))
