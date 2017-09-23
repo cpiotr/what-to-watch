@@ -26,8 +26,6 @@ import static pl.ciruk.whattowatch.title.Title.MISSING_YEAR;
 
 @Slf4j
 public class MetacriticScores implements ScoresProvider {
-    private static final String METACRITIC_BASE_URL = "http://www.metacritic.com";
-
     private static final int NYT_SCORE_WEIGHT = 10;
 
     private final HttpConnection<Element> connection;
@@ -70,9 +68,7 @@ public class MetacriticScores implements ScoresProvider {
 
         Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom)
-                .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
-                .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
-                .flatMap(href -> downloadPage(METACRITIC_BASE_URL + href))
+                .flatMap(this::getCriticScoresFor)
                 .map(page -> page.select("#main_content").first());
 
         Optional<Score> metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
@@ -137,18 +133,33 @@ public class MetacriticScores implements ScoresProvider {
         return connection.connectToAndGet(url);
     }
 
+    private Optional<Element> getSearchResultsFor(Title title) {
+        HttpUrl url = metacriticUrlBuilder()
+                .addPathSegment("search")
+                .addPathSegment("movie")
+                .addPathSegment(title.asText())
+                .addPathSegment("results")
+                .build();
+        return connection.connectToAndGet(url.toString());
+    }
+
+    private Optional<Element> getCriticScoresFor(String href) {
+        HttpUrl url = metacriticUrlBuilder()
+                .addPathSegments(href)
+                .addPathSegment("critic-reviews")
+                .build();
+        return connection.connectToAndGet(url.toString());
+    }
+
+    private HttpUrl.Builder metacriticUrlBuilder() {
+        return new HttpUrl.Builder()
+                .scheme("http")
+                .host("www.metacritic.com");
+    }
+
     private Optional<Element> metacriticSummaryOf(Title title) {
         try {
-            HttpUrl url = new HttpUrl.Builder()
-                    .scheme("http")
-                    .host("www.metacritic.com")
-                    .addPathSegment("search")
-                    .addPathSegment("movie")
-                    .addPathSegment(title.asText())
-                    .addPathSegment("results")
-                    .build();
-
-            return downloadPage(url.toString())
+            return getSearchResultsFor(title)
                     .flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
                             .filter(e -> extractTitle(e).matches(title))
                             .findFirst()
