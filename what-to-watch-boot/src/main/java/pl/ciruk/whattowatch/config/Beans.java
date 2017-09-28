@@ -23,8 +23,10 @@ import pl.ciruk.whattowatch.title.ekino.EkinoTitles;
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @Slf4j
@@ -38,10 +40,14 @@ public class Beans {
 
     @Bean
     ExecutorService executorService() {
-        String threadPrefix = "WhatToWatch-";
-        ExecutorService pool = Executors.newWorkStealingPool(filmPoolSize);
-        Threads.setThreadNamePrefix(threadPrefix, pool);
-        return pool;
+        String threadPrefix = "WhatToWatch";
+        return new ThreadPoolExecutor(
+                filmPoolSize,
+                filmPoolSize,
+                0,
+                TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(10_000),
+                Threads.createThreadFactory(threadPrefix));
     }
 
     @Bean
