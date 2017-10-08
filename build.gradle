@@ -10,7 +10,7 @@ buildscript {
 apply plugin: 'org.springframework.boot'
 
 allprojects {
-    version = '0.0.1-SNAPSHOT'
+    version = "${version}"
 
     apply plugin: 'findbugs'
     apply plugin: 'pmd'
@@ -20,9 +20,11 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.0'
+    gradleVersion = '4.2'
 }
 
 springBoot {
     mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
 }
+
+println("[what-to-watch] Building version: $version")

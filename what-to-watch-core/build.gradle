@@ -19,8 +19,8 @@ testSets {
 }
 
 dependencies {
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compile "com.google.guava:guava:${guavaVersion}"
-    compile "org.projectlombok:lombok:${lombokVersion}"
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"
@@ -39,3 +39,5 @@ dependencies {
 
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
+
+println("[what-to-watch-boot] Building version: $version")

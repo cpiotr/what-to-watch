@@ -1,18 +1,23 @@
-cache:
-  image: redis:4.0.0-alpine
-  hostname: redis
-  ports:
-    - "6379:6379"
-w2w:
-    build: ./what-to-watch-boot
-    hostname: w2w-app
-    environment:
-      - W2W_TITLES_PAGES_PER_REQUEST=10
-      - W2W_THREAD_POOL_SIZE=32
-      - REDIS_HOST=redis
-      - W2W_LOGGING_LEVEL=INFO
+version: '2'
+services:
+  cache:
+    image: redis:4.0.0-alpine
+    hostname: redis
     ports:
-      - "8080:8080"
-      - "9999:9999"
-    links:
-      - "cache:redis"
+      - "6379:6379"
+  w2w:
+      build:
+        context: .
+        args:
+          - W2W_VERSION=0.0.1
+      hostname: w2w-app
+      environment:
+        - W2W_TITLES_PAGES_PER_REQUEST=10
+        - W2W_THREAD_POOL_SIZE=32
+        - REDIS_HOST=redis
+        - W2W_LOGGING_LEVEL=INFO
+      ports:
+        - "8080:8080"
+        - "9999:9999"
+      links:
+        - "cache:redis"

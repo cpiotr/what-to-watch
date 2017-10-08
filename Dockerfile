@@ -1,9 +1,11 @@
-FROM frolvlad/alpine-oraclejdk8:slim
+#FROM frolvlad/alpine-oraclejdk8:slim
+FROM openjdk:9-slim
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
 
-ENV W2W_VERSION 0.0.1-SNAPSHOT
+ARG W2W_VERSION
+ENV W2W_VERSION=${W2W_VERSION}
 ENV W2W_TITLES_PAGES_PER_REQUEST 10
 ENV W2W_THREAD_POOL_SIZE 16
 ENV REDIS_HOST 172.17.0.2
@@ -24,10 +26,14 @@ ENV JVM_OPTS="-Xmx1G -Xms1G \
 	-XX:ReservedCodeCacheSize=128m \
 	-XX:-UseBiasedLocking \
 	-XX:+AggressiveOpts \
-	-XX:+PreserveFramePointer"
+	-XX:+PreserveFramePointer \
+	-XX:+IgnoreUnrecognizedVMOptions \
+	--add-modules java.xml.bind"
 
-COPY ./build/libs/what-to-watch-boot-$W2W_VERSION.jar w2w.jar
-RUN sh -c 'touch /w2w.jar'
+COPY ./ /what-to-watch/
+WORKDIR /what-to-watch
+RUN sh -c './gradlew clean build -x check -Pversion=$W2W_VERSION'
+RUN sh -c 'ls -al ./what-to-watch-boot/build/libs/'
 
 EXPOSE 8080
 EXPOSE 9999
@@ -41,4 +47,4 @@ CMD sh -c "java \
 		-Dlogging.level.pl.ciruk=$W2W_LOGGING_LEVEL\
 		$JMX_OPTS \
 		$JVM_OPTS \
-		-jar /w2w.jar"
+		-jar ./what-to-watch-boot/build/libs/what-to-watch-boot-$W2W_VERSION.jar"

@@ -26,12 +26,12 @@ configurations {
 }
 
 dependencies {
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jersey")
     compile("org.springframework.boot:spring-boot-starter-data-redis")
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-undertow:$springBootVersion")
-    compile("org.projectlombok:lombok:$lombokVersion")
     compile("com.google.guava:guava:$guavaVersion")
     compile("redis.clients:jedis:$jedisVersion")
     compile("org.jsoup:jsoup:$jsoupVersion")
@@ -59,4 +59,8 @@ findbugs {
 
 pmd {
     sourceSets = [sourceSets.main, sourceSets.test]
+}
+
+test {
+    jvmArgs += ["--add-modules", "java.xml.bind"]
 }
