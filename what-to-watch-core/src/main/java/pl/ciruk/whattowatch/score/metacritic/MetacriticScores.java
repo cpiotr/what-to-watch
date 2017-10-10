@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
-import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoreType;
@@ -83,8 +82,8 @@ public class MetacriticScores implements ScoresProvider {
             missingNewYorkTimesScores.incrementAndGet();
         }
 
-        Stream<Score> averageScoreStream = Optionals.asStream(metacriticScore);
-        Stream<Score> nytScoreStream = Optionals.asStream(nytScore);
+        Stream<Score> averageScoreStream = metacriticScore.stream();
+        Stream<Score> nytScoreStream = nytScore.stream();
         return Stream.concat(averageScoreStream, nytScoreStream)
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
     }
@@ -127,10 +126,6 @@ public class MetacriticScores implements ScoresProvider {
                         .source("New York Times")
                         .type(ScoreType.CRITIC)
                         .build());
-    }
-
-    private Optional<Element> downloadPage(String url) {
-        return connection.connectToAndGet(url);
     }
 
     private Optional<Element> getSearchResultsFor(Title title) {

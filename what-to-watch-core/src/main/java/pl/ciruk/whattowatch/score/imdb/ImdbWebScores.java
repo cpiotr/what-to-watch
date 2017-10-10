@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
-import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.core.text.NumberToken;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
@@ -73,7 +72,7 @@ public class ImdbWebScores implements ScoresProvider {
                 .addQueryParameter("title_type", "feature,tv_movie")
                 .build();
 
-        Optional<Score> firstResult = Optionals.asStream(httpConnection.connectToAndGet(url.toString()))
+        Optional<Score> firstResult = httpConnection.connectToAndGet(url.toString()).stream()
                 .flatMap(FILMS_FROM_SEARCH_RESULT::extractFrom)
                 .filter(result -> matchesTitleFromDescription(result, description))
                 .findFirst()
@@ -84,7 +83,7 @@ public class ImdbWebScores implements ScoresProvider {
             missingScores.incrementAndGet();
         }
 
-        return Optionals.asStream(firstResult)
+        return firstResult.stream()
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
     }
 

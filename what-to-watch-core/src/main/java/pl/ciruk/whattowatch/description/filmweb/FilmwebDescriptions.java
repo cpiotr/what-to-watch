@@ -5,7 +5,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
@@ -72,10 +71,10 @@ public class FilmwebDescriptions implements DescriptionProvider {
     private Stream<Description> filmsForTitle(String title, int year) {
         Optional<Element> optionalResult = filmwebProxy.searchFor(title, year);
 
-        return Optionals.asStream(optionalResult)
+        return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT::extractFrom)
                 .map(filmwebProxy::getPageWithFilmDetailsFor)
-                .flatMap(Optionals::asStream)
+                .flatMap(Optional::stream)
                 .map(pageWithDetails -> {
                     try {
                         return extractDescriptionFrom(pageWithDetails);

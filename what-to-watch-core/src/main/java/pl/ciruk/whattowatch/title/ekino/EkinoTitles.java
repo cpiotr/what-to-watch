@@ -5,11 +5,11 @@ import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
-import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
 import javax.annotation.PostConstruct;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -50,7 +50,7 @@ public class EkinoTitles implements TitleProvider {
         return generatePageUrlsForRequest(pageNumber)
                 .peek(url -> log.debug("Loading films from: {}", url))
                 .map(connection::connectToAndGet)
-                .flatMap(Optionals::asStream)
+                .flatMap(Optional::stream)
                 .flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
                 .map(this::parseToTitle)
                 .peek(__ -> numberOfTitles.incrementAndGet());

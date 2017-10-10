@@ -13,8 +13,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static pl.ciruk.core.stream.Optionals.asStream;
-
 @Builder
 @Data
 @EqualsAndHashCode(of = "description")
@@ -44,8 +42,8 @@ public class Film {
                 .map(score -> Doubles.normalizeScore(score, countQuantity(ScoreType.CRITIC)))
                 .map(Score::critic);
         Stream<Score> weightedScores = Stream.concat(
-                asStream(amateur),
-                asStream(critic)
+                amateur.stream(),
+                critic.stream()
         );
 
         return calculateWeightedAverage(weightedScores.collect(Collectors.toList()))

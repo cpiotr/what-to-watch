@@ -4,7 +4,6 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.stream.Optionals;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -60,12 +59,12 @@ public class FilmwebScores implements ScoresProvider {
     private Stream<Score> scoresForTitle(Title title) {
         Optional<Element> optionalResult = filmwebProxy.searchFor(title.asText(), title.getYear());
 
-        return Optionals.asStream(optionalResult)
+        return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
                 .filter(result -> extractTitle(result).matches(title))
                 .map(this::getDetailsAndFindScore)
                 .peek(logIfMissing(title))
-                .flatMap(Optionals::asStream);
+                .flatMap(Optional::stream);
     }
 
     private Title extractTitle(Element result) {
