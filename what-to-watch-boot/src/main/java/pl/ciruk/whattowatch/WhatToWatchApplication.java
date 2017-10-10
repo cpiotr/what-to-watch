@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
@@ -101,7 +100,7 @@ public class WhatToWatchApplication {
             ExecutorService executorService,
             JsoupConnection connection,
             MetricRegistry metricRegistry) {
-        return Lists.newArrayList(
+        return List.of(
                 new FilmwebScores(new FilmwebProxy(connection), metricRegistry, executorService),
                 new ImdbWebScores(connection, metricRegistry, executorService),
                 new MetacriticScores(connection, metricRegistry, executorService)

@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.suggest;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +81,7 @@ public class FilmSuggestionsIT {
 
     private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, MetricRegistry metricRegistry, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
-        return Lists.newArrayList(
+        return List.of(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
                 new MetacriticScores(jsoupConnection, metricRegistry, executorService),
                 new ImdbWebScores(jsoupConnection, metricRegistry, executorService)

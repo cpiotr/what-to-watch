@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.suggest;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.Lists;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -135,7 +134,7 @@ public class FilmSuggestionsBenchmark {
             MetricRegistry metricRegistry,
             ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
-        return Lists.newArrayList(
+        return List.of(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
                 new MetacriticScores(jsoupConnection, metricRegistry, executorService),
                 new ImdbWebScores(jsoupConnection, metricRegistry, executorService)

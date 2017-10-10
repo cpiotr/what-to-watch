@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.description.filmweb;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.text.MissingValueException;
@@ -11,6 +10,7 @@ import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -56,7 +56,8 @@ public class FilmwebDescriptions implements DescriptionProvider {
         log.debug("descriptionOf - Title: {}", title);
 
         Optional<Description> foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
-                .filter(not(Strings::isNullOrEmpty))
+                .filter(Objects::nonNull)
+                .filter(not(String::isEmpty))
                 .flatMap(t -> filmsForTitle(t, title.getYear()))
                 .peek(description -> description.foundFor(title))
                 .findAny();

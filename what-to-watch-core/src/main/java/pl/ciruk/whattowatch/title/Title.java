@@ -1,11 +1,12 @@
 package pl.ciruk.whattowatch.title;
 
-import com.google.common.base.Strings;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Optional;
+
+import static pl.ciruk.core.stream.Predicates.not;
 
 @Getter
 @Builder
@@ -23,7 +24,7 @@ public class Title {
 
     public String asText() {
         return Optional.ofNullable(getOriginalTitle())
-                .filter(t -> !Strings.isNullOrEmpty(t))
+                .filter(not(String::isEmpty))
                 .orElse(getTitle());
     }
 

@@ -1,12 +1,10 @@
 package pl.ciruk.core.net;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UserAgents {
-    private static final List<String> AGENTS = ImmutableList.of(
+    private static final List<String> AGENTS = List.of(
             "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) Otter/0.1.01 Safari/538.1",
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) Otter/0.0.01 Safari/538.1",
             "Mozilla/5.0 (X11; Linux i686) AppleWebKit/538.1 (KHTML, like Gecko) Otter/0.2.01-dev Safari/538.1",
