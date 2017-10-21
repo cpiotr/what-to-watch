@@ -9,7 +9,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
@@ -27,11 +26,6 @@ public class HtmlConnection implements HttpConnection<String> {
         this.okHttpClient = httpClientSupplier;
 
         this.requests = metricRegistry.timer(name(HtmlConnection.class, "requests"));
-    }
-
-    @PostConstruct
-    public void init() {
-        log.debug("init: HttpClient: {}", okHttpClient);
     }
 
     @Override

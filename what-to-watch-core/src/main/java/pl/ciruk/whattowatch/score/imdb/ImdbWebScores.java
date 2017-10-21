@@ -72,10 +72,8 @@ public class ImdbWebScores implements ScoresProvider {
                 .addQueryParameter("title_type", "feature,tv_movie")
                 .build();
 
-        Optional<Score> firstResult = httpConnection.connectToAndGet(url.toString()).stream()
-                .flatMap(FILMS_FROM_SEARCH_RESULT::extractFrom)
-                .filter(result -> matchesTitleFromDescription(result, description))
-                .findFirst()
+        Optional<Score> firstResult = httpConnection.connectToAndGet(url.toString())
+                .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
             log.warn("scoresOf - Missing score for {}", description);
@@ -85,6 +83,12 @@ public class ImdbWebScores implements ScoresProvider {
 
         return firstResult.stream()
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
+    }
+
+    private Optional<Element> findFirstResult(Element searchResults, Description description) {
+        return FILMS_FROM_SEARCH_RESULT.extractFrom(searchResults)
+                .filter(searchResult -> matchesTitleFromDescription(searchResult, description))
+                .findAny();
     }
 
     private boolean matchesTitleFromDescription(Element result, Description description) {

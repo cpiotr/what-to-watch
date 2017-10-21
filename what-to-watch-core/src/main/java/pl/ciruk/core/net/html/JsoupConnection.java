@@ -6,7 +6,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -17,11 +16,6 @@ public class JsoupConnection implements HttpConnection<Element> {
 
     public JsoupConnection(HttpConnection<String> connection) {
         this.connection = connection;
-    }
-
-    @PostConstruct
-    public void init() {
-        log.trace("init - Connection: {}", connection);
     }
 
     @Override

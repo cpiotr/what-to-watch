@@ -8,7 +8,7 @@ jar {
     baseName = 'what-to-watch-core'
 }
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.9
 
 repositories {
     mavenCentral()

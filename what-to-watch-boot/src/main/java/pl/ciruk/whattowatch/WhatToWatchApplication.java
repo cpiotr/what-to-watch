@@ -46,7 +46,6 @@ public class WhatToWatchApplication {
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createJedisCache(jedisPool);
         JsoupConnection connection = createJsoupConnection(cache);
-        connection.init();
 
         FilmSuggestions suggestions = new FilmSuggestions(
                 sampleTitleProvider(),

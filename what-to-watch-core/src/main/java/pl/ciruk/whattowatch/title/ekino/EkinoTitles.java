@@ -8,7 +8,6 @@ import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -36,10 +35,11 @@ public class EkinoTitles implements TitleProvider {
         metricRegistry.register(
                 name(EkinoTitles.class, "numberOfTitles"),
                 (Gauge<Long>) numberOfTitles::get);
+
+        logConfiguration();
     }
 
-    @PostConstruct
-    public void init() {
+    private void logConfiguration() {
         log.info("Pages per request: {}", pagesPerRequest);
     }
 

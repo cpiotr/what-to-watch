@@ -24,7 +24,6 @@ public class FilmwebScoresIT {
     @Before
     public void setUp() throws Exception {
         JsoupConnection connection = Connections.jsoup();
-        connection.init();
 
         scores = new FilmwebScores(
                 new FilmwebProxy(connection),

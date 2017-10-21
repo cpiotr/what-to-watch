@@ -25,7 +25,6 @@ public class MetacriticScoresIT {
     @Before
     public void setUp() throws Exception {
         JsoupConnection connection = Connections.jsoup();
-        connection.init();
 
         scores = new MetacriticScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
     }
