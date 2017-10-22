@@ -9,8 +9,8 @@ import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -57,12 +57,11 @@ public class EkinoTitles implements TitleProvider {
     }
 
     private Stream<String> generatePageUrlsForRequest(int requestNumber) {
-        AtomicInteger i = new AtomicInteger(0);
         int startFromPage = (requestNumber - 1) * pagesPerRequest;
         log.debug("generatePageUrlsForRequest - Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
-        return Stream.generate(() -> String.format(TITLES_PAGE_PATTERN, i.incrementAndGet()))
-                .skip(startFromPage)
-                .limit(pagesPerRequest);
+        return IntStream.range(startFromPage, startFromPage + pagesPerRequest)
+                .boxed()
+                .map(index -> String.format(TITLES_PAGE_PATTERN, index));
     }
 
     private Title parseToTitle(Element linkToTitle) {
