@@ -33,7 +33,7 @@ public class HtmlConnection implements HttpConnection<String> {
         log.trace("connectToAndGet - Url: {}", url);
 
         Request.Builder requestBuilder = buildRequestTo(url);
-        return connectToAndGet(requestBuilder);
+        return connectToAndGet(requestBuilder, url);
     }
 
     @Override
@@ -42,17 +42,17 @@ public class HtmlConnection implements HttpConnection<String> {
         Request.Builder builder = buildRequestTo(url);
 
         action.accept(builder);
-        return connectToAndGet(builder);
+        return connectToAndGet(builder, url);
     }
 
-    private Optional<String> connectToAndGet(Request.Builder requestBuilder) {
+    private Optional<String> connectToAndGet(Request.Builder requestBuilder, String url) {
         try (Response response = execute(requestBuilder)) {
             return Optional.ofNullable(response)
                     .filter(Response::isSuccessful)
                     .map(Response::body)
-                    .flatMap(responseBody -> extractBodyAsString(responseBody, requestBuilder.toString()));
+                    .flatMap(responseBody -> extractBodyAsString(responseBody, url));
         } catch (IOException e) {
-            log.warn("connectToAndGet - Could no get {}", requestBuilder.toString(), e);
+            log.warn("connectToAndGet - Could not get {}", url, e);
             return Optional.empty();
         }
     }
@@ -61,7 +61,7 @@ public class HtmlConnection implements HttpConnection<String> {
         try {
             return Optional.of(responseBody.string());
         } catch (IOException e) {
-            log.warn("connectToAndGet - Could no get {}", url, e);
+            log.warn("connectToAndGet - Could not get {}", url, e);
             return Optional.empty();
         }
     }
