@@ -19,7 +19,7 @@ testSets {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    compile "org.projectlombok:lombok:${lombokVersion}"
     compile "com.google.guava:guava:${guavaVersion}"
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"

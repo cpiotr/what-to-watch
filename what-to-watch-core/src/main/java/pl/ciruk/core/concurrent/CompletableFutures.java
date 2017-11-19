@@ -1,5 +1,7 @@
 package pl.ciruk.core.concurrent;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -11,7 +13,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-public class CompletableFutures {
+@UtilityClass
+public final class CompletableFutures {
     public static <T> CompletableFuture<Stream<T>> allOf(List<CompletableFuture<T>> futures) {
         CompletableFuture.allOf(
                 futures.toArray(new CompletableFuture[futures.size()])

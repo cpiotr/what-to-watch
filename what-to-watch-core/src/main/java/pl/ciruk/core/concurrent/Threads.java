@@ -1,6 +1,7 @@
 package pl.ciruk.core.concurrent;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -8,7 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 @Slf4j
-public class Threads {
+@UtilityClass
+public final class Threads {
     public static void setThreadNamePrefix(String threadPrefix, ExecutorService pool) {
         try {
             Field workerNamePrefix = pool.getClass().getDeclaredField("workerNamePrefix");

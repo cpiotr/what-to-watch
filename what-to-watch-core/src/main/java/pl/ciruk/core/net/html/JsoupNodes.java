@@ -1,13 +1,11 @@
 package pl.ciruk.core.net.html;
 
+import lombok.experimental.UtilityClass;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
+@UtilityClass
 public final class JsoupNodes {
-    private JsoupNodes() {
-        // Utility class
-    }
-
     public static Element emptyTextElement() {
         return new Element(Tag.valueOf("span"), "") {
             @Override
