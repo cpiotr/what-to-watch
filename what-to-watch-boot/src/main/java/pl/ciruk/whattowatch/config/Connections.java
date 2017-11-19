@@ -90,11 +90,12 @@ public class Connections {
 
     @Bean
     @Primary
-    StringRedisTemplate stringRedisTemplate() {
+    StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         return new StringRedisTemplate(redisConnectionFactory());
     }
 
-    private RedisConnectionFactory redisConnectionFactory() {
+    @Bean
+    RedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setHostName(redisHost);
         JedisPoolConfig poolConfig = new JedisPoolConfig();
