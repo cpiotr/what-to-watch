@@ -3,7 +3,7 @@ package pl.ciruk.whattowatch.description.filmweb;
 import com.codahale.metrics.MetricRegistry;
 import org.junit.Before;
 import org.junit.Test;
-import pl.ciruk.core.net.Connections;
+import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
@@ -22,7 +22,7 @@ public class FilmwebDescriptionsIT {
 
     @Before
     public void setUp() throws Exception {
-        JsoupConnection connection = Connections.jsoup();
+        JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptions(
                 new FilmwebProxy(connection),
                 mock(MetricRegistry.class),

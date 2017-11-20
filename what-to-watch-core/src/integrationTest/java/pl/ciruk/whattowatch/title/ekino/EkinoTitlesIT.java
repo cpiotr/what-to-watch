@@ -5,7 +5,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
-import pl.ciruk.core.net.Connections;
+import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
@@ -33,7 +33,7 @@ public class EkinoTitlesIT {
     }
 
     private void givenCredentialsArePresent() {
-        provider = new EkinoTitles(Connections.jsoup(), 1, mock(MetricRegistry.class));
+        provider = new EkinoTitles(TestConnections.jsoup(), 1, mock(MetricRegistry.class));
     }
 
     private <T> Matcher<Collection<T>> empty() {

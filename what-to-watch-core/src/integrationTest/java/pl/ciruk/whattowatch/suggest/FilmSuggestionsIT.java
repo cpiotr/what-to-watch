@@ -5,8 +5,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.concurrent.CompletableFutures;
-import pl.ciruk.core.net.Connections;
 import pl.ciruk.core.net.HtmlConnection;
+import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.filmweb.FilmwebDescriptions;
@@ -44,7 +44,7 @@ public class FilmSuggestionsIT {
 
     @Before
     public void setUp() throws Exception {
-        HtmlConnection htmlConnection = Connections.html();
+        HtmlConnection htmlConnection = TestConnections.html();
         pool = Executors.newWorkStealingPool(32);
         suggestions = new FilmSuggestions(
                 provideTitlesFromResource(),
