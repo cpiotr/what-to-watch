@@ -6,7 +6,7 @@ import pl.ciruk.whattowatch.title.Title;
 
 public class DescriptionMatchers {
     public static Matcher<Description> ofTitle(String title) {
-        return new TypeSafeMatcher<Description>() {
+        return new TypeSafeMatcher<>() {
             @Override
             protected boolean matchesSafely(Description item) {
                 Title itemTitle = item.getTitle();

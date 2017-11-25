@@ -3,7 +3,6 @@ package pl.ciruk.core.net;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -83,16 +82,6 @@ public class HtmlConnection implements HttpConnection<String> {
                 .addHeader("User-Agent", UserAgents.next())
                 .addHeader("Accept-Language", "en-US")
                 .addHeader("Referer", rootDomainFor(url));
-    }
-
-    private Response log(Interceptor.Chain chain) throws IOException {
-        Request request = chain.request();
-        log.trace("Request: {}", request);
-
-        Response response = chain.proceed(request);
-        log.trace("Response: {}", response);
-
-        return response;
     }
 
     private static String rootDomainFor(String url) {

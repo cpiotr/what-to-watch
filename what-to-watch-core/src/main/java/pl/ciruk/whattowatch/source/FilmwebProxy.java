@@ -23,7 +23,7 @@ public class FilmwebProxy {
                 .addQueryParameter("endYear", String.valueOf(year))
                 .build();
 
-        return Optional.ofNullable(url)
+        return Optional.of(url)
                 .map(Object::toString)
                 .flatMap(connection::connectToAndGet);
     }

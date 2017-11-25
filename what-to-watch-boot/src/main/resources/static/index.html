@@ -30,17 +30,17 @@
                             </h3>
                             <p>{{film.plot}}</p>
                             <p>
-                            <div class="btn btn-primary" role="button">
-                                <span class="glyphicon glyphicon-star" aria-hidden="true"/>
-                                <span class="badge">{{film.score * 100 | number: 1}}%   </span>
-                            </div>
-                            <ul class="list-group">
-                                <li class="list-group-item" ng-repeat="score in film.scores">
-                                    <span class="badge glyphicon glyphicon-user">{{score.quantity}}</span>
-                                    <span class="badge glyphicon glyphicon-star">{{score.grade * 100 | number: 1}}%</span>
-                                    {{score.source}}
-                                </li>
-                            </ul>
+                                <div class="btn btn-primary" role="button">
+                                    <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                                    <span class="badge">{{film.score * 100 | number: 1}}%   </span>
+                                </div>
+                                <ul class="list-group">
+                                    <li class="list-group-item" ng-repeat="score in film.scores">
+                                        <span class="badge glyphicon glyphicon-user">{{score.quantity}}</span>
+                                        <span class="badge glyphicon glyphicon-star">{{score.grade * 100 | number: 1}}%</span>
+                                        {{score.source}}
+                                    </li>
+                                </ul>
                             </p>
 
                             <p class="genres">

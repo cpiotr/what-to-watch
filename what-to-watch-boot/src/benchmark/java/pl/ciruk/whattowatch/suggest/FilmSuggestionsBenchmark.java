@@ -156,7 +156,7 @@ public class FilmSuggestionsBenchmark {
     }
 
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
-        return new CacheProvider<String>() {
+        return new CacheProvider<>() {
             @Override
             public void put(String key, String value) {
                 try (Jedis jedis = pool.getResource()) {

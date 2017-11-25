@@ -9,7 +9,7 @@ public interface CacheProvider<T> {
     Optional<T> get(String key);
 
     static <T> CacheProvider<T> empty() {
-        return new CacheProvider<T>() {
+        return new CacheProvider<>() {
             @Override
             public void put(String key, T value) {
 

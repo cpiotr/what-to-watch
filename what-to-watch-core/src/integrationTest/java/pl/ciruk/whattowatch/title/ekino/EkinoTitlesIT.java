@@ -37,7 +37,7 @@ public class EkinoTitlesIT {
     }
 
     private <T> Matcher<Collection<T>> empty() {
-        return new TypeSafeMatcher<Collection<T>>() {
+        return new TypeSafeMatcher<>() {
             @Override
             protected boolean matchesSafely(Collection<T> item) {
                 return item == null || item.isEmpty();

@@ -6,7 +6,7 @@ import org.hamcrest.TypeSafeMatcher;
 
 public class ScoreMatchers {
     public static Matcher<? super Score> isMeaningful() {
-        return new TypeSafeMatcher<Score>() {
+        return new TypeSafeMatcher<>() {
             @Override
             protected boolean matchesSafely(Score item) {
                 return isMeaningful(item);
