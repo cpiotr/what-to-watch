@@ -53,14 +53,6 @@ springBoot {
     mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
 }
 
-findbugs {
-    sourceSets = [sourceSets.main, sourceSets.test]
-}
-
-pmd {
-    sourceSets = [sourceSets.main, sourceSets.test]
-}
-
 test {
     jvmArgs += ["--add-modules", "java.xml.bind"]
 }

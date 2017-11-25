@@ -12,19 +12,19 @@ apply plugin: 'org.springframework.boot'
 allprojects {
     version = "${version}"
 
-    apply plugin: 'findbugs'
     apply plugin: 'pmd'
 }
 
-dependencies {
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.2'
+pmd {
+    sourceSets = [sourceSets.main, sourceSets.test]
 }
 
 springBoot {
     mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.3.1'
 }
 
 println("[what-to-watch] Building version: $version")
