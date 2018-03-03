@@ -22,7 +22,7 @@ public class FilmwebScoresIT {
     private FilmwebScores scores;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new FilmwebScores(
@@ -32,7 +32,7 @@ public class FilmwebScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScore() throws Exception {
+    public void shouldRetrieveMeaningfulScore() {
         Title title = titleOfOldAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -47,7 +47,7 @@ public class FilmwebScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfRecentFilm() throws Exception {
+    public void shouldRetrieveMeaningfulScoreOfRecentFilm() {
         Title title = titleOfRecentAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)

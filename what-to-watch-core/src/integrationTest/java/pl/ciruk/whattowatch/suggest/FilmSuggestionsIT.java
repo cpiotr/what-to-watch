@@ -43,7 +43,7 @@ public class FilmSuggestionsIT {
     private ExecutorService pool;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         HtmlConnection htmlConnection = TestConnections.html();
         pool = Executors.newWorkStealingPool(32);
         suggestions = new FilmSuggestions(

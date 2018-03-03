@@ -21,14 +21,14 @@ public class ImdbWebScoresIT {
     private ScoresProvider scores;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new ImdbWebScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfOldFilm() throws Exception {
+    public void shouldRetrieveMeaningfulScoreOfOldFilm() {
         Title title = titleOfOldAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -51,7 +51,7 @@ public class ImdbWebScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfRecentFilm() throws Exception {
+    public void shouldRetrieveMeaningfulScoreOfRecentFilm() {
         Title title = titleOfRecentAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -66,7 +66,7 @@ public class ImdbWebScoresIT {
     }
 
     @Test
-    public void shouldCheckOnlyFirstTitleFromSearchResults() throws Exception {
+    public void shouldCheckOnlyFirstTitleFromSearchResults() {
         Title title = Title.builder().originalTitle("Hidden").year(2015).build();
         Description description = Description.builder()
                 .title(title)
@@ -81,7 +81,7 @@ public class ImdbWebScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfFilmWithSpecialCharsInTitle() throws Exception {
+    public void shouldRetrieveMeaningfulScoreOfFilmWithSpecialCharsInTitle() {
         Title title = Title.builder()
                 .originalTitle("Radin!")
                 .year(2016)
@@ -99,7 +99,7 @@ public class ImdbWebScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfPolishFilm() throws Exception {
+    public void shouldRetrieveMeaningfulScoreOfPolishFilm() {
         Title title = Title.builder()
                 .originalTitle("Powidoki")
                 .title("Powidoki")

@@ -23,14 +23,14 @@ public class MetacriticScoresIT {
     private MetacriticScores scores;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new MetacriticScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScore() throws Exception {
+    public void shouldRetrieveMeaningfulScore() {
         Title title = titleOfRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -46,7 +46,7 @@ public class MetacriticScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreForTitleWithSpecialChars() throws Exception {
+    public void shouldRetrieveMeaningfulScoreForTitleWithSpecialChars() {
         Title title = Title.builder()
                 .title("T2: Trainspotting")
                 .year(2017)
@@ -65,7 +65,7 @@ public class MetacriticScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMultipleScores() throws Exception {
+    public void shouldRetrieveMultipleScores() {
         Title title = titleOfRespectfulFilm();
         Description description = Description.builder()
                 .title(title)

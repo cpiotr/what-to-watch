@@ -21,7 +21,7 @@ public class FilmwebDescriptionsIT {
     private FilmwebDescriptions descriptions;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptions(
                 new FilmwebProxy(connection),
@@ -30,7 +30,7 @@ public class FilmwebDescriptionsIT {
     }
 
     @Test
-    public void shouldResolveRamboTitleToFirstBlood() throws Exception {
+    public void shouldResolveRamboTitleToFirstBlood() {
         Title rambo = Title.builder().title("Rambo").year(1982).build();
 
         Description description = descriptions.descriptionOf(rambo)
@@ -40,7 +40,7 @@ public class FilmwebDescriptionsIT {
     }
 
     @Test
-    public void shouldResolveRecentTitle() throws Exception {
+    public void shouldResolveRecentTitle() {
         Title rambo = Title.builder().title("A United Kingdom").year(2016).build();
 
         Description description = descriptions.descriptionOf(rambo)

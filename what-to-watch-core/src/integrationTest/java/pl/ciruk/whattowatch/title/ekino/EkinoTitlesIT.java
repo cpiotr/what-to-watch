@@ -23,17 +23,13 @@ public class EkinoTitlesIT {
     private TitleProvider provider;
 
     @Test
-    public void shouldFetchTitlesForValidUser() throws Exception {
-        givenCredentialsArePresent();
+    public void shouldFetchTitlesForValidUser() {
+        provider = new EkinoTitles(TestConnections.jsoup(), 1, mock(MetricRegistry.class));
 
         List<Title> titles = provider.streamOfTitles(1)
                 .collect(toList());
 
         assertThat(titles, is(not(empty())));
-    }
-
-    private void givenCredentialsArePresent() {
-        provider = new EkinoTitles(TestConnections.jsoup(), 1, mock(MetricRegistry.class));
     }
 
     private <T> Matcher<Collection<T>> empty() {
