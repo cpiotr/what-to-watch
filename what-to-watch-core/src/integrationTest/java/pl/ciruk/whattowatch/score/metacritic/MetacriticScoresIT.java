@@ -46,6 +46,22 @@ public class MetacriticScoresIT {
     }
 
     @Test
+    public void shouldRetrieveMeaningfulScoreWhenTitleCausesRedirects() {
+        Title title = titleOfFilmCausingRedirects();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scoreStream = scores.scoresOf(description);
+        Score score = scoreStream
+                .filter(ScoreMatchers::isMeaningful)
+                .findAny()
+                .orElseThrow(AssertionError::new);
+
+        assertThat(score, isMeaningful());
+    }
+
+    @Test
     public void shouldRetrieveMeaningfulScoreForTitleWithSpecialChars() {
         Title title = Title.builder()
                 .title("T2: Trainspotting")
@@ -81,6 +97,13 @@ public class MetacriticScoresIT {
         return Title.builder()
                 .originalTitle("Moana")
                 .year(2016)
+                .build();
+    }
+
+    private Title titleOfFilmCausingRedirects() {
+        return Title.builder()
+                .originalTitle("The post")
+                .year(2017)
                 .build();
     }
 }

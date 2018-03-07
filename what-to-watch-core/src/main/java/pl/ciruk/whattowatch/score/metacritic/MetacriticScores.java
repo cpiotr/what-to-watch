@@ -5,6 +5,7 @@ import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
+import pl.ciruk.core.math.Doubles;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -12,6 +13,7 @@ import pl.ciruk.whattowatch.score.ScoreType;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -65,10 +67,12 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> scoresOf(Description description) {
         log.debug("scoresOf - Description: {}", description);
 
-        Optional<Element> htmlWithScores = metacriticSummaryOf(description.getTitle())
-                .flatMap(LINK_TO_DETAILS::extractFrom)
+        Optional<String> linkToDetails = metacriticSummaryOf(description.getTitle())
+                .flatMap(LINK_TO_DETAILS::extractFrom);
+        Optional<Element> htmlWithScores = linkToDetails
                 .flatMap(this::getCriticScoresFor)
-                .map(page -> page.select("#main_content").first());
+                .map(this::extractCriticReviews)
+                .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
         Optional<Score> metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
         if (!metacriticScore.isPresent()) {
@@ -86,6 +90,17 @@ public class MetacriticScores implements ScoresProvider {
         Stream<Score> nytScoreStream = nytScore.stream();
         return Stream.concat(averageScoreStream, nytScoreStream)
                 .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
+    }
+
+    private Optional<Element> followDetailsLinkAndFindPageWithScores(Optional<String> linkToDetails) {
+        return linkToDetails.flatMap(this::getPage)
+                .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
+                .flatMap(this::getPage)
+                .map(this::extractCriticReviews);
+    }
+
+    private Element extractCriticReviews(Element page) {
+        return page.select("#main_content .critic_reviews").first();
     }
 
     private Optional<Score> extractScoreFrom(Element htmlWithScores) {
@@ -107,14 +122,21 @@ public class MetacriticScores implements ScoresProvider {
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {
-        return MetacriticSelectors.AVERAGE_GRADE.extractFrom(htmlWithScores)
-                .map(Double::valueOf)
-                .map(d -> d / 100.0);
+        return MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
+                .map(Element::text)
+                .mapToDouble(Double::valueOf)
+                .average()
+                .stream()
+                .boxed()
+                .findFirst();
     }
 
     private Optional<Double> numberOfReviewsFrom(Element htmlWithScores) {
-        return MetacriticSelectors.NUMBER_OF_GRADES.extractFrom(htmlWithScores)
-                .map(Double::valueOf);
+        double count = MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
+                .map(Element::text)
+                .mapToDouble(Double::valueOf)
+                .count();
+        return Optional.of(count).filter(Doubles.isGreaterThan(0.0));
     }
 
     private Optional<Score> nytScoreFrom(Element htmlWithScores) {
@@ -129,20 +151,17 @@ public class MetacriticScores implements ScoresProvider {
     }
 
     private Optional<Element> getSearchResultsFor(Title title) {
-        HttpUrl url = metacriticUrlBuilder()
-                .addPathSegment("search")
-                .addPathSegment("movie")
-                .addPathSegment(title.asText())
-                .addPathSegment("results")
-                .build();
-        return connection.connectToAndGet(url.toString());
+        return getPage("search", "movie", title.asText(), "results");
     }
 
     private Optional<Element> getCriticScoresFor(String href) {
-        HttpUrl url = metacriticUrlBuilder()
-                .addPathSegments(href)
-                .addPathSegment("critic-reviews")
-                .build();
+        return getPage(href, "critic-reviews");
+    }
+
+    private Optional<Element> getPage(String... pathSegments) {
+        HttpUrl.Builder builder = metacriticUrlBuilder();
+        Arrays.stream(pathSegments).forEach(builder::addPathSegments);
+        HttpUrl url = builder.build();
         return connection.connectToAndGet(url.toString());
     }
 
@@ -155,14 +174,17 @@ public class MetacriticScores implements ScoresProvider {
     private Optional<Element> metacriticSummaryOf(Title title) {
         try {
             return getSearchResultsFor(title)
-                    .flatMap(page -> MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(page)
-                            .filter(e -> extractTitle(e).matches(title))
-                            .findFirst()
-                    );
+                    .flatMap(searchResults -> findFirstResultMatching(title, searchResults));
         } catch (Exception e) {
             log.warn("Cannot find metacritic summary of {}", title, e);
             return Optional.empty();
         }
+    }
+
+    private Optional<Element> findFirstResultMatching(Title title, Element searchResults) {
+        return MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(searchResults)
+                .filter(e -> extractTitle(e).matches(title))
+                .findFirst();
     }
 
     private Title extractTitle(Element searchResult) {

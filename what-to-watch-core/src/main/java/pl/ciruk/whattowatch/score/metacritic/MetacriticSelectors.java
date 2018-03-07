@@ -32,7 +32,7 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
             .filter(review -> review.select(".source").text().equalsIgnoreCase("The New York Times"))
             .map(review -> review.select(".metascore_w.movie").text())
             .findFirst()),
-    LINK_TO_CRITIC_REVIEWS(details -> details.select(".critics_col a.see_all")
+    LINK_TO_CRITIC_REVIEWS(details -> details.select(".fxdcol.gu4 .subsection_title a")
             .stream()
             .map(link -> link.attr("href"))
             .findFirst()),
