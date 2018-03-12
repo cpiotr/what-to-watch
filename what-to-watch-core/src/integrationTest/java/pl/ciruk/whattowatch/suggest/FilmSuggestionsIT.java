@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.suggest;
 
 import com.codahale.metrics.MetricRegistry;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class FilmSuggestionsIT {
@@ -55,7 +53,7 @@ public class FilmSuggestionsIT {
     }
 
     @Test
-    public void shouldSuggestAllFilmsFromSampleTitleProvider() throws Exception {
+    public void shouldSuggestAllFilmsFromSampleTitleProvider() {
         Stream<Film> films = CompletableFutures.getAllOf(
                 suggestions.suggestFilms(1));
         int numberOfFilms = (int) films
@@ -63,7 +61,7 @@ public class FilmSuggestionsIT {
                 .filter(Film::isNotEmpty)
                 .count();
 
-        assertThat(numberOfFilms, is(equalTo(NUMBER_OF_TITLES)));
+        Assertions.assertThat(numberOfFilms).isEqualTo(NUMBER_OF_TITLES);
     }
 
     @After

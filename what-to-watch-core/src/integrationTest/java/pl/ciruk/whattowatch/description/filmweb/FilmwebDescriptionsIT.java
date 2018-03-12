@@ -6,15 +6,13 @@ import org.junit.Test;
 import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
+import pl.ciruk.whattowatch.description.DescriptionAssert;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
 import java.util.concurrent.Executors;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static pl.ciruk.whattowatch.description.DescriptionMatchers.ofTitle;
 
 public class FilmwebDescriptionsIT {
 
@@ -36,7 +34,7 @@ public class FilmwebDescriptionsIT {
         Description description = descriptions.descriptionOf(rambo)
                 .orElseThrow(AssertionError::new);
 
-        assertThat(description, is(ofTitle("First Blood")));
+        DescriptionAssert.assertThat(description).hasTitle("First Blood");
     }
 
     @Test
@@ -46,6 +44,6 @@ public class FilmwebDescriptionsIT {
         Description description = descriptions.descriptionOf(rambo)
                 .orElseThrow(AssertionError::new);
 
-        assertThat(description, is(ofTitle("A United Kingdom")));
+        DescriptionAssert.assertThat(description).hasTitle("A United Kingdom");
     }
 }

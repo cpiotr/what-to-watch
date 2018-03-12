@@ -1,23 +1,22 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
 import com.codahale.metrics.MetricRegistry;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
-import pl.ciruk.whattowatch.score.ScoreMatchers;
+import pl.ciruk.whattowatch.score.ScoreMatcher;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertThat;
+import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.mock;
-import static pl.ciruk.whattowatch.score.ScoreMatchers.isMeaningful;
 
 public class MetacriticScoresIT {
     private MetacriticScores scores;
@@ -36,13 +35,9 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scoreStream = scores.scoresOf(description);
-        Score score = scoreStream
-                .filter(ScoreMatchers::isMeaningful)
-                .findAny()
-                .orElseThrow(AssertionError::new);
+        Stream<Score> scores = this.scores.scoresOf(description);
 
-        assertThat(score, isMeaningful());
+        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
     }
 
     @Test
@@ -52,13 +47,9 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scoreStream = scores.scoresOf(description);
-        Score score = scoreStream
-                .filter(ScoreMatchers::isMeaningful)
-                .findAny()
-                .orElseThrow(AssertionError::new);
+        Stream<Score> scores = this.scores.scoresOf(description);
 
-        assertThat(score, isMeaningful());
+        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
     }
 
     @Test
@@ -71,13 +62,9 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scoreStream = scores.scoresOf(description);
-        Score score = scoreStream
-                .filter(ScoreMatchers::isMeaningful)
-                .findAny()
-                .orElseThrow(AssertionError::new);
+        Stream<Score> scores = this.scores.scoresOf(description);
 
-        assertThat(score, isMeaningful());
+        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
     }
 
     @Test
@@ -90,7 +77,7 @@ public class MetacriticScoresIT {
         long numberOfScores = scores.scoresOf(description)
                 .count();
 
-        assertThat(numberOfScores, is(greaterThan(1L)));
+        Assertions.assertThat(numberOfScores).isGreaterThan(1L);
     }
 
     private Title titleOfRespectfulFilm() {

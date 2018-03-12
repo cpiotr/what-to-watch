@@ -1,21 +1,14 @@
 package pl.ciruk.whattowatch.title.ekino;
 
 import com.codahale.metrics.MetricRegistry;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class EkinoTitlesIT {
@@ -26,23 +19,8 @@ public class EkinoTitlesIT {
     public void shouldFetchTitlesForValidUser() {
         provider = new EkinoTitles(TestConnections.jsoup(), 1, mock(MetricRegistry.class));
 
-        List<Title> titles = provider.streamOfTitles(1)
-                .collect(toList());
+        Stream<Title> titles = provider.streamOfTitles(1);
 
-        assertThat(titles, is(not(empty())));
-    }
-
-    private <T> Matcher<Collection<T>> empty() {
-        return new TypeSafeMatcher<>() {
-            @Override
-            protected boolean matchesSafely(Collection<T> item) {
-                return item == null || item.isEmpty();
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("empty collection");
-            }
-        };
+        Assertions.assertThat(titles).isNotEmpty();
     }
 }
