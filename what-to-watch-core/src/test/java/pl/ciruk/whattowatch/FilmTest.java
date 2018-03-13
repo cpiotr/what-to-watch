@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilmTest {
     @Test
-    public void shouldBeWorthWatchingIfReceivedLotsOfPositiveScores() throws Exception {
+    public void shouldBeWorthWatchingIfReceivedLotsOfPositiveScores() {
         long totalQuantity = 2000;
         List<Score> scores = Arrays.asList(
                 Score.amateur(0.7, (long) (totalQuantity * 0.95)),
@@ -27,7 +27,7 @@ public class FilmTest {
     }
 
     @Test
-    public void shouldNotBeWorthWatchingIfReceivedFewPositiveScores() throws Exception {
+    public void shouldNotBeWorthWatchingIfReceivedFewPositiveScores() {
         int totalQuantity = 100;
         List<Score> scores = Arrays.asList(
                 Score.amateur(0.7, (long) (totalQuantity * 0.4)),
