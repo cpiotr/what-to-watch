@@ -30,7 +30,6 @@ dependencies {
 
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
     testCompile "junit:junit:$junitVersion"
-    testCompile "org.hamcrest:java-hamcrest:$hamcrestVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.assertj:assertj-core:$assertjVersion"
 
