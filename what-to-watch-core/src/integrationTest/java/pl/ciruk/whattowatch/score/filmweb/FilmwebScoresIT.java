@@ -8,7 +8,7 @@ import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
-import pl.ciruk.whattowatch.score.ScoreMatcher;
+import pl.ciruk.whattowatch.score.ScoreAssert;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
@@ -42,7 +42,7 @@ public class FilmwebScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
+        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class FilmwebScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
+        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     private Title titleOfRecentAndRespectfulFilm() {

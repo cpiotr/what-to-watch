@@ -8,7 +8,7 @@ import pl.ciruk.core.net.TestConnections;
 import pl.ciruk.core.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
-import pl.ciruk.whattowatch.score.ScoreMatcher;
+import pl.ciruk.whattowatch.score.ScoreAssert;
 import pl.ciruk.whattowatch.title.Title;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
+        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
+        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreMatcher::isMeaningful);
+        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
