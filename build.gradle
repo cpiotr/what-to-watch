@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -13,6 +14,11 @@ allprojects {
     version = "${version}"
 
     apply plugin: 'pmd'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
 }
 
 pmd {
