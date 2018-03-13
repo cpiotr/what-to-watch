@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.config;
 
 import lombok.extern.slf4j.Slf4j;
+import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.suggest.FilmSuggestions;
 
 import javax.annotation.PostConstruct;
@@ -10,10 +11,10 @@ import javax.inject.Named;
 @Named
 @Slf4j
 public class Bootstrap {
-    private final FilmSuggestions filmSuggestions;
+    private final FilmSuggestionProvider filmSuggestions;
 
     @Inject
-    public Bootstrap(FilmSuggestions filmSuggestions) {
+    public Bootstrap(FilmSuggestionProvider filmSuggestions) {
         this.filmSuggestions = filmSuggestions;
     }
 
