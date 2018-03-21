@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.suggest;
 
-import com.codahale.metrics.MetricRegistry;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.mock;
 
 public class FilmSuggestionsIT {
     private static final int NUMBER_OF_TITLES = 50;
@@ -47,7 +45,7 @@ public class FilmSuggestionsIT {
         suggestions = new FilmSuggestions(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(htmlConnection, pool),
-                sampleScoreProviders(htmlConnection, mock(MetricRegistry.class), pool),
+                sampleScoreProviders(htmlConnection, pool),
                 pool
         );
     }
@@ -73,16 +71,15 @@ public class FilmSuggestionsIT {
     private FilmwebDescriptions sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
         return new FilmwebDescriptions(
                 new FilmwebProxy(new JsoupConnection(htmlConnection)),
-                mock(MetricRegistry.class),
                 pool);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, MetricRegistry metricRegistry, ExecutorService executorService) {
+    private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
-                new MetacriticScores(jsoupConnection, metricRegistry, executorService),
-                new ImdbWebScores(jsoupConnection, metricRegistry, executorService)
+                new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
+                new MetacriticScores(jsoupConnection, executorService),
+                new ImdbWebScores(jsoupConnection, executorService)
         );
     }
 

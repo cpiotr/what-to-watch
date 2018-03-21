@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.config;
 
-import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,9 +51,8 @@ public class Beans {
 
     @Bean
     TitleProvider ekinoTitles(
-            @Named("allCookiesHtml") HttpConnection<Element> httpConnection,
-            MetricRegistry metricRegistry) {
-        return new EkinoTitles(httpConnection, titlePagesPerRequest, metricRegistry);
+            @Named("allCookiesHtml") HttpConnection<Element> httpConnection) {
+        return new EkinoTitles(httpConnection, titlePagesPerRequest);
     }
 
     @Bean
@@ -65,33 +63,29 @@ public class Beans {
     @Bean
     DescriptionProvider filmwebDescriptions(
             FilmwebProxy filmwebProxy,
-            MetricRegistry metricRegistry,
             ExecutorService executorService) {
-        return new FilmwebDescriptions(filmwebProxy, metricRegistry, executorService);
+        return new FilmwebDescriptions(filmwebProxy, executorService);
     }
 
     @Bean
     ScoresProvider imdbScores(
             @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
-            MetricRegistry metricRegistry,
             ExecutorService executorService) {
-        return new ImdbWebScores(httpConnection, metricRegistry, executorService);
+        return new ImdbWebScores(httpConnection, executorService);
     }
 
     @Bean
     ScoresProvider filmwebScores(
             FilmwebProxy filmwebProxy,
-            MetricRegistry metricRegistry,
             ExecutorService executorService) {
-        return new FilmwebScores(filmwebProxy, metricRegistry, executorService);
+        return new FilmwebScores(filmwebProxy, executorService);
     }
 
     @Bean
     ScoresProvider metacriticScores(
             @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
-            MetricRegistry metricRegistry,
             ExecutorService executorService) {
-        return new MetacriticScores(httpConnection, metricRegistry, executorService);
+        return new MetacriticScores(httpConnection, executorService);
     }
 
     @Bean

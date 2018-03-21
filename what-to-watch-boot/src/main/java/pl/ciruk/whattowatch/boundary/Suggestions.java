@@ -1,7 +1,7 @@
 package pl.ciruk.whattowatch.boundary;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,6 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
@@ -35,13 +34,13 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 @Slf4j
 public class Suggestions {
     private final FilmSuggestionProvider suggestions;
-    private final Timer responses;
+    private final Timer responseTimer;
 
     @Inject
-    public Suggestions(FilmSuggestionProvider suggestions, MetricRegistry metricRegistry) {
+    public Suggestions(FilmSuggestionProvider suggestions) {
         this.suggestions = suggestions;
 
-        responses = metricRegistry.timer(name(Suggestions.class, "responses"));
+        responseTimer = Metrics.timer(Suggestions.class.getSimpleName() + ".responses");
     }
 
     @GET
@@ -60,20 +59,21 @@ public class Suggestions {
                 )
         );
 
-        Timer.Context time = responses.time();
         try {
-            List<FilmResult> films = CompletableFutures.getAllOf(suggestions.suggestFilms(pageNumber))
-                    .distinct()
-                    .filter(Film::isWorthWatching)
-                    .map(this::toFilmResult)
-                    .collect(toList());
+            List<FilmResult> films = responseTimer.record(() -> findSuggestions(pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
         } catch (AsyncExecutionException e) {
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
-        } finally {
-            time.stop();
         }
+    }
+
+    private List<FilmResult> findSuggestions(@PathParam("pageNumber") int pageNumber) {
+        return CompletableFutures.getAllOf(suggestions.suggestFilms(pageNumber))
+                .distinct()
+                .filter(Film::isWorthWatching)
+                .map(this::toFilmResult)
+                .collect(toList());
     }
 
     private FilmResult toFilmResult(Film film) {

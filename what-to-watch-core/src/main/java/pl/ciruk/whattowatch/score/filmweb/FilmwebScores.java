@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.text.NumberTokenizer;
@@ -12,6 +11,7 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static pl.ciruk.core.stream.Predicates.not;
 
 @Slf4j
@@ -30,13 +29,15 @@ public class FilmwebScores implements ScoresProvider {
 
     private final AtomicLong missingScores = new AtomicLong();
 
-    public FilmwebScores(FilmwebProxy filmwebProxy, MetricRegistry metricRegistry, ExecutorService executorService) {
+    public FilmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
         this.executorService = executorService;
 
-        metricRegistry.register(
-                name(FilmwebScores.class, "missingScores"),
-                (Gauge<Long>) missingScores::get
+        Metrics.gauge(
+                FilmwebScores.class.getSimpleName() + ".missingScores",
+                Collections.emptyList(),
+                missingScores,
+                AtomicLong::get
         );
     }
 

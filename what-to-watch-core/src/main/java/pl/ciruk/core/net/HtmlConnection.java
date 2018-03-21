@@ -1,7 +1,7 @@
 package pl.ciruk.core.net;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -13,18 +13,16 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
 @Slf4j
 public class HtmlConnection implements HttpConnection<String> {
     private final OkHttpClient okHttpClient;
 
-    private final Timer requests;
+    private final Timer requestsTimer;
 
-    public HtmlConnection(OkHttpClient httpClientSupplier, MetricRegistry metricRegistry) {
+    public HtmlConnection(OkHttpClient httpClientSupplier) {
         this.okHttpClient = httpClientSupplier;
 
-        this.requests = metricRegistry.timer(name(HtmlConnection.class, "requests"));
+        this.requestsTimer = Metrics.timer(HtmlConnection.class.getSimpleName() + ".requests");
     }
 
     @Override
@@ -46,7 +44,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private Optional<String> connectToAndGet(Request.Builder requestBuilder, String url) {
         try (Response response = execute(requestBuilder)) {
-            return Optional.ofNullable(response)
+            return Optional.of(response)
                     .filter(Response::isSuccessful)
                     .map(Response::body)
                     .flatMap(responseBody -> extractBodyAsString(responseBody, url));
@@ -68,11 +66,12 @@ public class HtmlConnection implements HttpConnection<String> {
     private Response execute(Request.Builder requestBuilder) throws IOException {
         Request build = requestBuilder.build();
 
-        Timer.Context time = requests.time();
         try {
-            return okHttpClient.newCall(build).execute();
-        } finally {
-            time.stop();
+            return requestsTimer.recordCallable(
+                    () -> okHttpClient.newCall(build).execute()
+            );
+        } catch (Exception e) {
+            throw new IOException(e);
         }
     }
 

@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.score.imdb;
 
-import com.codahale.metrics.MetricRegistry;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,12 +11,8 @@ import pl.ciruk.whattowatch.score.ScoreAssert;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.mock;
 
 public class ImdbWebScoresIT {
     private ScoresProvider scores;
@@ -26,7 +21,7 @@ public class ImdbWebScoresIT {
     public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scores = new ImdbWebScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
+        scores = new ImdbWebScores(connection, Executors.newSingleThreadExecutor());
     }
 
     @Test

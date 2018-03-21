@@ -1,18 +1,6 @@
 package pl.ciruk.whattowatch.suggest;
 
-import com.codahale.metrics.MetricRegistry;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Level;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -70,13 +58,12 @@ public class FilmSuggestionsBenchmark {
     @Setup(Level.Trial)
     public void initialize() {
         HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection();
-        MetricRegistry metricRegistry = new MetricRegistry();
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
         suggestionsWorkStealing = new FilmSuggestions(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, workStealingPool),
-                sampleScoreProviders(connection, metricRegistry, workStealingPool),
+                sampleScoreProviders(connection, workStealingPool),
                 workStealingPool
         );
 
@@ -84,7 +71,7 @@ public class FilmSuggestionsBenchmark {
         suggestionsFixedPool= new FilmSuggestions(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, fixedPool),
-                sampleScoreProviders(connection, metricRegistry, fixedPool),
+                sampleScoreProviders(connection, fixedPool),
                 fixedPool
         );
     }
@@ -125,19 +112,17 @@ public class FilmSuggestionsBenchmark {
     private FilmwebDescriptions sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
         return new FilmwebDescriptions(
                 new FilmwebProxy(new JsoupConnection(htmlConnection)),
-                new MetricRegistry(),
                 pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(
             HttpConnection<String> connection,
-            MetricRegistry metricRegistry,
             ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScores(new FilmwebProxy(jsoupConnection), metricRegistry, executorService),
-                new MetacriticScores(jsoupConnection, metricRegistry, executorService),
-                new ImdbWebScores(jsoupConnection, metricRegistry, executorService)
+                new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
+                new MetacriticScores(jsoupConnection, executorService),
+                new ImdbWebScores(jsoupConnection, executorService)
         );
     }
 

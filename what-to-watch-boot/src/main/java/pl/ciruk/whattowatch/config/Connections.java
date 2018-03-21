@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.config;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
@@ -52,14 +51,14 @@ public class Connections {
 
     @Bean
     @Named("allCookies")
-    HttpConnection<String> allCookiesConnection(OkHttpClient httpClient, MetricRegistry metricRegistry) {
-        return new HtmlConnection(httpClient, metricRegistry);
+    HttpConnection<String> allCookiesConnection(OkHttpClient httpClient) {
+        return new HtmlConnection(httpClient);
     }
 
     @Bean
     @Named("noCookies")
-    HttpConnection<String> noCookiesConnection(OkHttpClient okHttpClient, MetricRegistry metricRegistry) {
-        return new HtmlConnection(okHttpClient, metricRegistry);
+    HttpConnection<String> noCookiesConnection(OkHttpClient okHttpClient) {
+        return new HtmlConnection(okHttpClient);
     }
 
     @Bean

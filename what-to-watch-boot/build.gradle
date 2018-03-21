@@ -26,31 +26,30 @@ configurations {
 }
 
 dependencies {
+    runtime("org.springframework.boot:spring-boot-properties-migrator")
+
     compileOnly("org.projectlombok:lombok:$lombokVersion")
-    compile("org.springframework.boot:spring-boot-starter-actuator")
-    compile("org.springframework.boot:spring-boot-starter-jersey")
-    compile("org.springframework.boot:spring-boot-starter-data-redis")
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.boot:spring-boot-starter-undertow:$springBootVersion")
-    compile("com.google.guava:guava:$guavaVersion")
-    compile("redis.clients:jedis:$jedisVersion")
-    compile("org.jsoup:jsoup:$jsoupVersion")
-    compile("net.jodah:failsafe:$failsafeVersion")
-    compile("io.dropwizard.metrics:metrics-core:$metricsVersion")
+
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.springframework.boot:spring-boot-starter-jersey"
+    compile "org.springframework.boot:spring-boot-starter-data-redis"
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.boot:spring-boot-starter-undertow:$springBootVersion"
+    compile "com.google.guava:guava:$guavaVersion"
+    compile "redis.clients:jedis:$jedisVersion"
+    compile "org.jsoup:jsoup:$jsoupVersion"
+    compile "net.jodah:failsafe:$failsafeVersion"
+    compile "io.micrometer:micrometer-core:$micrometerVersion"
     compile project(":what-to-watch-core")
 
-    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile "org.springframework.boot:spring-boot-starter-test"
 
-    benchmarkCompile("org.openjdk.jmh:jmh-core:$jmhVersion")
-    benchmarkCompile("org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion")
+    benchmarkCompile "org.openjdk.jmh:jmh-core:$jmhVersion"
+    benchmarkCompile "org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion"
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.0'
-}
-
-springBoot {
-    mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
 }
 
 test {

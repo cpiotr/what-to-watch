@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
-import com.codahale.metrics.MetricRegistry;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,12 +11,8 @@ import pl.ciruk.whattowatch.score.ScoreAssert;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.mock;
 
 public class FilmwebScoresIT {
 
@@ -29,7 +24,6 @@ public class FilmwebScoresIT {
 
         scores = new FilmwebScores(
                 new FilmwebProxy(connection),
-                mock(MetricRegistry.class),
                 Executors.newSingleThreadExecutor());
     }
 

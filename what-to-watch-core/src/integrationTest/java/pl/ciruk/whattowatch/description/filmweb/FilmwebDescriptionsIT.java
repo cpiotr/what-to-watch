@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.description.filmweb;
 
-import com.codahale.metrics.MetricRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import pl.ciruk.core.net.TestConnections;
@@ -12,8 +11,6 @@ import pl.ciruk.whattowatch.title.Title;
 
 import java.util.concurrent.Executors;
 
-import static org.mockito.Mockito.mock;
-
 public class FilmwebDescriptionsIT {
 
     private FilmwebDescriptions descriptions;
@@ -23,7 +20,6 @@ public class FilmwebDescriptionsIT {
         JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptions(
                 new FilmwebProxy(connection),
-                mock(MetricRegistry.class),
                 Executors.newSingleThreadExecutor());
     }
 

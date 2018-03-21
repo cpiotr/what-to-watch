@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
@@ -50,7 +49,7 @@ public class WhatToWatchApplication {
         FilmSuggestions suggestions = new FilmSuggestions(
                 sampleTitleProvider(),
                 sampleDescriptionProvider(threadPool, connection),
-                sampleScoreProviders(threadPool, connection, new MetricRegistry()),
+                sampleScoreProviders(threadPool, connection),
                 threadPool);
 
         Stopwatch started = Stopwatch.createStarted();
@@ -78,7 +77,7 @@ public class WhatToWatchApplication {
     }
 
     public static HtmlConnection createHttpConnection() {
-        return new HtmlConnection(createHttpClient(), new MetricRegistry());
+        return new HtmlConnection(createHttpClient());
     }
 
     private static OkHttpClient createHttpClient() {
@@ -91,24 +90,22 @@ public class WhatToWatchApplication {
     private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
         return new FilmwebDescriptions(
                 new FilmwebProxy(connection),
-                new MetricRegistry(),
                 executorService);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(
             ExecutorService executorService,
-            JsoupConnection connection,
-            MetricRegistry metricRegistry) {
+            JsoupConnection connection) {
         return List.of(
-                new FilmwebScores(new FilmwebProxy(connection), metricRegistry, executorService),
-                new ImdbWebScores(connection, metricRegistry, executorService),
-                new MetacriticScores(connection, metricRegistry, executorService)
+                new FilmwebScores(new FilmwebProxy(connection), executorService),
+                new ImdbWebScores(connection, executorService),
+                new MetacriticScores(connection, executorService)
         );
     }
 
     private static TitleProvider sampleTitleProvider() {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new EkinoTitles(keepCookiesConnection, 20, new MetricRegistry());
+        return new EkinoTitles(keepCookiesConnection, 20);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

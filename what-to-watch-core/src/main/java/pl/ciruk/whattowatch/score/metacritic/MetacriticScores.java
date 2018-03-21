@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
@@ -13,6 +12,7 @@ import pl.ciruk.whattowatch.score.ScoreType;
 import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static pl.ciruk.core.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.title.Title.MISSING_YEAR;
@@ -39,19 +38,20 @@ public class MetacriticScores implements ScoresProvider {
 
     public MetacriticScores(
             HttpConnection<Element> connection,
-            MetricRegistry metricRegistry,
             ExecutorService executorService) {
         this.connection = connection;
         this.executorService = executorService;
 
-        metricRegistry.register(
-                name(MetacriticScores.class, "missingMetacriticScores"),
-                (Gauge<Long>) missingMetacriticScores::get
+        Metrics.gauge(
+                MethodHandles.lookup().lookupClass().getSimpleName() + "missingMetacriticScores",
+                missingMetacriticScores,
+                AtomicLong::get
         );
 
-        metricRegistry.register(
-                name(MetacriticScores.class, "missingNewYorkTimesScores"),
-                (Gauge<Long>) missingNewYorkTimesScores::get
+        Metrics.gauge(
+                MethodHandles.lookup().lookupClass().getSimpleName() + "missingNewYorkTimesScores",
+                missingNewYorkTimesScores,
+                AtomicLong::get
         );
     }
 

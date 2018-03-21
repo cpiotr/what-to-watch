@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.description.filmweb;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.text.MissingValueException;
@@ -10,6 +9,7 @@ import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.core.stream.Predicates.not;
 
@@ -30,13 +29,15 @@ public class FilmwebDescriptions implements DescriptionProvider {
 
     private final AtomicLong missingDescriptions = new AtomicLong();
 
-    public FilmwebDescriptions(FilmwebProxy filmwebProxy, MetricRegistry metricRegistry, ExecutorService executorService) {
+    public FilmwebDescriptions(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
         this.executorService = executorService;
 
-        metricRegistry.register(
-                name(FilmwebDescriptions.class, "missingDescriptions"),
-                (Gauge<Long>) missingDescriptions::get
+        Metrics.gauge(
+                FilmwebDescriptions.class.getSimpleName() + ".missingDescriptions",
+                Collections.emptyList(),
+                missingDescriptions,
+                AtomicLong::get
         );
     }
 

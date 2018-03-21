@@ -25,10 +25,6 @@ pmd {
     sourceSets = [sourceSets.main, sourceSets.test]
 }
 
-springBoot {
-    mainClass = 'pl.ciruk.whattowatch.WhatToWatchBoot'
-}
-
 task wrapper(type: Wrapper) {
     gradleVersion = '4.6'
 }

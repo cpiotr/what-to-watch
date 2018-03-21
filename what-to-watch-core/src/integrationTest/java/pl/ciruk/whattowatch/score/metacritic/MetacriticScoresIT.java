@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
-import com.codahale.metrics.MetricRegistry;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,12 +10,8 @@ import pl.ciruk.whattowatch.score.Score;
 import pl.ciruk.whattowatch.score.ScoreAssert;
 import pl.ciruk.whattowatch.title.Title;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.mock;
 
 public class MetacriticScoresIT {
     private MetacriticScores scores;
@@ -25,7 +20,7 @@ public class MetacriticScoresIT {
     public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scores = new MetacriticScores(connection, mock(MetricRegistry.class), Executors.newSingleThreadExecutor());
+        scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
     }
 
     @Test

@@ -1,19 +1,17 @@
 package pl.ciruk.whattowatch.title.ekino;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static com.codahale.metrics.MetricRegistry.name;
 
 @Slf4j
 public class EkinoTitles implements TitleProvider {
@@ -28,13 +26,14 @@ public class EkinoTitles implements TitleProvider {
 
     private final AtomicLong numberOfTitles = new AtomicLong();
 
-    public EkinoTitles(HttpConnection<Element> connection, int pagesPerRequest, MetricRegistry metricRegistry) {
+    public EkinoTitles(HttpConnection<Element> connection, int pagesPerRequest) {
         this.connection = connection;
         this.pagesPerRequest = pagesPerRequest;
 
-        metricRegistry.register(
-                name(EkinoTitles.class, "numberOfTitles"),
-                (Gauge<Long>) numberOfTitles::get);
+        Metrics.gauge(
+                MethodHandles.lookup().lookupClass().getSimpleName() + "numberOfTitles",
+                numberOfTitles,
+                AtomicLong::get);
 
         logConfiguration();
     }

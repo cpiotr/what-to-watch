@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.cache;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
@@ -11,6 +10,7 @@ import pl.ciruk.core.cache.CacheProvider;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,16 +28,18 @@ public class RedisCache implements CacheProvider<String> {
     private final CircuitBreaker circuitBreaker;
 
     @Inject
-    public RedisCache(StringRedisTemplate cache, MetricRegistry metricRegistry) {
+    public RedisCache(StringRedisTemplate cache) {
         this.cache = cache;
 
-        metricRegistry.register(
-                MetricRegistry.name(RedisCache.class, "missCounter"),
-                (Gauge<Long>) missCounter::get);
+        Metrics.gauge(
+                MethodHandles.lookup().lookupClass().getSimpleName() + ".missCounter",
+                missCounter,
+                AtomicLong::get);
 
-        metricRegistry.register(
-                MetricRegistry.name(RedisCache.class, "requestCounter"),
-                (Gauge<Long>) requestCounter::get);
+        Metrics.gauge(
+                MethodHandles.lookup().lookupClass().getSimpleName() + ".requestCounter",
+                requestCounter,
+                AtomicLong::get);
 
         circuitBreaker = new CircuitBreaker()
                 .withFailureThreshold(3, 10)
@@ -47,7 +49,7 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     @PostConstruct
-    void init() {
+    private void init() {
         log.debug("init - RedisCache created");
     }
 
@@ -71,7 +73,8 @@ public class RedisCache implements CacheProvider<String> {
     @Override
     public void put(String key, String value) {
         Failsafe.with(circuitBreaker)
-                .withFallback(() -> {})
+                .withFallback(() -> {
+                })
                 .run(() -> putValueToCache(key, value));
     }
 
