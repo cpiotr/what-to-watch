@@ -32,7 +32,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        Assertions.assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        Assertions.assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        Assertions.assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
 
     @Test

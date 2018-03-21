@@ -127,6 +127,7 @@ public class MetacriticScores implements ScoresProvider {
                 .mapToDouble(Double::valueOf)
                 .average()
                 .stream()
+                .map(grade -> grade / 100.0)
                 .boxed()
                 .findFirst();
     }

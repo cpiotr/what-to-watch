@@ -58,6 +58,7 @@ public class WhatToWatchApplication {
             CompletableFutures.getAllOf(suggestions.suggestFilms(1))
                     .limit(100)
                     .filter(Film::isNotEmpty)
+                    .filter(Film::isWorthWatching)
                     .forEach(System.out::println);
             started.stop();
 
