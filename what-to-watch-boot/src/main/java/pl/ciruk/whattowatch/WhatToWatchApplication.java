@@ -40,7 +40,7 @@ public class WhatToWatchApplication {
     public static void main(String[] args) {
         Properties properties = loadDevProperties();
         ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
-        Threads.setThreadNamePrefix("My-", threadPool);
+        Threads.setThreadNamePrefix("My", threadPool);
 
         JedisPool jedisPool = createJedisPool(properties);
         CacheProvider<String> cache = createJedisCache(jedisPool);
