@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.config;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +24,7 @@ import pl.ciruk.whattowatch.title.ekino.EkinoTitles;
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Configuration
 @Slf4j
@@ -40,13 +39,15 @@ public class Beans {
     @Bean
     ExecutorService executorService() {
         String threadPrefix = "WhatToWatch";
-        return new ThreadPoolExecutor(
+        ExecutorService threadPoolExecutor = new ThreadPoolExecutor(
                 filmPoolSize,
                 filmPoolSize,
                 0,
                 TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(10_000),
                 Threads.createThreadFactory(threadPrefix));
+
+        return ExecutorServiceMetrics.monitor(Metrics.globalRegistry, threadPoolExecutor, threadPrefix);
     }
 
     @Bean
