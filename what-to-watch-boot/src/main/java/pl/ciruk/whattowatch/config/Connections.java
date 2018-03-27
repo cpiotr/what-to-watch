@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
@@ -19,12 +18,9 @@ import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
-import pl.ciruk.core.net.json.JsonConnection;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.JedisShardInfo;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Named;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -52,41 +48,29 @@ public class Connections {
     }
 
     @Bean
-    @Named("allCookies")
-    HttpConnection<String> allCookiesConnection(OkHttpClient httpClient) {
+    @NotCached
+    HttpConnection<String> notCachedConnection(OkHttpClient httpClient) {
         return new HtmlConnection(httpClient);
     }
 
     @Bean
-    @Named("noCookies")
-    HttpConnection<String> noCookiesConnection(OkHttpClient okHttpClient) {
-        return new HtmlConnection(okHttpClient);
-    }
-
-    @Bean
-    @Named("cachedConnection")
+    @Cached
     HttpConnection<String> cachedConnection(
-            @Named("redisCache") CacheProvider<String> cacheProvider,
-            @Named("noCookies") HttpConnection<String> connection) {
+            CacheProvider<String> cacheProvider,
+            @NotCached HttpConnection<String> connection) {
         return new CachedConnection(cacheProvider, connection);
     }
 
     @Bean
-    @Named("allCookiesHtml")
-    HttpConnection<Element> jsoupConnectionAllCookies(@Named("allCookies") HttpConnection<String> allCookies) {
-        return new JsoupConnection(allCookies);
-    }
-
-    @Bean
-    @Named("noCookiesHtml")
-    HttpConnection<Element> jsoupConnection(@Named("cachedConnection") HttpConnection<String> connection) {
+    @Cached
+    HttpConnection<Element> jsoupConnection(@Cached HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 
     @Bean
-    @Named("noCookiesJson")
-    HttpConnection<JsonNode> jsonConnection(@Named("cachedConnection") HttpConnection<String> connection) {
-        return new JsonConnection(connection);
+    @NotCached
+    HttpConnection<Element> notCachedJsoupConnection(@Cached HttpConnection<String> connection) {
+        return new JsoupConnection(connection);
     }
 
     @Bean

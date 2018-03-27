@@ -51,41 +51,32 @@ public class Beans {
     }
 
     @Bean
-    TitleProvider ekinoTitles(
-            @Named("allCookiesHtml") HttpConnection<Element> httpConnection) {
+    TitleProvider ekinoTitles(@NotCached HttpConnection<Element> httpConnection) {
         return new EkinoTitles(httpConnection, titlePagesPerRequest);
     }
 
     @Bean
-    FilmwebProxy filmwebProxy(@Named("noCookiesHtml") HttpConnection<Element> httpConnection) {
+    FilmwebProxy filmwebProxy(@Cached HttpConnection<Element> httpConnection) {
         return new FilmwebProxy(httpConnection);
     }
 
     @Bean
-    DescriptionProvider filmwebDescriptions(
-            FilmwebProxy filmwebProxy,
-            ExecutorService executorService) {
+    DescriptionProvider filmwebDescriptions(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         return new FilmwebDescriptions(filmwebProxy, executorService);
     }
 
     @Bean
-    ScoresProvider imdbScores(
-            @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
-            ExecutorService executorService) {
+    ScoresProvider imdbScores(@Cached HttpConnection<Element> httpConnection, ExecutorService executorService) {
         return new ImdbWebScores(httpConnection, executorService);
     }
 
     @Bean
-    ScoresProvider filmwebScores(
-            FilmwebProxy filmwebProxy,
-            ExecutorService executorService) {
+    ScoresProvider filmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         return new FilmwebScores(filmwebProxy, executorService);
     }
 
     @Bean
-    ScoresProvider metacriticScores(
-            @Named("noCookiesHtml") HttpConnection<Element> httpConnection,
-            ExecutorService executorService) {
+    ScoresProvider metacriticScores(@Cached HttpConnection<Element> httpConnection, ExecutorService executorService) {
         return new MetacriticScores(httpConnection, executorService);
     }
 
@@ -96,6 +87,11 @@ public class Beans {
             List<ScoresProvider> scoreProviders,
             ExecutorService executorService) {
         return new FilmSuggestions(titleProvider, descriptionProvider, scoreProviders, executorService);
+    }
+
+    @Bean
+    Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider) {
+        return new Bootstrap(filmSuggestionProvider);
     }
 
     @PostConstruct
