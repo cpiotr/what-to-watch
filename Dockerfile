@@ -32,7 +32,7 @@ ENV JVM_OPTS="-Xmx1G -Xms1G \
 
 COPY ./ /what-to-watch/
 WORKDIR /what-to-watch
-RUN sh -c './gradlew clean build -x check -Pversion=$W2W_VERSION'
+RUN sh -c './gradlew clean build -Pversion=$W2W_VERSION'
 RUN sh -c 'ls -al ./what-to-watch-boot/build/libs/'
 
 EXPOSE 8080
