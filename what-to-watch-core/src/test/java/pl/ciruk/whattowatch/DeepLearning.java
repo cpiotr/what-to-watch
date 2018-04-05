@@ -1,9 +1,11 @@
 package pl.ciruk.whattowatch;
 
+import com.google.common.collect.Lists;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
@@ -12,9 +14,13 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.ui.standalone.ClassPathResource;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.BaseNDArray;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.iterator.fetcher.BaseDataFetcher;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.io.IOException;
@@ -38,9 +44,9 @@ public class DeepLearning {
                 .learningRate(2e-2)
                 .trainingWorkspaceMode(WorkspaceMode.SEPARATE).inferenceWorkspaceMode(WorkspaceMode.SEPARATE)   //https://deeplearning4j.org/workspaces
                 .list()
-                .layer(0, new GravesLSTM.Builder().nIn(vectorSize).nOut(256)
-                        .activation(Activation.TANH).build())
-                .layer(1, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
+                .layer(0, new GravesLSTM.Builder().nIn(vectorSize).nOut(128).activation(Activation.TANH).build())
+                .layer(1, new GravesLSTM.Builder().nIn(128).nOut(256).activation(Activation.SIGMOID).build())
+                .layer(2, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
                         .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(256).nOut(10).build())
                 .pretrain(false).backprop(true).build();
 
@@ -52,15 +58,17 @@ public class DeepLearning {
             net.fit(allData);
         }
 
-        RecordReader recordReader = new CSVRecordReader(0, '\t');
-        recordReader.initialize(new FileSplit(new ClassPathResource("data.csv").getFile()));
-
-        DataSetIterator iterator = new RecordReaderDataSetIterator(recordReader, 1, 4, 10);
-        INDArray output = net.output(iterator);
-        System.out.println(output);
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i + " " + output.getDouble(i));
+        int[] ints = {66, 70, 90, 72};
+        INDArray input = Nd4j.create(1, 4);
+        for (int i = 0; i < ints.length; i++) {
+            input.putScalar(i, ints[i]);
         }
+        INDArray output = net.output(input);
+        double score = 0.0;
+        for (int i = 0; i < 10; i++) {
+            score += (i + 1) * output.getDouble(i);
+        }
+        System.out.println(score);
     }
 
     private static DataSet readDataSet() throws IOException, InterruptedException {
