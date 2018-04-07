@@ -42,4 +42,14 @@ public class FilmwebDescriptionsIT {
 
         DescriptionAssert.assertThat(description).hasTitle("A United Kingdom");
     }
+
+    @Test
+    public void shouldResolveDescriptionFromOriginalTitle() {
+        Title title = Title.builder().title("Pasażer - HD").originalTitle("The Commuter").year(2018).build();
+
+        Description description = descriptions.descriptionOf(title)
+                .orElseThrow(AssertionError::new);
+
+        DescriptionAssert.assertThat(description).hasTitle("The Commuter");
+    }
 }
