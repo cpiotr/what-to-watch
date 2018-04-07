@@ -63,7 +63,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 .peek(description -> description.foundFor(title))
                 .findAny();
         if (!foundDescription.isPresent()) {
-            log.warn("Missing description for: {}", title);
+            log.warn("descriptionOf - Missing description for: {}", title);
             missingDescriptions.incrementAndGet();
         }
 
