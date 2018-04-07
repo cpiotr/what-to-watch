@@ -17,11 +17,11 @@ public class DescriptionAssert extends AbstractAssert<DescriptionAssert, Descrip
     public DescriptionAssert hasTitle(String title) {
         Title itemTitle = actual.getTitle();
 
-        boolean containsTitle = itemTitle.getOriginalTitle().equalsIgnoreCase(title)
+        boolean descriptionHasTitle = itemTitle.getOriginalTitle().equalsIgnoreCase(title)
                 || itemTitle.getTitle().equalsIgnoreCase(title);
 
-        Assertions.assertThat(containsTitle)
-                .as("Contains title: " + title)
+        Assertions.assertThat(descriptionHasTitle)
+                .as("Has title: " + title)
                 .isTrue();
 
         return this;
