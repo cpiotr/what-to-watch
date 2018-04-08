@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -77,14 +78,19 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 .flatMap(FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT::extractFrom)
                 .map(filmwebProxy::getPageWithFilmDetailsFor)
                 .flatMap(Optional::stream)
-                .map(pageWithDetails -> {
-                    try {
-                        return extractDescriptionFrom(pageWithDetails);
-                    } catch (MissingValueException e) {
-                        log.warn("filmsForTitle - Could not get description for {} ({})", title, year);
-                        return Description.empty();
-                    }
-                }).filter(not(Description::isEmpty));
+                .map(extractDescriptionOrElse(() -> log.warn("Could not get description for {} ({})", title, year)))
+                .filter(not(Description::isEmpty));
+    }
+
+    private Function<Element, Description> extractDescriptionOrElse(Runnable actionIfMissing) {
+        return pageWithDetails -> {
+            try {
+                return extractDescriptionFrom(pageWithDetails);
+            } catch (MissingValueException e) {
+                actionIfMissing.run();
+                return Description.empty();
+            }
+        };
     }
 
     private Description extractDescriptionFrom(Element pageWithDetails) {
