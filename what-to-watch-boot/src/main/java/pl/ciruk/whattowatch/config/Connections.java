@@ -69,7 +69,7 @@ public class Connections {
 
     @Bean
     @NotCached
-    HttpConnection<Element> notCachedJsoupConnection(@Cached HttpConnection<String> connection) {
+    HttpConnection<Element> notCachedJsoupConnection(@NotCached HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 
