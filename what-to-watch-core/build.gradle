@@ -27,8 +27,6 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "io.micrometer:micrometer-core:$micrometerVersion"
-    compile "org.deeplearning4j:deeplearning4j-core:$dl4jVersion"
-    compile "org.nd4j:nd4j-native-platform:$dl4jVersion"
 
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
     testCompile "junit:junit:$junitVersion"

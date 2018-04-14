@@ -1,0 +1,38 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+version '0.0.1'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.9
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    compile "org.deeplearning4j:deeplearning4j-core:$dl4jVersion"
+    compile "org.nd4j:nd4j-native-platform:$dl4jVersion"
+    compile project(":what-to-watch-core")
+
+    testCompile "junit:junit:$junitVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "org.assertj:assertj-core:$assertjVersion"
+
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.9"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.9"
+}

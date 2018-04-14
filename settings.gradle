@@ -1,3 +1,4 @@
 include 'what-to-watch-core'
 include 'what-to-watch-boot'
+include 'what-to-watch-neural'
 
