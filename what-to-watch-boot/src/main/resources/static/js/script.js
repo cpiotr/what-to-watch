@@ -5,28 +5,33 @@ filmsApp.controller('FilmListController', function ($scope, FilmList) {
 });
 
 filmsApp.factory('FilmList', function($http) {
-	var FilmList = function() {
-		this.items = [];
-		this.busy = false;
-		this.page = 1;
-	};
+    var FilmList = function() {
+        this.items = [];
+        this.busy = false;
+        this.page = 1;
+    };
 
-	FilmList.prototype.nextPage = function() {
-		if (this.busy) return;
-		this.busy = true;
-		console.log("Loading films for page: " + this.page);
+    FilmList.prototype.nextPage = function() {
+        if (this.busy) return;
 
-		$http
-			.get("/resources/suggestions/" + this.page)
-			.success(function(data) {
-				var items = data;
-				for (var i = 0; i < items.length; i++) {
-					this.items.push(items[i]);
-				}
-				this.page += 1;
-				this.busy = false;
-			}.bind(this));
-	};
+        var self = this;
+        this.busy = true;
+        console.log("Loading films for page: " + this.page);
 
-	return FilmList;
+        $http
+            .get("/resources/suggestions/" + this.page)
+            .success(function(data) {
+                var receivedFilms = data;
+                for (var i = 0; i < receivedFilms.length; i++) {
+                    this.items.push(receivedFilms[i]);
+                }
+                this.page += 1;
+                this.busy = false;
+                if (receivedFilms.length == 0 || this.items.length <= 3) {
+                    self.nextPage();
+                }
+            }.bind(this));
+    };
+
+    return FilmList;
 });
