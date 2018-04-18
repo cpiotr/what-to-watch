@@ -12,8 +12,9 @@ class NeuralScoresTest {
     companion object {
         private var neuralScores: NeuralScores = NeuralScores(NeuralScores.readDataSet())
         @BeforeClass
+        @JvmStatic
         fun setUp() {
-            neuralScores.train(500)
+            neuralScores.train(1000)
         }
     }
 
@@ -24,8 +25,7 @@ class NeuralScoresTest {
         val score = neuralScores.calculateScore(scores)
 
         ScoreAssert.assertThat(score)
-                .hasGradeGreaterThan(0.7)
-                .hasGradeLessThan(0.8)
+                .hasGradeCloseTo(0.7)
     }
 
     @Test
@@ -35,8 +35,7 @@ class NeuralScoresTest {
         val score = neuralScores.calculateScore(scores)
 
         ScoreAssert.assertThat(score)
-                .hasGradeGreaterThan(0.9)
-                .hasGradeLessThan(1.0)
+                .hasGradeCloseTo(0.9)
     }
 
     @Test
@@ -46,8 +45,7 @@ class NeuralScoresTest {
         val score = neuralScores.calculateScore(scores)
 
         ScoreAssert.assertThat(score)
-                .hasGradeGreaterThan(0.3)
-                .hasGradeLessThan(0.4)
+                .hasGradeCloseTo(0.3)
     }
 
     private fun createScores(

@@ -7,8 +7,6 @@ buildscript {
     }
 }
 
-version '0.0.1'
-
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
@@ -20,8 +18,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    compile "org.deeplearning4j:deeplearning4j-core:$dl4jVersion"
-    compile "org.nd4j:nd4j-native-platform:$dl4jVersion"
+    compile "org.beykery:neuroph:$neurophVersion"
     compile project(":what-to-watch-core")
 
     testCompile "junit:junit:$junitVersion"
