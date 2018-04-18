@@ -18,24 +18,18 @@ class NeuralScores(private val dataSet: DataSet) {
             resource.readText().split("\n")
                     .drop(1) // Header
                     .map { it.split("\t") }
-                    .map { values -> values.map { it.toDouble() }.toDoubleArray() }
-                    .map { doubles -> DataSetRow(withoutLast(doubles), onlyLast(doubles)) }
+                    .map { values -> values.map { it.toDouble() } }
+                    .map { doubles -> DataSetRow(extractInput(doubles), extractOutput(doubles)) }
                     .forEach { dataSet.addRow(it) }
             return dataSet
         }
 
-        private fun withoutLast(doubles: DoubleArray): ArrayList<Double> {
-            val arrayList = ArrayList(doubles.map { it / 100.0 }.slice(0 until doubles.size - 1))
-            println(arrayList)
-            return arrayList
+        private fun extractInput(doubles: List<Double>): DoubleArray {
+            return doubles.map { it / 100.0 }.dropLast(1).toDoubleArray()
         }
 
-        private fun onlyLast(doubles: DoubleArray): ArrayList<Double> {
-            val doubleArray = DoubleArray(10)
-            doubleArray[doubles.last().toInt()] = 1.0
-            val arrayList = ArrayList(listOf(doubles.last() / 10.0))
-            println(arrayList)
-            return arrayList
+        private fun extractOutput(doubles: List<Double>): DoubleArray {
+            return listOf(doubles.last() / 10.0).toDoubleArray()
         }
     }
 
