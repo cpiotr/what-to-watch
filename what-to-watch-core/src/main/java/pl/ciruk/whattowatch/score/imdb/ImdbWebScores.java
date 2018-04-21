@@ -1,9 +1,10 @@
 package pl.ciruk.whattowatch.score.imdb;
 
 import io.micrometer.core.instrument.Metrics;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.text.NumberToken;
 import pl.ciruk.core.text.NumberTokenizer;
@@ -23,8 +24,8 @@ import java.util.stream.Stream;
 import static pl.ciruk.whattowatch.score.imdb.ImdbSelectors.*;
 import static pl.ciruk.whattowatch.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEARCH_RESULT;
 
-@Slf4j
 public class ImdbWebScores implements ScoresProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
 
     private final HttpConnection<Element> httpConnection;
@@ -56,7 +57,7 @@ public class ImdbWebScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.debug("scoresOf - Description: {}", description);
+        LOGGER.debug("scoresOf - Description: {}", description);
 
         HttpUrl url = new HttpUrl.Builder()
                 .scheme("http")
@@ -72,13 +73,13 @@ public class ImdbWebScores implements ScoresProvider {
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
-            log.warn("scoresOf - Missing score for {}", description);
-            log.trace("scoresOf - Search query: {}", url.toString());
+            LOGGER.warn("scoresOf - Missing score for {}", description);
+            LOGGER.trace("scoresOf - Search query: {}", url.toString());
             missingScores.incrementAndGet();
         }
 
         return firstResult.stream()
-                .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("scoresOf - Score for {}: {}", description, score));
     }
 
     private Optional<Element> findFirstResult(Element searchResults, Description description) {

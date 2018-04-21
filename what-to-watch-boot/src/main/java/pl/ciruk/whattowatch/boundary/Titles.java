@@ -1,7 +1,8 @@
 package pl.ciruk.whattowatch.boundary;
 
-import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ManagedAsync;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
@@ -14,6 +15,7 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
@@ -21,9 +23,10 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 @Component
 @Path("/titles")
-@Slf4j
 public class Titles {
-    TitleProvider titles;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private TitleProvider titles;
 
     @Inject
     public Titles(TitleProvider titles) {
@@ -37,7 +40,7 @@ public class Titles {
     public void findAll(
             @Suspended AsyncResponse asyncResponse,
             @PathParam("pageNumber") int pageNumber) {
-        log.info("findAll - Page number: {}", pageNumber);
+        LOGGER.info("findAll - Page number: {}", pageNumber);
 
         asyncResponse.resume(
                 Response.ok(titles.streamOfTitles(pageNumber).collect(toList())).build()

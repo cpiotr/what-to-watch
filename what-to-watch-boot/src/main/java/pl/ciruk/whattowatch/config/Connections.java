@@ -1,9 +1,10 @@
 package pl.ciruk.whattowatch.config;
 
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,11 +22,12 @@ import pl.ciruk.core.net.html.JsoupConnection;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-@Slf4j
 public class Connections {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Value("${redis.host}")
     private String redisHost;
@@ -97,8 +99,8 @@ public class Connections {
 
     @PostConstruct
     private void logConfiguration() {
-        log.info("Redis host: <{}>", redisHost);
-        log.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
-        log.info("HttpClient pool max idle: <{}>", httpPoolMaxIdle);
+        LOGGER.info("Redis host: <{}>", redisHost);
+        LOGGER.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
+        LOGGER.info("HttpClient pool max idle: <{}>", httpPoolMaxIdle);
     }
 }

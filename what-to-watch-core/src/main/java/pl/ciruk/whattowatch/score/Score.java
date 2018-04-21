@@ -1,12 +1,5 @@
 package pl.ciruk.whattowatch.score;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
-
-@Getter
-@ToString
-@Builder
 public class Score {
 
     private final double grade;
@@ -16,6 +9,13 @@ public class Score {
     private String source;
 
     private ScoreType type;
+
+    private Score(double grade, long quantity, String source, ScoreType type) {
+        this.grade = grade;
+        this.quantity = quantity;
+        this.source = source;
+        this.type = type;
+    }
 
     public static Score amateur(double grade) {
         return amateur(grade, ScoreType.AMATEUR.getWeight());
@@ -41,7 +41,69 @@ public class Score {
                 .build();
     }
 
+    public static ScoreBuilder builder() {
+        return new ScoreBuilder();
+    }
+
     public boolean isSignificant() {
         return quantity >= type.getSignificantQuantityThreshold();
+    }
+
+    public double getGrade() {
+        return this.grade;
+    }
+
+    public long getQuantity() {
+        return this.quantity;
+    }
+
+    public String getSource() {
+        return this.source;
+    }
+
+    public ScoreType getType() {
+        return this.type;
+    }
+
+    public String toString() {
+        return "Score(grade=" + this.getGrade() + ", quantity=" + this.getQuantity() + ", source=" + this.getSource() + ", type=" + this.getType() + ")";
+    }
+
+    public static class ScoreBuilder {
+        private double grade;
+        private long quantity;
+        private String source;
+        private ScoreType type;
+
+        ScoreBuilder() {
+        }
+
+        public Score.ScoreBuilder grade(double grade) {
+            this.grade = grade;
+            return this;
+        }
+
+        public Score.ScoreBuilder quantity(long quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+
+        public Score.ScoreBuilder source(String source) {
+            this.source = source;
+            return this;
+        }
+
+        public Score.ScoreBuilder type(ScoreType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Score build() {
+            return new Score(grade, quantity, source, type);
+        }
+
+        public String toString() {
+            return "Score.ScoreBuilder(grade=" + this.grade + ", quantity=" + this.quantity + ", source=" + this.source + ", type=" + this.type + ")";
+        }
     }
 }

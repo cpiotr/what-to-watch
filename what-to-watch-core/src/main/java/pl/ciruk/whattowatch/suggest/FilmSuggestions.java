@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.suggest;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.Film;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
@@ -9,6 +10,7 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -21,8 +23,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
-@Slf4j
 public class FilmSuggestions implements FilmSuggestionProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private TitleProvider titles;
 
     private DescriptionProvider descriptions;
@@ -46,7 +49,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 
     @Override
     public Stream<CompletableFuture<Film>> suggestFilms(int pageNumber) {
-        log.info("suggestFilms");
+        LOGGER.info("suggestFilms");
 
         return titles.streamOfTitles(pageNumber)
                 .map(this::findFilmForTitle);
@@ -58,7 +61,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
                         description -> description.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())),
                         executorService)
                 .exceptionally(t -> {
-                    log.error("Cannot get film for title {}", title, t);
+                    LOGGER.error("Cannot get film for title {}", title, t);
                     return Film.empty();
                 });
     }

@@ -1,12 +1,15 @@
 package pl.ciruk.whattowatch.config;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
 
 import javax.annotation.PostConstruct;
+import java.lang.invoke.MethodHandles;
 
-@Slf4j
 public class Bootstrap {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final FilmSuggestionProvider filmSuggestions;
 
     public Bootstrap(FilmSuggestionProvider filmSuggestions) {
@@ -15,10 +18,10 @@ public class Bootstrap {
 
     @PostConstruct
     protected void onStartup() {
-        log.info("Startup processing");
+        LOGGER.info("Startup processing");
 
         long numberOfFilms = filmSuggestions.suggestFilms(1)
                 .count();
-        log.info("Number of suggestions: {}", numberOfFilms);
+        LOGGER.info("Number of suggestions: {}", numberOfFilms);
     }
 }

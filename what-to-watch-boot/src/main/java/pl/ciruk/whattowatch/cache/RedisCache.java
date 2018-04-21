@@ -1,9 +1,10 @@
 package pl.ciruk.whattowatch.cache;
 
 import io.micrometer.core.instrument.Metrics;
-import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
 
@@ -16,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Named
-@Slf4j
 public class RedisCache implements CacheProvider<String> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final StringRedisTemplate cache;
 
@@ -50,7 +51,7 @@ public class RedisCache implements CacheProvider<String> {
 
     @PostConstruct
     private void init() {
-        log.debug("init - RedisCache created");
+        LOGGER.debug("init - RedisCache created");
     }
 
     @Override

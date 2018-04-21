@@ -28,8 +28,6 @@ configurations {
 dependencies {
     runtime("org.springframework.boot:spring-boot-properties-migrator")
 
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
-
     compile "org.springframework.boot:spring-boot-starter-actuator"
     runtime "io.micrometer:micrometer-registry-prometheus"
 
@@ -48,10 +46,6 @@ dependencies {
 
     benchmarkCompile "org.openjdk.jmh:jmh-core:$jmhVersion"
     benchmarkCompile "org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion"
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.0'
 }
 
 test {

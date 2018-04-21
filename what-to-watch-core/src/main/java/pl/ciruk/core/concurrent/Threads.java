@@ -1,23 +1,24 @@
 package pl.ciruk.core.concurrent;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-@Slf4j
-@UtilityClass
 public final class Threads {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     public static void setThreadNamePrefix(String threadPrefix, ExecutorService pool) {
         try {
             Field workerNamePrefix = pool.getClass().getDeclaredField("workerNamePrefix");
             workerNamePrefix.setAccessible(true);
             workerNamePrefix.set(pool, threadPrefix + "-");
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            log.warn("Could not change name prefix for thread pool", e);
+            LOGGER.warn("Could not change name prefix for thread pool", e);
         }
     }
 
@@ -25,7 +26,7 @@ public final class Threads {
         return new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat(threadNamePrefix + "-%s")
-                .setUncaughtExceptionHandler((thread, throwable) -> log.error("Uncaught exception in {}", thread, throwable))
+                .setUncaughtExceptionHandler((thread, throwable) -> LOGGER.error("Uncaught exception in {}", thread, throwable))
                 .build();
     }
 }

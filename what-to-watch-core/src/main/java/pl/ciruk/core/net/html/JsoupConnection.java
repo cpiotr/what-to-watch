@@ -1,16 +1,18 @@
 package pl.ciruk.core.net.html;
 
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.net.HttpConnection;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Slf4j
 public class JsoupConnection implements HttpConnection<Element> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private HttpConnection<String> connection;
 

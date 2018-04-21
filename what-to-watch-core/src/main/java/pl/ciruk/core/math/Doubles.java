@@ -1,10 +1,7 @@
 package pl.ciruk.core.math;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.function.Predicate;
 
-@UtilityClass
 public final class Doubles {
 
     public static final double EPSILON = 1e-5;

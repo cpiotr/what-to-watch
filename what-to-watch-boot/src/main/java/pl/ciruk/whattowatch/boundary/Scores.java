@@ -1,7 +1,8 @@
 package pl.ciruk.whattowatch.boundary;
 
-import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ManagedAsync;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -18,6 +19,7 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -32,9 +34,10 @@ import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
 
 @Component
 @Path("/scores")
-@Slf4j
 public class Scores {
-    List<ScoresProvider> scoresProviders;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private List<ScoresProvider> scoresProviders;
 
     @Inject
     public Scores(List<ScoresProvider> scoresProviders) {
@@ -43,7 +46,7 @@ public class Scores {
 
     @PostConstruct
     void init() {
-        log.debug("init - ScoresProviders: {}", scoresProviders);
+        LOGGER.debug("init - ScoresProviders: {}", scoresProviders);
     }
 
     @GET

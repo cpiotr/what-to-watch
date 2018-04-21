@@ -1,14 +1,16 @@
 package pl.ciruk.whattowatch.description.filmweb;
 
 import io.micrometer.core.instrument.Metrics;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.description.DescriptionProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,8 +23,9 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.core.stream.Predicates.not;
 
-@Slf4j
 public class FilmwebDescriptions implements DescriptionProvider {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ExecutorService executorService;
 
@@ -48,14 +51,14 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 () -> descriptionOf(title),
                 executorService
         ).exceptionally(t -> {
-            log.error("Cannot get description of {}", title, t);
+            LOGGER.error("Cannot get description of {}", title, t);
             return Optional.empty();
         });
     }
 
     @Override
     public Optional<Description> descriptionOf(Title title) {
-        log.debug("descriptionOf - Title: {}", title);
+        LOGGER.debug("descriptionOf - Title: {}", title);
 
         Optional<Description> foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
                 .filter(Objects::nonNull)
@@ -64,7 +67,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 .peek(description -> description.foundFor(title))
                 .findAny();
         if (!foundDescription.isPresent()) {
-            log.warn("descriptionOf - Missing description for: {}", title);
+            LOGGER.warn("descriptionOf - Missing description for: {}", title);
             missingDescriptions.incrementAndGet();
         }
 
@@ -78,7 +81,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 .flatMap(FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT::extractFrom)
                 .map(filmwebProxy::getPageWithFilmDetailsFor)
                 .flatMap(Optional::stream)
-                .map(extractDescriptionOrElse(() -> log.warn("Could not get description for {} ({})", title, year)))
+                .map(extractDescriptionOrElse(() -> LOGGER.warn("Could not get description for {} ({})", title, year)))
                 .filter(not(Description::isEmpty));
     }
 

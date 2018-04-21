@@ -1,13 +1,8 @@
 package pl.ciruk.core.math;
 
 
-import lombok.experimental.UtilityClass;
+import static java.lang.Math.*;
 
-import static java.lang.Math.log;
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
-
-@UtilityClass
 public class WilsonScore {
     private static double P_NORMAL_DISTRIBUTION(double qn) {
         double[] b = {

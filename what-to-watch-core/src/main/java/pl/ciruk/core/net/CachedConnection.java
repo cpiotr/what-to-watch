@@ -1,14 +1,17 @@
 package pl.ciruk.core.net;
 
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.cache.CacheProvider;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Slf4j
 public class CachedConnection implements HttpConnection<String> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final CacheProvider<String> cache;
 
     private final HttpConnection<String> connection;
@@ -20,11 +23,11 @@ public class CachedConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndGet(String url) {
-        log.trace("connectToAndGet - Url: {}", url);
+        LOGGER.trace("connectToAndGet - Url: {}", url);
 
         Optional<String> document = cache.get(url);
         if (!document.isPresent()) {
-            log.trace("connectToAndGet - Cache miss for: {}", url);
+            LOGGER.trace("connectToAndGet - Cache miss for: {}", url);
             document = connection.connectToAndGet(url);
             document.ifPresent(content -> cache.put(url, content));
         }
@@ -33,8 +36,8 @@ public class CachedConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-        log.trace("connectToAndConsume - Url: {}", url);
-        log.trace("connectToAndConsume - Method currently does not rely on cache");
+        LOGGER.trace("connectToAndConsume - Url: {}", url);
+        LOGGER.trace("connectToAndConsume - Method currently does not rely on cache");
 
         return connection.connectToAndConsume(url, action);
     }

@@ -1,10 +1,11 @@
 package pl.ciruk.whattowatch;
 
 import com.google.common.base.Stopwatch;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.cache.CacheProvider;
 import pl.ciruk.core.concurrent.CompletableFutures;
 import pl.ciruk.core.concurrent.Threads;
@@ -25,6 +26,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -32,8 +34,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 public class WhatToWatchApplication {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final int POOL_SIZE = 32;
 
@@ -67,7 +69,7 @@ public class WhatToWatchApplication {
 
             System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
         } catch (InterruptedException e) {
-            log.error("main - Processing error", e);
+            LOGGER.error("main - Processing error", e);
         } finally {
             jedisPool.destroy();
         }
@@ -142,7 +144,7 @@ public class WhatToWatchApplication {
         try {
             properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties"));
         } catch (Exception e) {
-            log.error("loadDevProperties - Cannot load application-dev properties", e);
+            LOGGER.error("loadDevProperties - Cannot load application-dev properties", e);
         }
         return properties;
     }

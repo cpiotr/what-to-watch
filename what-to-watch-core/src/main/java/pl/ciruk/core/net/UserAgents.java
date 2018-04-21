@@ -1,11 +1,8 @@
 package pl.ciruk.core.net;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@UtilityClass
 class UserAgents {
     private static final List<String> AGENTS = List.of(
             "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) Otter/0.1.01 Safari/538.1",

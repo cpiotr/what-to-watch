@@ -1,8 +1,9 @@
 package pl.ciruk.whattowatch;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.*;
 import org.springframework.test.context.ContextConfiguration;
@@ -11,6 +12,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ciruk.whattowatch.config.Beans;
 import pl.ciruk.whattowatch.config.Bootstrap;
 import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
+
+import java.lang.invoke.MethodHandles;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = WhatToWatchBoot.class)
@@ -26,15 +29,16 @@ public class WhatToWatchBootTest {
     @ComponentScan("pl.ciruk.whattowatch")
     @Configuration
     @Import(Beans.class)
-    @Slf4j
     static class TestConfig {
+        private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
         @Bean
         @Primary
         Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider) {
             return new Bootstrap(filmSuggestionProvider) {
                 @Override
                 protected void onStartup() {
-                    log.info("Do nothing");
+                    LOGGER.info("Do nothing");
                 }
             };
         }

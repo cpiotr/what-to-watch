@@ -7,12 +7,13 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 
-public class Resources {
+public final class Resources {
     public static String readContentOf(String resourceName) {
         try {
             URL url = Resources.class.getClassLoader().getResource(resourceName);
-            URI uri = url.toURI();
+            URI uri = Objects.requireNonNull(url).toURI();
             return new String(
                     Files.readAllBytes(Paths.get(uri)),
                     Charset.defaultCharset());

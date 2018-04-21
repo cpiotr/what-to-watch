@@ -1,8 +1,9 @@
 package pl.ciruk.whattowatch.score.filmweb;
 
 import io.micrometer.core.instrument.Metrics;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.text.NumberTokenizer;
 import pl.ciruk.whattowatch.description.Description;
 import pl.ciruk.whattowatch.score.Score;
@@ -11,6 +12,7 @@ import pl.ciruk.whattowatch.score.ScoresProvider;
 import pl.ciruk.whattowatch.source.FilmwebProxy;
 import pl.ciruk.whattowatch.title.Title;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -21,8 +23,9 @@ import java.util.stream.Stream;
 
 import static pl.ciruk.core.stream.Predicates.not;
 
-@Slf4j
 public class FilmwebScores implements ScoresProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final FilmwebProxy filmwebProxy;
 
     private final ExecutorService executorService;
@@ -51,10 +54,10 @@ public class FilmwebScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.debug("scoresOf - Description: {}", description);
+        LOGGER.debug("scoresOf - Description: {}", description);
 
         return scoresForTitle(description.getTitle())
-                .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("scoresOf - Score for {}: {}", description, score));
     }
 
     private Stream<Score> scoresForTitle(Title title) {
@@ -111,7 +114,7 @@ public class FilmwebScores implements ScoresProvider {
     private Consumer<Optional<?>> logIfMissing(Title title) {
         return score -> {
             if (!score.isPresent()) {
-                log.warn("Missing score for: {}", title);
+                LOGGER.warn("Missing score for: {}", title);
                 missingScores.incrementAndGet();
             }
         };

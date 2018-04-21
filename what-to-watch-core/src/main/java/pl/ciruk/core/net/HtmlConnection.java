@@ -2,19 +2,22 @@ package pl.ciruk.core.net;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Slf4j
 public class HtmlConnection implements HttpConnection<String> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final OkHttpClient okHttpClient;
 
     private final Timer requestsTimer;
@@ -27,7 +30,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndGet(String url) {
-        log.trace("connectToAndGet - Url: {}", url);
+        LOGGER.trace("connectToAndGet - Url: {}", url);
 
         Request.Builder requestBuilder = buildRequestTo(url);
         return connectToAndGet(requestBuilder, url);
@@ -35,7 +38,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-        log.trace("connectToAndConsume - Url: {}", url);
+        LOGGER.trace("connectToAndConsume - Url: {}", url);
         Request.Builder builder = buildRequestTo(url);
 
         action.accept(builder);
@@ -49,7 +52,7 @@ public class HtmlConnection implements HttpConnection<String> {
                     .map(Response::body)
                     .flatMap(responseBody -> extractBodyAsString(responseBody, url));
         } catch (IOException e) {
-            log.warn("connectToAndGet - Could not get {}", url, e);
+            LOGGER.warn("connectToAndGet - Could not get {}", url, e);
             return Optional.empty();
         }
     }
@@ -58,7 +61,7 @@ public class HtmlConnection implements HttpConnection<String> {
         try {
             return Optional.of(responseBody.string());
         } catch (IOException e) {
-            log.warn("connectToAndGet - Could not get {}", url, e);
+            LOGGER.warn("connectToAndGet - Could not get {}", url, e);
             return Optional.empty();
         }
     }

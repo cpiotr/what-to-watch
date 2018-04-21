@@ -2,8 +2,9 @@ package pl.ciruk.whattowatch.config;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +23,16 @@ import pl.ciruk.whattowatch.title.TitleProvider;
 import pl.ciruk.whattowatch.title.ekino.EkinoTitles;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Named;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
-@Slf4j
 public class Beans {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Value("${w2w.pool.size:16}")
     private Integer filmPoolSize;
@@ -96,7 +100,7 @@ public class Beans {
 
     @PostConstruct
     private void logConfiguration() {
-        log.info("Thread pool size: <{}>", filmPoolSize);
-        log.info("Number of title pages crawled per request: <{}>", titlePagesPerRequest);
+        LOGGER.info("Thread pool size: <{}>", filmPoolSize);
+        LOGGER.info("Number of title pages crawled per request: <{}>", titlePagesPerRequest);
     }
 }

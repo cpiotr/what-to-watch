@@ -15,7 +15,7 @@ import java.util.Optional;
 @Component
 @Path("/descriptions")
 public class Descriptions {
-    DescriptionProvider filmwebDescriptions;
+    private DescriptionProvider filmwebDescriptions;
 
     @Inject
     public Descriptions(DescriptionProvider filmwebDescriptions) {

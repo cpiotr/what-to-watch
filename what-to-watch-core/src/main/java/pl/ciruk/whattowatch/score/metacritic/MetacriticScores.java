@@ -1,9 +1,10 @@
 package pl.ciruk.whattowatch.score.metacritic;
 
 import io.micrometer.core.instrument.Metrics;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.math.Doubles;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.description.Description;
@@ -24,8 +25,8 @@ import static pl.ciruk.core.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.title.Title.MISSING_YEAR;
 
-@Slf4j
 public class MetacriticScores implements ScoresProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int NYT_SCORE_WEIGHT = 10;
 
     private final HttpConnection<Element> connection;
@@ -65,7 +66,7 @@ public class MetacriticScores implements ScoresProvider {
 
     @Override
     public Stream<Score> scoresOf(Description description) {
-        log.debug("scoresOf - Description: {}", description);
+        LOGGER.debug("scoresOf - Description: {}", description);
 
         Optional<String> linkToDetails = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom);
@@ -76,20 +77,20 @@ public class MetacriticScores implements ScoresProvider {
 
         Optional<Score> metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
         if (!metacriticScore.isPresent()) {
-            log.warn("scoresOf - Missing Metacritic score for: {}", description.getTitle());
+            LOGGER.warn("scoresOf - Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
         Optional<Score> nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
         if (!nytScore.isPresent()) {
-            log.warn("scoresOf - Missing NYT score for: {}", description.getTitle());
+            LOGGER.warn("scoresOf - Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
         }
 
         Stream<Score> averageScoreStream = metacriticScore.stream();
         Stream<Score> nytScoreStream = nytScore.stream();
         return Stream.concat(averageScoreStream, nytScoreStream)
-                .peek(score -> log.debug("scoresOf - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("scoresOf - Score for {}: {}", description, score));
     }
 
     private Optional<Element> followDetailsLinkAndFindPageWithScores(Optional<String> linkToDetails) {
@@ -177,7 +178,7 @@ public class MetacriticScores implements ScoresProvider {
             return getSearchResultsFor(title)
                     .flatMap(searchResults -> findFirstResultMatching(title, searchResults));
         } catch (Exception e) {
-            log.warn("Cannot find metacritic summary of {}", title, e);
+            LOGGER.warn("Cannot find metacritic summary of {}", title, e);
             return Optional.empty();
         }
     }

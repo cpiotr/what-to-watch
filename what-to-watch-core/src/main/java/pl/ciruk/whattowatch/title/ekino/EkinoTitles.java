@@ -1,8 +1,9 @@
 package pl.ciruk.whattowatch.title.ekino;
 
 import io.micrometer.core.instrument.Metrics;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.whattowatch.title.Title;
 import pl.ciruk.whattowatch.title.TitleProvider;
@@ -13,8 +14,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Slf4j
 public class EkinoTitles implements TitleProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String BASE_URL = "http://ekino-tv.pl";
 
@@ -39,15 +40,15 @@ public class EkinoTitles implements TitleProvider {
     }
 
     private void logConfiguration() {
-        log.info("Pages per request: {}", pagesPerRequest);
+        LOGGER.info("Pages per request: {}", pagesPerRequest);
     }
 
     @Override
     public Stream<Title> streamOfTitles(int pageNumber) {
-        log.debug("streamOfTitles - Page number: {}", pageNumber);
+        LOGGER.debug("streamOfTitles - Page number: {}", pageNumber);
 
         return generatePageUrlsForRequest(pageNumber)
-                .peek(url -> log.debug("Loading films from: {}", url))
+                .peek(url -> LOGGER.debug("Loading films from: {}", url))
                 .map(connection::connectToAndGet)
                 .flatMap(Optional::stream)
                 .flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
@@ -57,7 +58,7 @@ public class EkinoTitles implements TitleProvider {
 
     private Stream<String> generatePageUrlsForRequest(int requestNumber) {
         int startFromPage = (requestNumber - 1) * pagesPerRequest;
-        log.debug("generatePageUrlsForRequest - Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
+        LOGGER.debug("generatePageUrlsForRequest - Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
         return IntStream.range(startFromPage, startFromPage + pagesPerRequest)
                 .boxed()
                 .map(index -> String.format(TITLES_PAGE_PATTERN, index));

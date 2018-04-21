@@ -2,16 +2,18 @@ package pl.ciruk.core.net.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.ciruk.core.net.HttpConnection;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Slf4j
 public class JsonConnection implements HttpConnection<JsonNode> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final HttpConnection<String> connection;
 
@@ -37,7 +39,7 @@ public class JsonConnection implements HttpConnection<JsonNode> {
             return Optional.ofNullable(
                     objectMapper.readTree(text));
         } catch (IOException e) {
-            log.warn("parseFrom - Cannot parse json: {}", text, e);
+            LOGGER.warn("parseFrom - Cannot parse json: {}", text, e);
             return Optional.empty();
         }
     }
