@@ -1,5 +1,4 @@
-#FROM frolvlad/alpine-oraclejdk8:slim
-FROM openjdk:9-slim
+FROM openjdk:10-slim
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp

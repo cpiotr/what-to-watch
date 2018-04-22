@@ -10,8 +10,9 @@ apply plugin: 'io.spring.dependency-management'
 jar {
     baseName = 'what-to-watch-boot'
 }
-sourceCompatibility = 1.9
-targetCompatibility = 1.9
+
+sourceCompatibility = 1.10
+targetCompatibility = 1.10
 
 repositories {
     mavenCentral()
