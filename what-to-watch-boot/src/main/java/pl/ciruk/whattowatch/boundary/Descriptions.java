@@ -29,15 +29,14 @@ public class Descriptions {
             @QueryParam("originalTitle") String originalTitle,
             @QueryParam("year") int year
     ) {
-        Optional<pl.ciruk.whattowatch.description.Description> description = filmwebDescriptions.descriptionOf(
-                Title.builder()
-                        .title(title)
-                        .originalTitle(originalTitle)
-                        .year(year)
-                        .build()
-        );
+        var titleObject = Title.builder()
+                .title(title)
+                .originalTitle(originalTitle)
+                .year(year)
+                .build();
+        var optionalDescription = filmwebDescriptions.descriptionOf(titleObject);
 
-        return description.map(Response::ok)
+        return optionalDescription.map(Response::ok)
                 .orElse(Response.status(Response.Status.NOT_FOUND))
                 .build();
     }

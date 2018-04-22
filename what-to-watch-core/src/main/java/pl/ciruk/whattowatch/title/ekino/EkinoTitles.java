@@ -65,7 +65,7 @@ public class EkinoTitles implements TitleProvider {
     }
 
     private Title parseToTitle(Element linkToTitle) {
-        Title.TitleBuilder builder = Title.builder();
+        var builder = Title.builder();
 
         EkinoSelectors.TITLE.extractFrom(linkToTitle)
                 .ifPresent(builder::title);

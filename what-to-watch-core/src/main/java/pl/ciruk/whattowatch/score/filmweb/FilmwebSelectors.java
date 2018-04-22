@@ -39,8 +39,8 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
     }
 
     private static Optional<String> extractScoreFromText(String pageAsText) {
-        Optional<String> ratingValue = extractSpanValueForItem(pageAsText, "ratingValue");
-        Optional<String> ratingCount = extractSpanValueForItem(pageAsText, "ratingCount");
+        var ratingValue = extractSpanValueForItem(pageAsText, "ratingValue");
+        var ratingCount = extractSpanValueForItem(pageAsText, "ratingCount");
         return Optionals.mergeUsing(
                 ratingValue,
                 ratingCount,
@@ -49,14 +49,15 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
     }
 
     private static Optional<String> extractSpanValueForItem(String pageAsText, String item) {
-        String span = "<span itemprop=\"" + item + "\">";
-        int from = pageAsText.indexOf(span);
+        var span = "<span itemprop=\"" + item + "\">";
+        var from = pageAsText.indexOf(span);
         if (from < 0) {
             return Optional.empty();
         }
 
         from += span.length();
-        int to = pageAsText.indexOf("</span>", from);
+
+        var to = pageAsText.indexOf("</span>", from);
         if (to < from) {
             return Optional.empty();
         }

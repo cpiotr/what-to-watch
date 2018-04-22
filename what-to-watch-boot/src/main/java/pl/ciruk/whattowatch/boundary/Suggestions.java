@@ -61,7 +61,7 @@ public class Suggestions {
         );
 
         try {
-            List<FilmResult> films = responseTimer.record(() -> findSuggestions(pageNumber));
+            var films = responseTimer.record(() -> findSuggestions(pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
         } catch (AsyncExecutionException e) {

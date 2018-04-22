@@ -60,7 +60,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
     public Optional<Description> descriptionOf(Title title) {
         LOGGER.debug("descriptionOf - Title: {}", title);
 
-        Optional<Description> foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
+        var foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
                 .filter(Objects::nonNull)
                 .filter(not(String::isEmpty))
                 .flatMap(t -> filmsForTitle(t, title.getYear()))
@@ -75,7 +75,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
     }
 
     private Stream<Description> filmsForTitle(String title, int year) {
-        Optional<Element> optionalResult = filmwebProxy.searchFor(title, year);
+        var optionalResult = filmwebProxy.searchFor(title, year);
 
         return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT::extractFrom)
@@ -97,14 +97,14 @@ public class FilmwebDescriptions implements DescriptionProvider {
     }
 
     private Description extractDescriptionFrom(Element pageWithDetails) {
-        String localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(pageWithDetails)
+        var localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(pageWithDetails)
                 .orElseThrow(MissingValueException::new);
-        String originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(pageWithDetails)
+        var originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(pageWithDetails)
                 .orElse("");
-        int extractedYear = extractYearFrom(pageWithDetails)
+        var extractedYear = extractYearFrom(pageWithDetails)
                 .orElseThrow(MissingValueException::new);
 
-        Title retrievedTitle = Title.builder()
+        var retrievedTitle = Title.builder()
                 .title(localTitle)
                 .originalTitle(originalTitle)
                 .year(extractedYear)

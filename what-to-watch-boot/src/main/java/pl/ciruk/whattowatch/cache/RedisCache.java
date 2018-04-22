@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.cache;
 import io.micrometer.core.instrument.Metrics;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.function.CheckedRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -58,13 +59,13 @@ public class RedisCache implements CacheProvider<String> {
     public Optional<String> get(String key) {
         requestCounter.incrementAndGet();
 
-        Optional<String> optional = Failsafe.with(circuitBreaker)
+        var optionalValue = Failsafe.with(circuitBreaker)
                 .withFallback(Optional.empty())
                 .get(() -> getValueFromCache(key));
-        if (!optional.isPresent()) {
+        if (!optionalValue.isPresent()) {
             missCounter.incrementAndGet();
         }
-        return optional;
+        return optionalValue;
     }
 
     private Optional<String> getValueFromCache(String key) {
@@ -74,13 +75,17 @@ public class RedisCache implements CacheProvider<String> {
     @Override
     public void put(String key, String value) {
         Failsafe.with(circuitBreaker)
-                .withFallback(() -> {
-                })
+                .withFallback(doNothing())
                 .run(() -> putValueToCache(key, value));
     }
 
     private void putValueToCache(String key, String value) {
         cache.opsForValue().set(key, value);
+    }
+
+    private CheckedRunnable doNothing() {
+        return () -> {
+        };
     }
 }
 

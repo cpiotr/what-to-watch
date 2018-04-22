@@ -13,8 +13,8 @@ public class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
     }
 
     public static boolean isMeaningful(Score item) {
-        boolean validGrade = item.getGrade() >= 0.1 && item.getGrade() <= 1.0;
-        boolean significant = item.isSignificant();
+        var validGrade = item.getGrade() >= 0.1 && item.getGrade() <= 1.0;
+        var significant = item.isSignificant();
 
         return validGrade && significant;
     }

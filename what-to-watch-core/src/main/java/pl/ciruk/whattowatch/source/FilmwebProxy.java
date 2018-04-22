@@ -14,7 +14,7 @@ public class FilmwebProxy {
     }
 
     public Optional<Element> searchFor(String title, int year) {
-        HttpUrl url = new HttpUrl.Builder()
+        var url = new HttpUrl.Builder()
                 .scheme("http")
                 .host("www.filmweb.pl")
                 .addPathSegment("search/film")
@@ -29,7 +29,7 @@ public class FilmwebProxy {
     }
 
     public Optional<Element> getPageWithFilmDetailsFor(String href) {
-        HttpUrl url = new HttpUrl.Builder()
+        var url = new HttpUrl.Builder()
                 .scheme("http")
                 .host("www.filmweb.pl")
                 .build()

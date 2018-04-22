@@ -34,7 +34,7 @@ public class JsonConnection implements HttpConnection<JsonNode> {
     }
 
     private Optional<JsonNode> parseFrom(String text) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        var objectMapper = new ObjectMapper();
         try {
             return Optional.ofNullable(
                     objectMapper.readTree(text));

@@ -59,7 +59,7 @@ public class ImdbWebScores implements ScoresProvider {
     public Stream<Score> scoresOf(Description description) {
         LOGGER.debug("scoresOf - Description: {}", description);
 
-        HttpUrl url = new HttpUrl.Builder()
+        var url = new HttpUrl.Builder()
                 .scheme("http")
                 .host("www.imdb.com")
                 .addPathSegment("search")
@@ -69,7 +69,7 @@ public class ImdbWebScores implements ScoresProvider {
                 .addQueryParameter("title_type", "feature,tv_movie")
                 .build();
 
-        Optional<Score> firstResult = httpConnection.connectToAndGet(url.toString())
+        var firstResult = httpConnection.connectToAndGet(url.toString())
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
@@ -89,7 +89,7 @@ public class ImdbWebScores implements ScoresProvider {
     }
 
     private boolean matchesTitleFromDescription(Element result, Description description) {
-        Title descriptionTitle = description.getTitle();
+        var descriptionTitle = description.getTitle();
         return extractTitleFrom(result).matches(descriptionTitle)
                 || extractFullTitleFrom(result).matches(descriptionTitle);
     }
@@ -116,7 +116,7 @@ public class ImdbWebScores implements ScoresProvider {
     }
 
     private Optional<Element> getDetails(String linkToDetails) {
-        String url = "http://www.imdb.com/" + linkToDetails;
+        var url = "http://www.imdb.com/" + linkToDetails;
 
         return httpConnection.connectToAndGet(url);
     }
@@ -126,20 +126,20 @@ public class ImdbWebScores implements ScoresProvider {
     }
 
     private Optional<Score> extractScore(Element element) {
-        double grade = SCORE.extractFrom(element)
+        var grade = SCORE.extractFrom(element)
                 .map(NumberTokenizer::new)
                 .filter(NumberTokenizer::hasMoreTokens)
                 .map(NumberTokenizer::nextToken)
                 .map(NumberToken::asNormalizedDouble)
                 .orElse(-1.0);
-        long quantity = NUMBER_OF_SCORES.extractFrom(element)
+        var quantity = NUMBER_OF_SCORES.extractFrom(element)
                 .map(NumberTokenizer::new)
                 .filter(NumberTokenizer::hasMoreTokens)
                 .map(NumberTokenizer::nextToken)
                 .map(NumberToken::asSimpleLong)
                 .orElse(-1L);
 
-        Score imdbScore = Score.builder()
+        var imdbScore = Score.builder()
                 .grade(asPercentage(grade))
                 .quantity(quantity)
                 .source("IMDb")

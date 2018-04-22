@@ -32,21 +32,21 @@ public class HtmlConnection implements HttpConnection<String> {
     public Optional<String> connectToAndGet(String url) {
         LOGGER.trace("connectToAndGet - Url: {}", url);
 
-        Request.Builder requestBuilder = buildRequestTo(url);
+        var requestBuilder = buildRequestTo(url);
         return connectToAndGet(requestBuilder, url);
     }
 
     @Override
     public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
         LOGGER.trace("connectToAndConsume - Url: {}", url);
-        Request.Builder builder = buildRequestTo(url);
+        var builder = buildRequestTo(url);
 
         action.accept(builder);
         return connectToAndGet(builder, url);
     }
 
     private Optional<String> connectToAndGet(Request.Builder requestBuilder, String url) {
-        try (Response response = execute(requestBuilder)) {
+        try (var response = execute(requestBuilder)) {
             return Optional.of(response)
                     .filter(Response::isSuccessful)
                     .map(Response::body)
@@ -87,8 +87,8 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private static String rootDomainFor(String url) {
-        URI uri = URI.create(url);
-        String port = uri.getPort() > -1
+        var uri = URI.create(url);
+        var port = uri.getPort() > -1
                 ? ":" + uri.getPort()
                 : "";
 

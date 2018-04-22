@@ -12,8 +12,8 @@ import java.util.Objects;
 public final class Resources {
     public static String readContentOf(String resourceName) {
         try {
-            URL url = Resources.class.getClassLoader().getResource(resourceName);
-            URI uri = Objects.requireNonNull(url).toURI();
+            var url = Resources.class.getClassLoader().getResource(resourceName);
+            var uri = Objects.requireNonNull(url).toURI();
             return new String(
                     Files.readAllBytes(Paths.get(uri)),
                     Charset.defaultCharset());

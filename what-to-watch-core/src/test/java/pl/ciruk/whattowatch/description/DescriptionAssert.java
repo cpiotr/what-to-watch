@@ -15,9 +15,9 @@ public class DescriptionAssert extends AbstractAssert<DescriptionAssert, Descrip
     }
 
     public DescriptionAssert hasTitle(String title) {
-        Title itemTitle = actual.getTitle();
+        var itemTitle = actual.getTitle();
 
-        boolean descriptionHasTitle = itemTitle.getOriginalTitle().equalsIgnoreCase(title)
+        var descriptionHasTitle = itemTitle.getOriginalTitle().equalsIgnoreCase(title)
                 || itemTitle.getTitle().equalsIgnoreCase(title);
 
         Assertions.assertThat(descriptionHasTitle)

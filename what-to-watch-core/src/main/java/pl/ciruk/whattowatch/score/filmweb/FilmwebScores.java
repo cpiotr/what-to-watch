@@ -61,7 +61,7 @@ public class FilmwebScores implements ScoresProvider {
     }
 
     private Stream<Score> scoresForTitle(Title title) {
-        Optional<Element> optionalResult = filmwebProxy.searchFor(title.asText(), title.getYear());
+        var optionalResult = filmwebProxy.searchFor(title.asText(), title.getYear());
 
         return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
@@ -72,8 +72,8 @@ public class FilmwebScores implements ScoresProvider {
     }
 
     private Title extractTitle(Element result) {
-        String title = FilmwebSelectors.TITLE_FROM_SEARCH_RESULT.extractFrom(result).orElse("");
-        int year = FilmwebSelectors.YEAR_FROM_SEARCH_RESULT.extractFrom(result)
+        var title = FilmwebSelectors.TITLE_FROM_SEARCH_RESULT.extractFrom(result).orElse("");
+        var year = FilmwebSelectors.YEAR_FROM_SEARCH_RESULT.extractFrom(result)
                 .filter(not(String::isEmpty))
                 .map(Integer::parseInt)
                 .orElse(0);
@@ -100,9 +100,9 @@ public class FilmwebScores implements ScoresProvider {
     }
 
     private Score parseScore(String s) {
-        NumberTokenizer numberTokenizer = new NumberTokenizer(s);
-        double rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
-        int quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
+        var numberTokenizer = new NumberTokenizer(s);
+        var rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
+        var quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
         return Score.builder()
                 .grade(rating/10.0)
                 .quantity(quantity)

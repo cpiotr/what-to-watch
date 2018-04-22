@@ -12,14 +12,14 @@ public class FilmTest {
     @Test
     public void shouldBeWorthWatchingIfReceivedLotsOfPositiveScores() {
         long totalQuantity = 2000;
-        List<Score> scores = Arrays.asList(
+        var scores = List.of(
                 Score.amateur(0.7, (long) (totalQuantity * 0.95)),
                 Score.amateur(0.0, (long) (totalQuantity * 0.025)),
                 Score.amateur(0.0, (long) (totalQuantity * 0.025)),
                 Score.critic(0.7, 10L)
         );
 
-        Film film = Film.builder()
+        var film = Film.builder()
                 .scores(scores)
                 .build();
 
@@ -29,7 +29,7 @@ public class FilmTest {
     @Test
     public void shouldNotBeWorthWatchingIfReceivedFewPositiveScores() {
         int totalQuantity = 100;
-        List<Score> scores = Arrays.asList(
+        var scores = List.of(
                 Score.amateur(0.7, (long) (totalQuantity * 0.4)),
                 Score.amateur(0.7, (long) (totalQuantity * 0.55)),
                 Score.amateur(0.0, (long) (totalQuantity * 0.025)),
@@ -37,7 +37,7 @@ public class FilmTest {
                 Score.critic(0.7, 10L)
         );
 
-        Film film = Film.builder()
+        var film = Film.builder()
                 .scores(scores)
                 .build();
 

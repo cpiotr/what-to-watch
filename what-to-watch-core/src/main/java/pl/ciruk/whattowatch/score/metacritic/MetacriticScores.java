@@ -68,27 +68,27 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> scoresOf(Description description) {
         LOGGER.debug("scoresOf - Description: {}", description);
 
-        Optional<String> linkToDetails = metacriticSummaryOf(description.getTitle())
+        var linkToDetails = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom);
-        Optional<Element> htmlWithScores = linkToDetails
+        var htmlWithScores = linkToDetails
                 .flatMap(this::getCriticScoresFor)
                 .map(this::extractCriticReviews)
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
-        Optional<Score> metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
+        var metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
         if (!metacriticScore.isPresent()) {
             LOGGER.warn("scoresOf - Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
-        Optional<Score> nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
+        var nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
         if (!nytScore.isPresent()) {
             LOGGER.warn("scoresOf - Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
         }
 
-        Stream<Score> averageScoreStream = metacriticScore.stream();
-        Stream<Score> nytScoreStream = nytScore.stream();
+        var averageScoreStream = metacriticScore.stream();
+        var nytScoreStream = nytScore.stream();
         return Stream.concat(averageScoreStream, nytScoreStream)
                 .peek(score -> LOGGER.debug("scoresOf - Score for {}: {}", description, score));
     }
@@ -105,8 +105,8 @@ public class MetacriticScores implements ScoresProvider {
     }
 
     private Optional<Score> extractScoreFrom(Element htmlWithScores) {
-        Optional<Double> averageGrade = averageGradeFrom(htmlWithScores);
-        Optional<Double> numberOfReviews = numberOfReviewsFrom(htmlWithScores);
+        var averageGrade = averageGradeFrom(htmlWithScores);
+        var numberOfReviews = numberOfReviewsFrom(htmlWithScores);
         return mergeUsing(
                 averageGrade,
                 numberOfReviews,
@@ -161,9 +161,9 @@ public class MetacriticScores implements ScoresProvider {
     }
 
     private Optional<Element> getPage(String... pathSegments) {
-        HttpUrl.Builder builder = metacriticUrlBuilder();
+        var builder = metacriticUrlBuilder();
         Arrays.stream(pathSegments).forEach(builder::addPathSegments);
-        HttpUrl url = builder.build();
+        var url = builder.build();
         return connection.connectToAndGet(url.toString());
     }
 
@@ -190,8 +190,8 @@ public class MetacriticScores implements ScoresProvider {
     }
 
     private Title extractTitle(Element searchResult) {
-        String title = MetacriticSelectors.TITLE.extractFrom(searchResult).orElse("");
-        Integer year = MetacriticSelectors.RELEASE_DATE.extractFrom(searchResult)
+        var title = MetacriticSelectors.TITLE.extractFrom(searchResult).orElse("");
+        var year = MetacriticSelectors.RELEASE_DATE.extractFrom(searchResult)
                 .map(Integer::parseInt)
                 .orElse(MISSING_YEAR);
 

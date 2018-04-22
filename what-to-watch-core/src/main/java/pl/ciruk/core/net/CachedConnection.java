@@ -25,13 +25,13 @@ public class CachedConnection implements HttpConnection<String> {
     public Optional<String> connectToAndGet(String url) {
         LOGGER.trace("connectToAndGet - Url: {}", url);
 
-        Optional<String> document = cache.get(url);
-        if (!document.isPresent()) {
+        var optionalDocument = cache.get(url);
+        if (!optionalDocument.isPresent()) {
             LOGGER.trace("connectToAndGet - Cache miss for: {}", url);
-            document = connection.connectToAndGet(url);
-            document.ifPresent(content -> cache.put(url, content));
+            optionalDocument = connection.connectToAndGet(url);
+            optionalDocument.ifPresent(content -> cache.put(url, content));
         }
-        return document;
+        return optionalDocument;
     }
 
     @Override

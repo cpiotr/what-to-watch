@@ -40,7 +40,7 @@ public class Connections {
 
     @Bean
     OkHttpClient httpClient() {
-        ConnectionPool connectionPool = new ConnectionPool(httpPoolMaxIdle, 20_000, TimeUnit.SECONDS);
+        var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20_000, TimeUnit.SECONDS);
         return new OkHttpClient.Builder()
                 .connectionPool(connectionPool)
                 .retryOnConnectionFailure(true)
@@ -85,11 +85,11 @@ public class Connections {
     RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHost);
 
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        var poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(redisPoolMaxActive);
         poolConfig.setMaxWaitMillis(1_000);
         poolConfig.setMinEvictableIdleTimeMillis(100);
-        JedisClientConfiguration jedisClientConfiguration = JedisClientConfiguration.builder()
+        var jedisClientConfiguration = JedisClientConfiguration.builder()
                 .usePooling()
                 .poolConfig(poolConfig)
                 .build();
