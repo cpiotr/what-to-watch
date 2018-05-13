@@ -9,9 +9,10 @@ import org.springframework.context.annotation.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import pl.ciruk.whattowatch.config.Beans;
-import pl.ciruk.whattowatch.config.Bootstrap;
-import pl.ciruk.whattowatch.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.boot.WhatToWatchBoot;
+import pl.ciruk.whattowatch.boot.config.Beans;
+import pl.ciruk.whattowatch.boot.config.Bootstrap;
+import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 
 import java.lang.invoke.MethodHandles;
 

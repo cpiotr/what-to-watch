@@ -2,14 +2,15 @@ package pl.ciruk.whattowatch.neural
 
 import org.neuroph.core.data.DataSet
 import org.neuroph.core.data.DataSetRow
+import org.neuroph.nnet.Kohonen
 import org.neuroph.nnet.MultiLayerPerceptron
 import org.neuroph.nnet.learning.BackPropagation
-import pl.ciruk.whattowatch.score.Score
-import pl.ciruk.whattowatch.score.ScoreType
+import pl.ciruk.whattowatch.core.score.Score
+import pl.ciruk.whattowatch.core.score.ScoreType
 
 
 class NeuralScores(private val dataSet: DataSet) {
-    private val network = MultiLayerPerceptron(4, 256, 1)
+    private val network = MultiLayerPerceptron(4, 100, 1)
 
     companion object {
         fun readDataSet(): DataSet {
@@ -35,10 +36,12 @@ class NeuralScores(private val dataSet: DataSet) {
 
     fun train(maxIterations: Int) {
         val backPropagation = BackPropagation()
-        backPropagation.maxIterations = maxIterations
-        backPropagation.learningRate = 0.2
+//        backPropagation.maxIterations = maxIterations
+        backPropagation.learningRate = 0.05
+        backPropagation.learningRate
+        backPropagation.addListener { println((it.source as BackPropagation).totalNetworkError) }
 
-        network.learn(dataSet, backPropagation)
+        network.learn(dataSet)
     }
 
     fun calculateScore(scores: List<Score>): Score {

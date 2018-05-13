@@ -4,17 +4,18 @@ import org.junit.BeforeClass
 import org.junit.Ignore
 import org.junit.Test
 import pl.ciruk.whattowatch.ScoreAssert
-import pl.ciruk.whattowatch.score.Score
-import pl.ciruk.whattowatch.score.ScoreType
+import pl.ciruk.whattowatch.core.score.Score
+import pl.ciruk.whattowatch.core.score.ScoreType
 
 @Ignore
 class NeuralScoresTest {
     companion object {
         private var neuralScores: NeuralScores = NeuralScores(NeuralScores.readDataSet())
+
         @BeforeClass
         @JvmStatic
         fun setUp() {
-            neuralScores.train(1000)
+            neuralScores.train(2000)
         }
     }
 
