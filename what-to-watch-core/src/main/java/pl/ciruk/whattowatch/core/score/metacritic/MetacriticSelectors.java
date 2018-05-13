@@ -40,11 +40,12 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
             .stream()
             .map(Element::text)
             .findFirst()),
-    RELEASE_DATE(details -> details.select(".release_date .data")
+    RELEASE_DATE(details -> details.select(".main_stats p")
             .stream()
             .map(Element::text)
             .map(MetacriticSelectors::extractYear)
-            .findFirst()),;
+            .findFirst()),
+    ;
 
     private static boolean isValidScore(String scoreAsText) {
         return !scoreAsText.isEmpty() && !scoreAsText.equalsIgnoreCase("tbd");
