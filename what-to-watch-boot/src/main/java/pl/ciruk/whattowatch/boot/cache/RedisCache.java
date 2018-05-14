@@ -6,6 +6,7 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.function.CheckedRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
 
@@ -28,6 +29,12 @@ public class RedisCache implements CacheProvider<String> {
     private final AtomicLong requestCounter = new AtomicLong();
 
     private final CircuitBreaker circuitBreaker;
+
+    @Value("${w2w.cache.expiry.interval}")
+    private long expiryInterval = 10;
+
+    @Value("${w2w.cache.expiry.unit}")
+    private TimeUnit expiryUnit = TimeUnit.DAYS;
 
     @Inject
     public RedisCache(StringRedisTemplate cache) {
@@ -52,7 +59,8 @@ public class RedisCache implements CacheProvider<String> {
 
     @PostConstruct
     private void init() {
-        LOGGER.debug("init - RedisCache created");
+        LOGGER.info("init - RedisCache created");
+        LOGGER.info("init - Cache expiry: {} {}", expiryInterval, expiryUnit);
     }
 
     @Override
@@ -81,6 +89,7 @@ public class RedisCache implements CacheProvider<String> {
 
     private void putValueToCache(String key, String value) {
         cache.opsForValue().set(key, value);
+        cache.expire(key, expiryInterval, expiryUnit);
     }
 
     private CheckedRunnable doNothing() {
