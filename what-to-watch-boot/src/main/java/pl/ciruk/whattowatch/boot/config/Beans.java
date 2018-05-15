@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.core.concurrent.Threads;
 import pl.ciruk.core.net.HttpConnection;
+import pl.ciruk.whattowatch.boot.cache.Cached;
+import pl.ciruk.whattowatch.boot.cache.NotCached;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;

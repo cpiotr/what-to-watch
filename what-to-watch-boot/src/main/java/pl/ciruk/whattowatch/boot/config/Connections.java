@@ -20,9 +20,7 @@ import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
-import pl.ciruk.whattowatch.boot.cache.LongExpiry;
-import pl.ciruk.whattowatch.boot.cache.RedisCache;
-import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
+import pl.ciruk.whattowatch.boot.cache.*;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;

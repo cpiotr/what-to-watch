@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.boot.config;
+package pl.ciruk.whattowatch.boot.cache;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
