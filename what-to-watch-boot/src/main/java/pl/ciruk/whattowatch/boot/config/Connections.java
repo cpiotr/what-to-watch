@@ -40,11 +40,17 @@ public class Connections {
     @Value("${http.pool.maxIdle:32}")
     private Integer httpPoolMaxIdle;
 
-    @Value("${w2w.cache.expiry.interval}")
-    private long expiryInterval = 10;
+    @Value("${w2w.cache.expiry.long.interval}")
+    private long longExpiryInterval = 10;
 
-    @Value("${w2w.cache.expiry.unit}")
-    private TimeUnit expiryUnit = TimeUnit.DAYS;
+    @Value("${w2w.cache.expiry.long.unit}")
+    private TimeUnit longExpiryUnit = TimeUnit.DAYS;
+
+    @Value("${w2w.cache.expiry.short.interval}")
+    private long shortExpiryInterval = 10;
+
+    @Value("${w2w.cache.expiry.short.unit}")
+    private TimeUnit shortExpiryUnit = TimeUnit.DAYS;
 
     @Bean
     OkHttpClient httpClient() {
@@ -114,13 +120,13 @@ public class Connections {
     @Bean
     @LongExpiry
     CacheProvider<String> longExpiryCache(StringRedisTemplate redisTemplate, CircuitBreaker circuitBreaker) {
-        return new RedisCache(redisTemplate, expiryInterval, expiryUnit, circuitBreaker);
+        return new RedisCache(redisTemplate, longExpiryInterval, longExpiryUnit, circuitBreaker);
     }
 
     @Bean
     @ShortExpiry
     CacheProvider<String> shortExpiryCache(StringRedisTemplate redisTemplate, CircuitBreaker circuitBreaker) {
-        return new RedisCache(redisTemplate, 15, TimeUnit.MINUTES, circuitBreaker);
+        return new RedisCache(redisTemplate, shortExpiryInterval, shortExpiryUnit, circuitBreaker);
     }
 
     @Bean
@@ -136,7 +142,8 @@ public class Connections {
     private void logConfiguration() {
         LOGGER.info("Redis host: <{}>", redisHost);
         LOGGER.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
-        LOGGER.info("Cache expiry: <{} {}>", expiryInterval, expiryUnit);
+        LOGGER.info("Cache long expiry: <{} {}>", longExpiryInterval, longExpiryUnit);
+        LOGGER.info("Cache short expiry: <{} {}>", shortExpiryInterval, shortExpiryUnit);
         LOGGER.info("HttpClient pool max idle: <{}>", httpPoolMaxIdle);
     }
 }
