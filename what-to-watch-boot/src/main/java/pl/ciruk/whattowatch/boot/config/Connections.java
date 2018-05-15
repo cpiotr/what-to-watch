@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.boot.config;
 
+import net.jodah.failsafe.CircuitBreaker;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
@@ -19,6 +20,9 @@ import pl.ciruk.core.net.CachedConnection;
 import pl.ciruk.core.net.HtmlConnection;
 import pl.ciruk.core.net.HttpConnection;
 import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.whattowatch.boot.cache.LongExpiry;
+import pl.ciruk.whattowatch.boot.cache.RedisCache;
+import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
@@ -37,6 +41,12 @@ public class Connections {
 
     @Value("${http.pool.maxIdle:32}")
     private Integer httpPoolMaxIdle;
+
+    @Value("${w2w.cache.expiry.interval}")
+    private long expiryInterval = 10;
+
+    @Value("${w2w.cache.expiry.unit}")
+    private TimeUnit expiryUnit = TimeUnit.DAYS;
 
     @Bean
     OkHttpClient httpClient() {
@@ -57,21 +67,27 @@ public class Connections {
 
     @Bean
     @Cached
-    HttpConnection<String> cachedConnection(
-            CacheProvider<String> cacheProvider,
-            @NotCached HttpConnection<String> connection) {
+    @LongExpiry
+    HttpConnection<String> longCachedConnection(@LongExpiry CacheProvider<String> cacheProvider, @NotCached HttpConnection<String> connection) {
         return new CachedConnection(cacheProvider, connection);
     }
 
     @Bean
     @Cached
-    HttpConnection<Element> jsoupConnection(@Cached HttpConnection<String> connection) {
+    @ShortExpiry
+    HttpConnection<String> shortCachedConnection(@ShortExpiry CacheProvider<String> cacheProvider, @NotCached HttpConnection<String> connection) {
+        return new CachedConnection(cacheProvider, connection);
+    }
+
+    @Bean
+    @Cached
+    HttpConnection<Element> jsoupConnection(@Cached @LongExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 
     @Bean
     @NotCached
-    HttpConnection<Element> notCachedJsoupConnection(@NotCached HttpConnection<String> connection) {
+    HttpConnection<Element> notCachedJsoupConnection(@Cached @ShortExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 
@@ -97,10 +113,32 @@ public class Connections {
         return new JedisConnectionFactory(redisStandaloneConfiguration, jedisClientConfiguration);
     }
 
+    @Bean
+    @LongExpiry
+    CacheProvider<String> longExpiryCache(StringRedisTemplate redisTemplate, CircuitBreaker circuitBreaker) {
+        return new RedisCache(redisTemplate, expiryInterval, expiryUnit, circuitBreaker);
+    }
+
+    @Bean
+    @ShortExpiry
+    CacheProvider<String> shortExpiryCache(StringRedisTemplate redisTemplate, CircuitBreaker circuitBreaker) {
+        return new RedisCache(redisTemplate, 15, TimeUnit.MINUTES, circuitBreaker);
+    }
+
+    @Bean
+    CircuitBreaker circuitBreaker() {
+        return new CircuitBreaker()
+                .withFailureThreshold(3, 10)
+                .withSuccessThreshold(5)
+                .withDelay(1, TimeUnit.SECONDS)
+                .withTimeout(5, TimeUnit.SECONDS);
+    }
+
     @PostConstruct
     private void logConfiguration() {
         LOGGER.info("Redis host: <{}>", redisHost);
         LOGGER.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
+        LOGGER.info("Cache expiry: <{} {}>", expiryInterval, expiryUnit);
         LOGGER.info("HttpClient pool max idle: <{}>", httpPoolMaxIdle);
     }
 }

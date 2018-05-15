@@ -6,7 +6,6 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.function.CheckedRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
 
@@ -18,7 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Named
 public class RedisCache implements CacheProvider<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -30,31 +28,25 @@ public class RedisCache implements CacheProvider<String> {
 
     private final CircuitBreaker circuitBreaker;
 
-    @Value("${w2w.cache.expiry.interval}")
-    private long expiryInterval = 10;
+    private final long expiryInterval;
 
-    @Value("${w2w.cache.expiry.unit}")
-    private TimeUnit expiryUnit = TimeUnit.DAYS;
+    private final TimeUnit expiryUnit;
 
-    @Inject
-    public RedisCache(StringRedisTemplate cache) {
-        this.cache = cache;
-
+    public RedisCache(StringRedisTemplate cache, long expiryInterval, TimeUnit expiryUnit, CircuitBreaker circuitBreaker) {
+        String className = MethodHandles.lookup().lookupClass().getSimpleName();
         Metrics.gauge(
-                MethodHandles.lookup().lookupClass().getSimpleName() + ".missCounter",
+                String.format("%s.%s%s.%s", className, expiryInterval, expiryUnit, "missCounter"),
                 missCounter,
                 AtomicLong::get);
-
         Metrics.gauge(
-                MethodHandles.lookup().lookupClass().getSimpleName() + ".requestCounter",
+                String.format("%s.%s%s.%s", className, expiryInterval, expiryUnit, "requestCounter"),
                 requestCounter,
                 AtomicLong::get);
 
-        circuitBreaker = new CircuitBreaker()
-                .withFailureThreshold(3, 10)
-                .withSuccessThreshold(5)
-                .withDelay(1, TimeUnit.SECONDS)
-                .withTimeout(5, TimeUnit.SECONDS);
+        this.cache = cache;
+        this.expiryInterval = expiryInterval;
+        this.expiryUnit = expiryUnit;
+        this.circuitBreaker = circuitBreaker;
     }
 
     @PostConstruct
