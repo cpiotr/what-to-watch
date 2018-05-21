@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.core.cache.CacheProvider;
+import pl.ciruk.core.stream.Functions;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -16,6 +17,8 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static pl.ciruk.core.stream.Functions.identity;
 
 public class RedisCache implements CacheProvider<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -69,7 +72,8 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     private Optional<String> getValueFromCache(String key) {
-        return Optional.ofNullable(cache.opsForValue().get(key));
+        return Optional.ofNullable(cache.opsForValue().get(key))
+                .map(identity(() -> cache.expire(key, expiryInterval, expiryUnit)));
     }
 
     @Override
