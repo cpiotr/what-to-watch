@@ -15,7 +15,7 @@ class NeuralScoresTest {
         @BeforeClass
         @JvmStatic
         fun setUp() {
-            neuralScores.train(2000)
+            neuralScores.train(2500)
         }
     }
 
@@ -47,6 +47,16 @@ class NeuralScoresTest {
 
         ScoreAssert.assertThat(score)
                 .hasGradeCloseTo(0.3)
+    }
+
+    @Test
+    fun shouldScoreAtSeventy() {
+        val scores = createScores(0.68, 0.57, 0.80, 0.66)
+
+        val score = neuralScores.calculateScore(scores)
+
+        ScoreAssert.assertThat(score)
+                .hasGradeCloseTo(0.7)
     }
 
     private fun createScores(

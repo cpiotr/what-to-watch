@@ -51,7 +51,7 @@ public class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
     public ScoreAssert hasGradeCloseTo(double threshold) {
         Assertions.assertThat(actual.getGrade())
                 .as("Grade close to %.2f%%", threshold * 100)
-                .isCloseTo(threshold, within(0.1));
+                .isCloseTo(threshold, within(0.075));
         return this;
     }
 }
