@@ -2,7 +2,7 @@ package pl.ciruk.whattowatch.core.title.ekino;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import pl.ciruk.core.net.TestConnections;
+import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 

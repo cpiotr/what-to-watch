@@ -2,12 +2,12 @@ package pl.ciruk.whattowatch.core.description.filmweb;
 
 import org.junit.Before;
 import org.junit.Test;
-import pl.ciruk.core.net.TestConnections;
-import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionAssert;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
 

@@ -1,7 +1,7 @@
 package pl.ciruk.whattowatch.core.score.metacritic;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.Extractable;
+import pl.ciruk.whattowatch.utils.net.Extractable;
 
 import java.util.function.Function;
 import java.util.stream.Stream;

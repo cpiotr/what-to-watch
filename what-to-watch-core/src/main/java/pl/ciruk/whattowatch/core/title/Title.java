@@ -2,7 +2,7 @@ package pl.ciruk.whattowatch.core.title;
 
 import java.util.Optional;
 
-import static pl.ciruk.core.stream.Predicates.not;
+import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public class Title {
     public static final int MISSING_YEAR = 0;

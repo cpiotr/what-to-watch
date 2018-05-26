@@ -15,11 +15,11 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import pl.ciruk.core.cache.CacheProvider;
-import pl.ciruk.core.net.CachedConnection;
-import pl.ciruk.core.net.HtmlConnection;
-import pl.ciruk.core.net.HttpConnection;
-import pl.ciruk.core.net.html.JsoupConnection;
+import pl.ciruk.whattowatch.utils.cache.CacheProvider;
+import pl.ciruk.whattowatch.utils.net.CachedConnection;
+import pl.ciruk.whattowatch.utils.net.HtmlConnection;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 import pl.ciruk.whattowatch.boot.cache.*;
 import redis.clients.jedis.JedisPoolConfig;
 

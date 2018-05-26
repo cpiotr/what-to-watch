@@ -5,8 +5,8 @@ import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.core.math.Doubles;
-import pl.ciruk.core.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.math.Doubles;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-import static pl.ciruk.core.stream.Optionals.mergeUsing;
+import static pl.ciruk.whattowatch.utils.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
 

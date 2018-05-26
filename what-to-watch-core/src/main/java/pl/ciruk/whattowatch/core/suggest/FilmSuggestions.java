@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
+import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUsing;
 
 public class FilmSuggestions implements FilmSuggestionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

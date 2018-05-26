@@ -3,13 +3,13 @@ package pl.ciruk.whattowatch.core.score.imdb;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
-import pl.ciruk.core.net.Extractable;
+import pl.ciruk.whattowatch.utils.net.Extractable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static pl.ciruk.core.stream.Predicates.not;
+import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public enum ImdbSelectors implements Extractable<Optional<String>> {
     YEAR(result -> result.select(".lister-item-content .lister-item-header .lister-item-year")

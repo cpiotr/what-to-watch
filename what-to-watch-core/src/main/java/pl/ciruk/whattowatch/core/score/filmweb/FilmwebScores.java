@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Metrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.core.text.NumberTokenizer;
+import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static pl.ciruk.core.stream.Predicates.not;
+import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public class FilmwebScores implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

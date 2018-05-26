@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import pl.ciruk.core.math.Doubles;
+import pl.ciruk.whattowatch.utils.math.Doubles;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Film {
-    static final Film EMPTY = Film.builder().build();
+    private static final Film EMPTY = Film.builder().build();
 
-    Description description;
+    private Description description;
 
-    List<Score> scores;
+    private List<Score> scores;
 
     private Film(Description description, List<Score> scores) {
         this.description = description;

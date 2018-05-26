@@ -30,7 +30,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
-import static pl.ciruk.core.concurrent.CompletableFutures.combineUsing;
+import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUsing;
 
 @Component
 @Path("/scores")

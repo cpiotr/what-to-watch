@@ -2,7 +2,7 @@ package pl.ciruk.whattowatch.core.source;
 
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.util.Optional;
 

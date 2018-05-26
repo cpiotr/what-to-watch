@@ -1,7 +1,7 @@
 package pl.ciruk.whattowatch.core.title.ekino;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.Extractable;
+import pl.ciruk.whattowatch.utils.net.Extractable;
 
 import java.util.function.Function;
 import java.util.stream.Stream;

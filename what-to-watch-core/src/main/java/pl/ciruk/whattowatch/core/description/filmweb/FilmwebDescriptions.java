@@ -4,11 +4,11 @@ import io.micrometer.core.instrument.Metrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.core.text.MissingValueException;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.text.MissingValueException;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static pl.ciruk.core.stream.Predicates.not;
+import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public class FilmwebDescriptions implements DescriptionProvider {
 

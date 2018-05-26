@@ -1,9 +1,9 @@
 package pl.ciruk.whattowatch.core.score.metacritic;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.core.net.Extractable;
-import pl.ciruk.core.text.NumberToken;
-import pl.ciruk.core.text.NumberTokenizer;
+import pl.ciruk.whattowatch.utils.net.Extractable;
+import pl.ciruk.whattowatch.utils.text.NumberToken;
+import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.util.Optional;
 import java.util.function.Function;
