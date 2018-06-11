@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.score.Score;
 
 import java.util.List;

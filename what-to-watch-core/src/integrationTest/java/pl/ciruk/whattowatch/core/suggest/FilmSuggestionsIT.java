@@ -1,13 +1,9 @@
 package pl.ciruk.whattowatch.core.suggest;
 
 import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
-import pl.ciruk.whattowatch.utils.net.HtmlConnection;
-import pl.ciruk.whattowatch.utils.net.TestConnections;
-import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
@@ -16,6 +12,10 @@ import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScores;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
+import pl.ciruk.whattowatch.utils.net.HtmlConnection;
+import pl.ciruk.whattowatch.utils.net.TestConnections;
+import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class FilmSuggestionsIT {
     private FilmSuggestions suggestions;
     private ExecutorService pool;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         HtmlConnection htmlConnection = TestConnections.html();
         pool = Executors.newWorkStealingPool(32);
@@ -61,7 +61,7 @@ public class FilmSuggestionsIT {
         Assertions.assertThat(numberOfFilms).isEqualTo(NUMBER_OF_TITLES);
     }
 
-    @After
+    @AfterEach
     public void cleanUp() throws InterruptedException {
         pool.shutdown();
         pool.awaitTermination(1, TimeUnit.SECONDS);

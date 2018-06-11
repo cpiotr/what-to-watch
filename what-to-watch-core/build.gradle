@@ -4,10 +4,6 @@ plugins {
 
 apply plugin: 'java'
 
-jar {
-    baseName = 'what-to-watch-core'
-}
-
 sourceCompatibility = 1.10
 targetCompatibility = 1.10
 
@@ -20,7 +16,7 @@ testSets {
 }
 
 dependencies {
-    compile "com.google.guava:guava:${guavaVersion}"
+    compile "com.google.guava:guava:$guavaVersion"
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"
@@ -29,7 +25,7 @@ dependencies {
     compile "io.micrometer:micrometer-core:$micrometerVersion"
 
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
-    testCompile "junit:junit:$junitVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.assertj:assertj-core:$assertjVersion"
 

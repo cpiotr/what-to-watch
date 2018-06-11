@@ -1,18 +1,18 @@
 package pl.ciruk.whattowatch.neural
 
-import org.junit.BeforeClass
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 import pl.ciruk.whattowatch.ScoreAssert
 import pl.ciruk.whattowatch.core.score.Score
 import pl.ciruk.whattowatch.core.score.ScoreType
 
-@Ignore
+@Disabled
 class NeuralScoresTest {
     companion object {
         private var neuralScores: NeuralScores = NeuralScores(NeuralScores.readDataSet())
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUp() {
             neuralScores.train(2500)

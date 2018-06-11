@@ -1,12 +1,12 @@
 package pl.ciruk.whattowatch.core.description.filmweb;
 
-import org.junit.Before;
-import org.junit.Test;
-import pl.ciruk.whattowatch.utils.net.TestConnections;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionAssert;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
@@ -15,7 +15,7 @@ public class FilmwebDescriptionsIT {
 
     private FilmwebDescriptions descriptions;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptions(

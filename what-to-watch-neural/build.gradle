@@ -21,7 +21,7 @@ dependencies {
     compile "org.beykery:neuroph:$neurophVersion"
     compile project(":what-to-watch-core")
 
-    testCompile "junit:junit:$junitVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.assertj:assertj-core:$assertjVersion"
 
