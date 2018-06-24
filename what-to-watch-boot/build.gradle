@@ -2,6 +2,8 @@ plugins {
     id "org.unbroken-dome.test-sets" version "1.4.2"
 }
 
+ext.moduleName = 'what.to.watch.boot'
+
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
@@ -26,6 +28,14 @@ configurations {
     compile.exclude module: "spring-boot-starter-tomcat"
 }
 
+test {
+    useJUnitPlatform()
+}
+
+benchmark {
+    useJUnitPlatform()
+}
+
 dependencies {
     runtime("org.springframework.boot:spring-boot-properties-migrator")
 
@@ -44,11 +54,11 @@ dependencies {
     compile project(":what-to-watch-core")
 
     testCompile "org.springframework.boot:spring-boot-starter-test"
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     benchmarkCompile "org.openjdk.jmh:jmh-core:$jmhVersion"
     benchmarkCompile "org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion"
 }
 
-test {
-    jvmArgs += ["--add-modules", "java.xml.bind"]
-}
+println("[what-to-watch-boot] Building version: $version")

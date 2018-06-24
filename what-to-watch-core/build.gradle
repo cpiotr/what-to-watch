@@ -2,6 +2,8 @@ plugins {
     id "org.unbroken-dome.test-sets" version "1.4.2"
 }
 
+ext.moduleName = 'what.to.watch.core'
+
 apply plugin: 'java'
 
 sourceCompatibility = 1.10
@@ -11,8 +13,26 @@ repositories {
     mavenCentral()
 }
 
+compileJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
+}
+
 testSets {
     integrationTest
+}
+
+test {
+    useJUnitPlatform()
+}
+
+integrationTest {
+    useJUnitPlatform()
 }
 
 dependencies {
@@ -26,6 +46,7 @@ dependencies {
 
     testCompile "ch.qos.logback:logback-classic:$logbackVersion"
     testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.assertj:assertj-core:$assertjVersion"
 
@@ -35,4 +56,4 @@ dependencies {
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 
-println("[what-to-watch-boot] Building version: $version")
+println("[what-to-watch-core] Building version: $version")
