@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.score.metacritic;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -12,6 +11,8 @@ import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetacriticScoresIT {
     private MetacriticScores scores;
@@ -32,7 +33,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -44,7 +45,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -59,7 +60,7 @@ public class MetacriticScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -72,7 +73,7 @@ public class MetacriticScoresIT {
         long numberOfScores = scores.scoresOf(description)
                 .count();
 
-        Assertions.assertThat(numberOfScores).isGreaterThan(1L);
+        assertThat(numberOfScores).isGreaterThan(1L);
     }
 
     private Title titleOfRespectfulFilm() {

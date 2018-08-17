@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilmSuggestionsIT {
     private static final int NUMBER_OF_TITLES = 50;
@@ -58,7 +58,7 @@ public class FilmSuggestionsIT {
                 .filter(Film::isNotEmpty)
                 .count();
 
-        Assertions.assertThat(numberOfFilms).isEqualTo(NUMBER_OF_TITLES);
+        assertThat(numberOfFilms).isEqualTo(NUMBER_OF_TITLES);
     }
 
     @AfterEach
@@ -68,9 +68,8 @@ public class FilmSuggestionsIT {
     }
 
     private FilmwebDescriptions sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
-        return new FilmwebDescriptions(
-                new FilmwebProxy(new JsoupConnection(htmlConnection)),
-                pool);
+        FilmwebProxy filmwebProxy = new FilmwebProxy(new JsoupConnection(htmlConnection));
+        return new FilmwebDescriptions(filmwebProxy, pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {
@@ -83,8 +82,7 @@ public class FilmSuggestionsIT {
     }
 
     private static TitleProvider provideTitlesFromResource() {
-        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("films-with-my-scores.csv");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
+        try (InputStream inputStream = getResourceAsStream(); BufferedReader reader = createReader(inputStream)) {
             List<Title> titles = reader.lines()
                     .limit(NUMBER_OF_TITLES)
                     .map(line -> line.split(";"))
@@ -94,5 +92,13 @@ public class FilmSuggestionsIT {
         } catch (IOException e) {
             throw new AssertionError(e);
         }
+    }
+
+    private static InputStream getResourceAsStream() {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream("films-with-my-scores.csv");
+    }
+
+    private static BufferedReader createReader(InputStream inputStream) {
+        return new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
     }
 }

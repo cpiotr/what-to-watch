@@ -1,12 +1,13 @@
 package pl.ciruk.whattowatch.core.title.ekino;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 
 import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class EkinoTitlesIT {
 
@@ -18,6 +19,6 @@ public class EkinoTitlesIT {
 
         Stream<Title> titles = provider.streamOfTitles(1);
 
-        Assertions.assertThat(titles).isNotEmpty();
+        assertThat(titles).isNotEmpty();
     }
 }

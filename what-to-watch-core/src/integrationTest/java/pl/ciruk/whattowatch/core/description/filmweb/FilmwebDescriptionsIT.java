@@ -3,13 +3,14 @@ package pl.ciruk.whattowatch.core.description.filmweb;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
-import pl.ciruk.whattowatch.core.description.DescriptionAssert;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
+
+import static pl.ciruk.whattowatch.core.description.DescriptionAssert.assertThat;
 
 public class FilmwebDescriptionsIT {
 
@@ -30,7 +31,7 @@ public class FilmwebDescriptionsIT {
         Description description = descriptions.descriptionOf(rambo)
                 .orElseThrow(AssertionError::new);
 
-        DescriptionAssert.assertThat(description).hasTitle("First Blood");
+        assertThat(description).hasTitle("First Blood");
     }
 
     @Test
@@ -40,7 +41,7 @@ public class FilmwebDescriptionsIT {
         Description description = descriptions.descriptionOf(rambo)
                 .orElseThrow(AssertionError::new);
 
-        DescriptionAssert.assertThat(description).hasTitle("A United Kingdom");
+        assertThat(description).hasTitle("A United Kingdom");
     }
 
     @Test
@@ -50,6 +51,6 @@ public class FilmwebDescriptionsIT {
         Description description = descriptions.descriptionOf(title)
                 .orElseThrow(AssertionError::new);
 
-        DescriptionAssert.assertThat(description).hasTitle("The Commuter");
+        assertThat(description).hasTitle("The Commuter");
     }
 }

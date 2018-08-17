@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.score.filmweb;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -13,6 +12,8 @@ import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilmwebScoresIT {
 
@@ -36,7 +37,7 @@ public class FilmwebScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
@@ -48,7 +49,7 @@ public class FilmwebScoresIT {
 
         Stream<Score> scores = this.scores.scoresOf(description);
 
-        Assertions.assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
     private Title titleOfRecentAndRespectfulFilm() {
