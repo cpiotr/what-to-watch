@@ -13,7 +13,7 @@ module what.to.watch.core {
     exports pl.ciruk.whattowatch.core.score.metacritic;
     exports pl.ciruk.whattowatch.utils.cache;
     exports pl.ciruk.whattowatch.utils.stream;
-    requires jsoup;
+    requires org.jsoup;
     requires org.slf4j;
     requires micrometer.core;
     requires okhttp3;
