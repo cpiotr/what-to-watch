@@ -86,12 +86,20 @@ public class FilmSuggestionsIT {
             List<Title> titles = reader.lines()
                     .limit(NUMBER_OF_TITLES)
                     .map(line -> line.split(";"))
-                    .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build())
+                    .map(FilmSuggestionsIT::buildTitle)
                     .collect(toList());
             return (int pageNumber) -> titles.stream();
         } catch (IOException e) {
             throw new AssertionError(e);
         }
+    }
+
+    private static Title buildTitle(String[] array) {
+        return Title.builder()
+                .title(array[0])
+                .originalTitle(array[1])
+                .year(Integer.parseInt(array[2]))
+                .build();
     }
 
     private static InputStream getResourceAsStream() {
