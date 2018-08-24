@@ -85,16 +85,14 @@ public class Description {
         if (!other.canEqual(this)) {
             return false;
         }
-        final Object this$title = this.getTitle();
-        final Object other$title = other.getTitle();
-        return this$title == null ? other$title == null : this$title.equals(other$title);
+        final Object otherTitle = other.getTitle();
+        return title == null ? otherTitle == null : title.equals(otherTitle);
     }
 
     public int hashCode() {
         final int PRIME = 59;
         int result = 1;
-        final Object $title = this.getTitle();
-        result = result * PRIME + ($title == null ? 43 : $title.hashCode());
+        result = result * PRIME + (title == null ? 43 : title.hashCode());
         return result;
     }
 
@@ -142,7 +140,13 @@ public class Description {
         }
 
         public String toString() {
-            return "Description.DescriptionBuilder(title=" + this.title + ", foundFor=" + this.foundFor + ", poster=" + this.poster + ", plot=" + this.plot + ", genres=" + this.genres + ")";
+            return "Description.DescriptionBuilder(" +
+                    "title=" + this.title + ", " +
+                    "foundFor=" + this.foundFor + ", " +
+                    "poster=" + this.poster + ", " +
+                    "plot=" + this.plot + ", " +
+                    "genres=" + this.genres +
+                    ")";
         }
     }
 }
