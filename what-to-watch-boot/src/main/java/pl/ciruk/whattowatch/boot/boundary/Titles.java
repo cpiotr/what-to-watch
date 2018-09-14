@@ -19,7 +19,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 @Component
 @Path("/titles")
@@ -46,8 +45,7 @@ public class Titles {
                 Response.ok(titles.streamOfTitles(pageNumber).collect(toList())).build()
         );
 
-        asyncResponse.setTimeout(20_000, TimeUnit.MILLISECONDS);
-        asyncResponse.setTimeoutHandler(ar -> ar.resume(
-                Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
+        asyncResponse.setTimeout(20, TimeUnit.SECONDS);
+        asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
     }
 }

@@ -78,8 +78,7 @@ public class Scores {
                 .exceptionally(e ->
                         asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build()));
 
-        asyncResponse.setTimeout(10_000, TimeUnit.MILLISECONDS);
-        asyncResponse.setTimeoutHandler(ar -> ar.resume(
-                Response.status(SERVICE_UNAVAILABLE).entity("Request timed out").build()));
+        asyncResponse.setTimeout(10, TimeUnit.SECONDS);
+        asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
     }
 }
