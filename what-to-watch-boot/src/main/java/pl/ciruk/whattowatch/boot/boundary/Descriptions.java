@@ -33,7 +33,7 @@ public class Descriptions {
                 .originalTitle(originalTitle)
                 .year(year)
                 .build();
-        var optionalDescription = filmwebDescriptions.descriptionOf(titleObject);
+        var optionalDescription = filmwebDescriptions.findDescriptionOf(titleObject);
 
         return optionalDescription.map(Response::ok)
                 .orElse(Response.status(Response.Status.NOT_FOUND))

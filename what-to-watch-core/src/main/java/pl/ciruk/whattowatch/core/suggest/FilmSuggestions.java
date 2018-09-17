@@ -78,7 +78,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
     }
 
     private CompletableFuture<Film> findFilmByTitle(Title title) {
-        return descriptions.descriptionOfAsync(title)
+        return descriptions.findDescriptionOfAsync(title)
                 .thenComposeAsync(
                         description -> description.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())),
                         executorService)

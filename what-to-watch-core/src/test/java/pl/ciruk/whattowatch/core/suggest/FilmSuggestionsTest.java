@@ -4,8 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.score.Score;
@@ -18,11 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class FilmSuggestionsTest {
@@ -44,7 +40,7 @@ class FilmSuggestionsTest {
 
         descriptionProvider = mock(DescriptionProvider.class);
         description = createDescription(title);
-        when(descriptionProvider.descriptionOfAsync(title))
+        when(descriptionProvider.findDescriptionOfAsync(title))
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(description)));
 
         scoreProvider = mock(ScoresProvider.class);
@@ -76,7 +72,7 @@ class FilmSuggestionsTest {
         List<Film> films = CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
                 .collect(toList());
 
-        verify(descriptionProvider).descriptionOfAsync(title);
+        verify(descriptionProvider).findDescriptionOfAsync(title);
         verify(scoreProvider).scoresOfAsync(description);
     }
 

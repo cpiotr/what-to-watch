@@ -28,7 +28,7 @@ public class FilmwebDescriptionsIT {
     public void shouldResolveRamboTitleToFirstBlood() {
         Title rambo = Title.builder().title("Rambo").year(1982).build();
 
-        Description description = descriptions.descriptionOf(rambo)
+        Description description = descriptions.findDescriptionOf(rambo)
                 .orElseThrow(AssertionError::new);
 
         assertThat(description).hasTitle("First Blood");
@@ -38,7 +38,7 @@ public class FilmwebDescriptionsIT {
     public void shouldResolveRecentTitle() {
         Title rambo = Title.builder().title("A United Kingdom").year(2016).build();
 
-        Description description = descriptions.descriptionOf(rambo)
+        Description description = descriptions.findDescriptionOf(rambo)
                 .orElseThrow(AssertionError::new);
 
         assertThat(description).hasTitle("A United Kingdom");
@@ -48,7 +48,7 @@ public class FilmwebDescriptionsIT {
     public void shouldResolveDescriptionFromOriginalTitle() {
         Title title = Title.builder().title("Pasażer - HD").originalTitle("The Commuter").year(2018).build();
 
-        Description description = descriptions.descriptionOf(title)
+        Description description = descriptions.findDescriptionOf(title)
                 .orElseThrow(AssertionError::new);
 
         assertThat(description).hasTitle("The Commuter");
