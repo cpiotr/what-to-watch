@@ -1,8 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import io.micrometer.core.instrument.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -13,7 +11,6 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 
 import java.lang.invoke.MethodHandles;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -31,25 +28,14 @@ public class FilmSuggestions implements FilmSuggestionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private TitleProvider titles;
-
     private DescriptionProvider descriptions;
-
     private List<ScoresProvider> scoresProviders;
-
     private final ExecutorService executorService;
-
     private final AtomicLong suggestedFilms = new AtomicLong();
     private final Cache<Title, Film> cache;
 
-    public FilmSuggestions(
-            TitleProvider titles,
-            DescriptionProvider descriptions,
-            List<ScoresProvider> scoresProviders,
-            ExecutorService executorService) {
-        this(titles, descriptions, scoresProviders, executorService, createFilmCache());
-    }
 
-    FilmSuggestions(
+    public FilmSuggestions(
             TitleProvider titles,
             DescriptionProvider descriptions,
             List<ScoresProvider> scoresProviders,
@@ -109,17 +95,5 @@ public class FilmSuggestions implements FilmSuggestionProvider {
             cache.put(film.getDescription().getFoundFor(), film);
             return film;
         };
-    }
-
-    private static Cache<Title, Film> createFilmCache() {
-        Cache<Title, Film> filmCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(Duration.ofHours(1))
-                .maximumSize(1000)
-                .recordStats()
-                .build();
-        Metrics.gauge(FilmSuggestions.class.getSimpleName() + ".cache.size", List.of(), filmCache, Cache::size);
-        Metrics.gauge(FilmSuggestions.class.getSimpleName() + ".cache.hitCount", List.of(), filmCache, cache -> cache.stats().hitCount());
-        Metrics.gauge(FilmSuggestions.class.getSimpleName() + ".cache.requestCount", List.of(), filmCache, cache -> cache.stats().requestCount());
-        return filmCache;
     }
 }

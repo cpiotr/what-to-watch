@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
+import com.google.common.cache.CacheBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,8 @@ public class FilmSuggestionsIT {
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(htmlConnection, pool),
                 sampleScoreProviders(htmlConnection, pool),
-                pool
+                pool,
+                CacheBuilder.newBuilder().build()
         );
     }
 

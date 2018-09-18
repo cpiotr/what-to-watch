@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.boot.config;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.jsoup.nodes.Element;
@@ -8,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.ciruk.whattowatch.core.suggest.Film;
+import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.boot.cache.Cached;
@@ -26,6 +30,7 @@ import pl.ciruk.whattowatch.core.title.ekino.EkinoTitles;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -87,12 +92,27 @@ public class Beans {
     }
 
     @Bean
+    Cache<Title, Film> cache() {
+        Cache<Title, Film> filmCache = CacheBuilder.newBuilder()
+                .expireAfterAccess(Duration.ofHours(1))
+                .maximumSize(1000)
+                .recordStats()
+                .build();
+        String className = FilmSuggestions.class.getSimpleName();
+        Metrics.gauge(className + ".cache.size", List.of(), filmCache, Cache::size);
+        Metrics.gauge(className + ".cache.hitCount", List.of(), filmCache, cache -> cache.stats().hitCount());
+        Metrics.gauge(className + ".cache.requestCount", List.of(), filmCache, cache -> cache.stats().requestCount());
+        return filmCache;
+    }
+
+    @Bean
     FilmSuggestionProvider filmSuggestions(
             TitleProvider titleProvider,
             DescriptionProvider descriptionProvider,
             List<ScoresProvider> scoreProviders,
-            ExecutorService executorService) {
-        return new FilmSuggestions(titleProvider, descriptionProvider, scoreProviders, executorService);
+            ExecutorService executorService,
+            Cache<Title, Film> cache) {
+        return new FilmSuggestions(titleProvider, descriptionProvider, scoreProviders, executorService, cache);
     }
 
     @Bean

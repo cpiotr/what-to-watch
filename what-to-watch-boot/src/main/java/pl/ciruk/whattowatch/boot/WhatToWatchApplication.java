@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.boot;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.cache.CacheBuilder;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
@@ -53,7 +54,8 @@ public class WhatToWatchApplication {
                 sampleTitleProvider(),
                 sampleDescriptionProvider(threadPool, connection),
                 sampleScoreProviders(threadPool, connection),
-                threadPool);
+                threadPool,
+                CacheBuilder.newBuilder().build());
 
         Stopwatch started = Stopwatch.createStarted();
 

@@ -61,7 +61,7 @@ public class Suggestions {
         }
     }
 
-    private List<FilmResult> findSuggestions(@PathParam("pageNumber") int pageNumber) {
+    private List<FilmResult> findSuggestions(int pageNumber) {
         return CompletableFutures.getAllOf(suggestions.suggestFilms(pageNumber))
                 .distinct()
                 .filter(Film::isWorthWatching)
