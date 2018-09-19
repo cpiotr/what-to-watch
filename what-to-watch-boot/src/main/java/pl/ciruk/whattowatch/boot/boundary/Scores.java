@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUsing;
 
 @Component
@@ -68,7 +67,7 @@ public class Scores {
                 .build();
 
         Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-                scoresProvider -> scoresProvider.scoresOfAsync(description);
+                scoresProvider -> scoresProvider.findScoresByAsync(description);
 
         scoresProviders.stream()
                 .map(toScoresOfAsync)

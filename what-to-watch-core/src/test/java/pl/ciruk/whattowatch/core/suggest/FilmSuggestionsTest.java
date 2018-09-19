@@ -44,7 +44,7 @@ class FilmSuggestionsTest {
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(description)));
 
         scoreProvider = mock(ScoresProvider.class);
-        when(scoreProvider.scoresOfAsync(description))
+        when(scoreProvider.findScoresByAsync(description))
                 .thenAnswer(ignored -> CompletableFuture.completedFuture(Stream.of(Score.critic(1.0, 100))));
 
         cache = CacheBuilder.newBuilder().build();
@@ -73,7 +73,7 @@ class FilmSuggestionsTest {
                 .collect(toList());
 
         verify(descriptionProvider).findDescriptionOfAsync(title);
-        verify(scoreProvider).scoresOfAsync(description);
+        verify(scoreProvider).findScoresByAsync(description);
     }
 
     private Description createDescription(Title title) {

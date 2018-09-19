@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public interface ScoresProvider {
-    Stream<Score> scoresOf(Description description);
+    Stream<Score> findScoresBy(Description description);
 
-    CompletableFuture<Stream<Score>> scoresOfAsync(Description description);
+    CompletableFuture<Stream<Score>> findScoresByAsync(Description description);
 }

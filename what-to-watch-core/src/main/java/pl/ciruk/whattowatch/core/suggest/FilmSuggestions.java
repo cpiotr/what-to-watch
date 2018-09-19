@@ -76,7 +76,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 
     private CompletableFuture<Film> descriptionToFilm(Description description) {
         Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-                scoresProvider -> scoresProvider.scoresOfAsync(description);
+                scoresProvider -> scoresProvider.findScoresByAsync(description);
 
         return scoresProviders.stream()
                 .map(toScoresOfAsync)

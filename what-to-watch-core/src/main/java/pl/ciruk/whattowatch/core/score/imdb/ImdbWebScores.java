@@ -48,16 +48,16 @@ public class ImdbWebScores implements ScoresProvider {
     }
 
     @Override
-    public CompletableFuture<Stream<Score>> scoresOfAsync(Description description) {
+    public CompletableFuture<Stream<Score>> findScoresByAsync(Description description) {
         return CompletableFuture.supplyAsync(
-                () -> scoresOf(description),
+                () -> findScoresBy(description),
                 executorService
         );
     }
 
     @Override
-    public Stream<Score> scoresOf(Description description) {
-        LOGGER.debug("scoresOf - Description: {}", description);
+    public Stream<Score> findScoresBy(Description description) {
+        LOGGER.debug("findScoresBy - Description: {}", description);
 
         var url = new HttpUrl.Builder()
                 .scheme("http")
@@ -73,13 +73,13 @@ public class ImdbWebScores implements ScoresProvider {
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
-            LOGGER.warn("scoresOf - Missing score for {}", description);
-            LOGGER.trace("scoresOf - Search query: {}", url.toString());
+            LOGGER.warn("findScoresBy - Missing score for {}", description);
+            LOGGER.trace("findScoresBy - Search query: {}", url.toString());
             missingScores.incrementAndGet();
         }
 
         return firstResult.stream()
-                .peek(score -> LOGGER.debug("scoresOf - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score));
     }
 
     private Optional<Element> findFirstResult(Element searchResults, Description description) {

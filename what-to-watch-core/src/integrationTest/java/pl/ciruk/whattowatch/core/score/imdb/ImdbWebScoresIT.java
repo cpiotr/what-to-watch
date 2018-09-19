@@ -32,7 +32,7 @@ public class ImdbWebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
@@ -44,7 +44,7 @@ public class ImdbWebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
@@ -56,7 +56,7 @@ public class ImdbWebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
@@ -71,7 +71,7 @@ public class ImdbWebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
@@ -87,7 +87,7 @@ public class ImdbWebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }

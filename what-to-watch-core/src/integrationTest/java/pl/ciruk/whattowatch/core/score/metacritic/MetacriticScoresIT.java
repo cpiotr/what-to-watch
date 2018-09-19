@@ -31,7 +31,7 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
@@ -43,7 +43,7 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
@@ -58,7 +58,7 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).allMatch(ScoreAssert::isMeaningful);
     }
@@ -70,7 +70,7 @@ public class MetacriticScoresIT {
                 .title(title)
                 .build();
 
-        long numberOfScores = scores.scoresOf(description)
+        long numberOfScores = scores.findScoresBy(description)
                 .count();
 
         assertThat(numberOfScores).isGreaterThan(1L);

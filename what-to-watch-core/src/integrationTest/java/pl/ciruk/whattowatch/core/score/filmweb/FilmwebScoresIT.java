@@ -35,7 +35,7 @@ public class FilmwebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
@@ -47,7 +47,7 @@ public class FilmwebScoresIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.scoresOf(description);
+        Stream<Score> scores = this.scores.findScoresBy(description);
 
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
