@@ -6,6 +6,7 @@ filmsApp.controller('FilmListController', function ($scope, FilmList) {
 
 filmsApp.factory('FilmList', function($http) {
     var FilmList = function() {
+        this.displayedTitles = new Set();
         this.items = [];
         this.busy = false;
         this.page = 1;
@@ -23,7 +24,11 @@ filmsApp.factory('FilmList', function($http) {
             .success(function(data) {
                 var receivedFilms = data;
                 for (var i = 0; i < receivedFilms.length; i++) {
-                    this.items.push(receivedFilms[i]);
+                    var titleWithYear = receivedFilms[i].formatTitle();
+                    if (!this.displayedTitles.has(titleWithYear)) {
+                        this.displayedTitles.add(titleWithYear)
+                        this.items.push(receivedFilms[i]);
+                    }
                 }
                 this.page += 1;
                 this.busy = false;
@@ -35,3 +40,7 @@ filmsApp.factory('FilmList', function($http) {
 
     return FilmList;
 });
+
+Object.prototype.formatTitle = function() {
+    return this.title + "║" + this.year
+}
