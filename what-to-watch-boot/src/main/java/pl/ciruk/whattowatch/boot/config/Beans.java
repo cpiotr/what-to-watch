@@ -37,6 +37,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
+
 @Configuration
 public class Beans {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -122,7 +124,7 @@ public class Beans {
 
     @PostConstruct
     private void logConfiguration() {
-        LOGGER.info("Thread pool size: <{}>", filmPoolSize);
-        LOGGER.info("Number of title pages crawled per request: <{}>", titlePagesPerRequest);
+        logConfigurationEntry(LOGGER, "Thread pool size", filmPoolSize);
+        logConfigurationEntry(LOGGER, "Number of title pages crawled per request", titlePagesPerRequest);
     }
 }

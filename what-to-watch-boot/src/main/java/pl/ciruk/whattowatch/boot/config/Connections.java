@@ -27,6 +27,8 @@ import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
+import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
+
 @Configuration
 public class Connections {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -140,10 +142,10 @@ public class Connections {
 
     @PostConstruct
     private void logConfiguration() {
-        LOGGER.info("Redis host: <{}>", redisHost);
-        LOGGER.info("Redis thread pool max active: <{}>", redisPoolMaxActive);
-        LOGGER.info("Cache long expiry: <{} {}>", longExpiryInterval, longExpiryUnit);
-        LOGGER.info("Cache short expiry: <{} {}>", shortExpiryInterval, shortExpiryUnit);
-        LOGGER.info("HttpClient pool max idle: <{}>", httpPoolMaxIdle);
+        logConfigurationEntry(LOGGER,"Redis host", redisHost);
+        logConfigurationEntry(LOGGER,"Redis thread pool max active", redisPoolMaxActive);
+        logConfigurationEntry(LOGGER,"Cache long expiry", longExpiryInterval, longExpiryUnit);
+        logConfigurationEntry(LOGGER,"Cache short expiry", shortExpiryInterval, shortExpiryUnit);
+        logConfigurationEntry(LOGGER,"HttpClient pool max idle", httpPoolMaxIdle);
     }
 }
