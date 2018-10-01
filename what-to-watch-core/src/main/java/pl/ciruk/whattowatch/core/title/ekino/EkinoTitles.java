@@ -4,11 +4,13 @@ import io.micrometer.core.instrument.Metrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
+import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
@@ -32,7 +34,7 @@ public class EkinoTitles implements TitleProvider {
         this.pagesPerRequest = pagesPerRequest;
 
         Metrics.gauge(
-                MethodHandles.lookup().lookupClass().getSimpleName() + "numberOfTitles",
+                Names.createName(TitleProvider.class, List.of("ekino", "count")),
                 numberOfTitles,
                 AtomicLong::get);
 

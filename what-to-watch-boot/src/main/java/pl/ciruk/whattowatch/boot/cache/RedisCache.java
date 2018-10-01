@@ -8,9 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
+import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,13 +35,12 @@ public class RedisCache implements CacheProvider<String> {
     private final TimeUnit expiryUnit;
 
     public RedisCache(StringRedisTemplate cache, long expiryInterval, TimeUnit expiryUnit, CircuitBreaker circuitBreaker) {
-        String className = MethodHandles.lookup().lookupClass().getSimpleName();
         Metrics.gauge(
-                String.format("%s.%s%s.%s", className, expiryInterval, expiryUnit, "missCounter"),
+                Names.createName(RedisCache.class, List.of(expiryUnit, expiryInterval, "miss", "count")),
                 missCounter,
                 AtomicLong::get);
         Metrics.gauge(
-                String.format("%s.%s%s.%s", className, expiryInterval, expiryUnit, "requestCounter"),
+                Names.createName(RedisCache.class, List.of(expiryUnit, expiryInterval, "request", "count")),
                 requestCounter,
                 AtomicLong::get);
 

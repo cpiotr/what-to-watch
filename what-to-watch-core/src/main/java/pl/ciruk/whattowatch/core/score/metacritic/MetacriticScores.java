@@ -6,6 +6,7 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.math.Doubles;
+import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
@@ -15,6 +16,7 @@ import pl.ciruk.whattowatch.core.title.Title;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -44,13 +46,13 @@ public class MetacriticScores implements ScoresProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                MethodHandles.lookup().lookupClass().getSimpleName() + "missingMetacriticScores",
+                Names.createName(ScoresProvider.class, List.of("metacritic", "missing", "count")),
                 missingMetacriticScores,
                 AtomicLong::get
         );
 
         Metrics.gauge(
-                MethodHandles.lookup().lookupClass().getSimpleName() + "missingNewYorkTimesScores",
+                Names.createName(ScoresProvider.class, List.of("newYorkTimes", "missing", "count")),
                 missingNewYorkTimesScores,
                 AtomicLong::get
         );

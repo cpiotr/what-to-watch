@@ -9,6 +9,7 @@ import pl.ciruk.whattowatch.utils.concurrent.AsyncExecutionException;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,7 +40,7 @@ public class Suggestions {
     public Suggestions(FilmSuggestionProvider suggestions) {
         this.suggestions = suggestions;
 
-        responseTimer = Metrics.timer(Suggestions.class.getSimpleName() + ".responses");
+        responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
     }
 
     @GET

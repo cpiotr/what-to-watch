@@ -8,10 +8,12 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -25,7 +27,7 @@ public class HtmlConnection implements HttpConnection<String> {
     public HtmlConnection(OkHttpClient httpClientSupplier) {
         this.okHttpClient = httpClientSupplier;
 
-        this.requestsTimer = Metrics.timer(HtmlConnection.class.getSimpleName() + ".requests");
+        this.requestsTimer = Metrics.timer(Names.createName(HtmlConnection.class, "request"));
     }
 
     @Override
