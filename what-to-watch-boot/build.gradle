@@ -13,8 +13,8 @@ jar {
     baseName = 'what-to-watch-boot'
 }
 
-sourceCompatibility = 1.10
-targetCompatibility = 1.10
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 
 repositories {
     mavenCentral()
@@ -51,6 +51,8 @@ dependencies {
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "net.jodah:failsafe:$failsafeVersion"
     compile "io.micrometer:micrometer-core:$micrometerVersion"
+    compile "javax.activation:activation:$javaxAnnotationsVersion"
+    compile "javax.xml.bind:jaxb-api:$jaxbVersion"
     compile project(":what-to-watch-core")
 
     testCompile "org.springframework.boot:spring-boot-starter-test"

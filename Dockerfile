@@ -1,4 +1,4 @@
-FROM openjdk:10-slim
+FROM openjdk:11-slim
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
@@ -27,7 +27,8 @@ ENV JVM_OPTS="-Xmx1G -Xms1G \
 	-XX:+AggressiveOpts \
 	-XX:+PreserveFramePointer \
 	-XX:+IgnoreUnrecognizedVMOptions \
-	--add-modules java.xml.bind"
+	-XX:+UnlockExperimentalVMOptions \
+	-XX:+UseZGC"
 
 COPY ./ /what-to-watch/
 WORKDIR /what-to-watch
