@@ -1,9 +1,9 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import pl.ciruk.whattowatch.utils.math.Doubles;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
+import pl.ciruk.whattowatch.utils.math.Doubles;
 
 import java.util.List;
 import java.util.Optional;

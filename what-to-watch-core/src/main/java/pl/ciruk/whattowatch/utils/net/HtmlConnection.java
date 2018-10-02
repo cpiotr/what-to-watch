@@ -13,7 +13,6 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 

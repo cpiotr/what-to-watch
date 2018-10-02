@@ -4,14 +4,14 @@ import io.micrometer.core.instrument.Metrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.utils.metrics.Names;
-import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;

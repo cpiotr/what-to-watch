@@ -5,14 +5,14 @@ import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.utils.math.Doubles;
-import pl.ciruk.whattowatch.utils.metrics.Names;
-import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.math.Doubles;
+import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
@@ -23,9 +23,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-import static pl.ciruk.whattowatch.utils.stream.Optionals.mergeUsing;
 import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
+import static pl.ciruk.whattowatch.utils.stream.Optionals.mergeUsing;
 
 public class MetacriticScores implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

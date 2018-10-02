@@ -5,10 +5,10 @@ import io.micrometer.core.instrument.Timer;
 import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.utils.concurrent.AsyncExecutionException;
-import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.utils.concurrent.AsyncExecutionException;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import javax.inject.Inject;

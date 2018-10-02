@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.core.description;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
-import pl.ciruk.whattowatch.core.title.Title;
 
 public class DescriptionAssert extends AbstractAssert<DescriptionAssert, Description> {
 
