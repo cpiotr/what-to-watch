@@ -10,7 +10,8 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
     TITLE(film -> film.select(".title a")
             .stream()
             .findFirst()
-            .map(Element::text)),
+            .map(Element::text)
+            .map(EkinoSelectors::stripTags)),
     ORIGINAL_TITLE(film -> film.select(".title .blue a")
             .stream()
             .findFirst()
@@ -24,6 +25,7 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
             .findFirst()
             .map(Element::text)
             .map(EkinoSelectors::trimToYear));
+
     private Function<Element, Optional<String>> extractor;
 
     EkinoSelectors(Function<Element, Optional<String>> extractor) {
@@ -38,6 +40,15 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
     private static String trimToYear(String wholeDescriptionInTitle) {
         int endOfFirstPart = wholeDescriptionInTitle.indexOf('|');
         return wholeDescriptionInTitle.substring(0, endOfFirstPart).trim();
+    }
+
+    private static String stripTags(String title) {
+        int indexOfDash = title.indexOf('-');
+        if (indexOfDash > -1) {
+            return title.substring(0, indexOfDash);
+        }
+
+        return title;
     }
 
 }
