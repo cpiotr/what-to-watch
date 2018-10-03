@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface DescriptionProvider {
-    Optional<Description> findDescriptionOf(Title title);
+    Optional<Description> findDescriptionBy(Title title);
 
     CompletableFuture<Optional<Description>> findDescriptionOfAsync(Title title);
 }

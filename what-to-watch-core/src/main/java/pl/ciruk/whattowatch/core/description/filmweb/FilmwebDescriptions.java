@@ -50,7 +50,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
     @Override
     public CompletableFuture<Optional<Description>> findDescriptionOfAsync(Title title) {
         return CompletableFuture.supplyAsync(
-                () -> findDescriptionOf(title),
+                () -> findDescriptionBy(title),
                 executorService
         ).exceptionally(t -> {
             LOGGER.error("Cannot get description of {}", title, t);
@@ -59,8 +59,8 @@ public class FilmwebDescriptions implements DescriptionProvider {
     }
 
     @Override
-    public Optional<Description> findDescriptionOf(Title title) {
-        LOGGER.debug("findDescriptionOf - Title: {}", title);
+    public Optional<Description> findDescriptionBy(Title title) {
+        LOGGER.debug("findDescriptionBy - Title: {}", title);
 
         var foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
                 .filter(Objects::nonNull)
@@ -69,7 +69,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 .peek(description -> description.foundFor(title))
                 .findAny();
         if (!foundDescription.isPresent()) {
-            LOGGER.warn("findDescriptionOf - Missing description for: {}", title);
+            LOGGER.warn("findDescriptionBy - Missing description for: {}", title);
             missingDescriptions.incrementAndGet();
         }
 
