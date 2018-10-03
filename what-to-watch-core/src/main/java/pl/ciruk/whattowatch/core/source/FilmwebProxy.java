@@ -20,8 +20,8 @@ public class FilmwebProxy {
                 .host(HOST)
                 .addPathSegment("search/film")
                 .addQueryParameter("q", title)
-                .addQueryParameter("startYear", String.valueOf(year))
-                .addQueryParameter("endYear", String.valueOf(year))
+                .addQueryParameter("startYear", String.valueOf(previous(year)))
+                .addQueryParameter("endYear", String.valueOf(next(year)))
                 .build();
 
         return Optional.of(url)
@@ -39,5 +39,13 @@ public class FilmwebProxy {
         return Optional.ofNullable(url)
                 .map(Object::toString)
                 .flatMap(connection::connectToAndGet);
+    }
+
+    private static int next(int year) {
+        return year+1;
+    }
+
+    private static int previous(int year) {
+        return year-1;
     }
 }
