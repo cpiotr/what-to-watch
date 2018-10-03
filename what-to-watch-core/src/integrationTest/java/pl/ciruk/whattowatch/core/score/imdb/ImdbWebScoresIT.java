@@ -92,6 +92,21 @@ public class ImdbWebScoresIT {
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
+    @Test
+    public void shouldRetrieveMeaningfulScoreOfDocumentary() {
+        Title title = Title.builder()
+                .originalTitle("Life, animated")
+                .year(2016)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scores = this.scores.findScoresBy(description);
+
+        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+    }
+
     private Title titleOfOldAndRespectfulFilm() {
         return Title.builder()
                 .title("Rambo")
