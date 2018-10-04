@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.boot.config;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import net.jodah.failsafe.CircuitBreaker;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
@@ -57,11 +59,13 @@ public class Connections {
     @Bean
     OkHttpClient httpClient() {
         var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20_000, TimeUnit.SECONDS);
+        var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
         return new OkHttpClient.Builder()
                 .connectionPool(connectionPool)
                 .retryOnConnectionFailure(true)
                 .readTimeout(5_000, TimeUnit.MILLISECONDS)
                 .connectTimeout(1_000, TimeUnit.MILLISECONDS)
+                .eventListener(metricsEventListener)
                 .build();
     }
 
@@ -142,10 +146,10 @@ public class Connections {
 
     @PostConstruct
     private void logConfiguration() {
-        logConfigurationEntry(LOGGER,"Redis host", redisHost);
-        logConfigurationEntry(LOGGER,"Redis thread pool max active", redisPoolMaxActive);
-        logConfigurationEntry(LOGGER,"Cache long expiry", longExpiryInterval, longExpiryUnit);
-        logConfigurationEntry(LOGGER,"Cache short expiry", shortExpiryInterval, shortExpiryUnit);
-        logConfigurationEntry(LOGGER,"HttpClient pool max idle", httpPoolMaxIdle);
+        logConfigurationEntry(LOGGER, "Redis host", redisHost);
+        logConfigurationEntry(LOGGER, "Redis thread pool max active", redisPoolMaxActive);
+        logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);
+        logConfigurationEntry(LOGGER, "Cache short expiry", shortExpiryInterval, shortExpiryUnit);
+        logConfigurationEntry(LOGGER, "HttpClient pool max idle", httpPoolMaxIdle);
     }
 }
