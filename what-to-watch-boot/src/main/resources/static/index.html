@@ -3,7 +3,9 @@
 <head>
     <title>What To Watch?</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0/css/bootstrap.min.css"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css"
+          rel="stylesheet" media="screen"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css"
           rel="stylesheet" media="screen"/>
     <link href="css/style.css" rel="stylesheet" media="screen"/>
 
@@ -18,43 +20,46 @@
         <div ng-controller="FilmListController">
             <div class="row"
                  infinite-scroll='filmList.nextPage()'
-                 infinite-scroll-disabled='filmList.busy' >
-                <div class="col-sm-6 col-md-4" ng-repeat-start="film in filmList.items">
-                    <div class="thumbnail">
-                        <a href="{{film.link}}">
-                            <img src="{{film.poster}}" alt="{{film.title}}"/>
-                        </a>
+                 infinite-scroll-disabled='filmList.busy'>
+                <div class="col-sm-4 mb-4 d-flex" ng-repeat-start="film in filmList.items">
+                    <div class="col-sm p-3 border rounded shadow-sm">
+                        <div class="text-center mb-2">
+                            <a class="btn btn-outline-primary p-1" href="{{film.link}}">
+                                <img class="poster" src="{{film.poster}}" alt="{{film.title}}"/>
+                            </a>
+                        </div>
                         <div class="caption">
                             <h3>
                                 <a href="{{film.link}}">{{film.title}} ({{film.year}})</a>
                             </h3>
                             <p>{{film.plot}}</p>
                             <p>
-                                <div class="btn btn-primary" role="button">
-                                    <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                                    <span class="badge">{{film.score * 100 | number: 1}}%   </span>
-                                </div>
-                                <ul class="list-group">
-                                    <li class="list-group-item" ng-repeat="score in film.scores">
-                                        <span class="badge glyphicon glyphicon-user">{{score.quantity}}</span>
-                                        <span class="badge glyphicon glyphicon-star">{{score.grade * 100 | number: 1}}%</span>
-                                        {{score.source}}
-                                    </li>
-                                </ul>
+                            <div class="btn btn-primary" role="button">
+                                <span class="oi oi-star" aria-hidden="true"></span>
+                                <span class="badge badge-light">{{film.score * 100 | number: 1}}%   </span>
+                            </div>
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="score in film.scores">
+                                    <span class="border badge badge-light oi oi-person float-right mr-1">{{score.quantity}}</span>
+                                    <span class="border badge badge-light oi oi-star float-right mr-1">{{score.grade * 100 | number: 1}}%</span>
+                                    <span>{{score.source}}</span>
+                                </li>
+                            </ul>
                             </p>
 
                             <p class="genres">
-                                <span class="label label-info" style="margin-right: 2px;"
+                                <span class="badge badge-pill badge-info" style="margin-right: 2px;"
                                       ng-repeat="genre in film.genres">{{genre}}</span>
                             </p>
                         </div>
                     </div>
                 </div>
+
                 <div class="clearfix" ng-if="$index%3==2"></div>
                 <div ng-repeat-end=""></div>
             </div>
             <div class="row" ng-show='filmList.busy'>
-                <div class="center-block loader"></div>
+                <div class="mx-auto loader"></div>
             </div>
         </div>
     </div>

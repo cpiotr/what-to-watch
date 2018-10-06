@@ -17,3 +17,20 @@ div[role=main] {
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
+
+.oi::before {
+    padding-right: 0.5em;
+}
+
+.oi-person::before {
+    padding-right: 0.5em;
+}
+
+.poster {
+    width: 200px;
+    height: 285px;
+}
+
+.shadow-sm {
+    box-shadow: 0rem 0rem .5em .0rem rgba(0,0,0,.075) !important;
+}
