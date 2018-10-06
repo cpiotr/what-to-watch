@@ -22,10 +22,6 @@ public final class CompletableFutures {
         );
     }
 
-    public static <T> CompletableFuture<Stream<T>> allOf(Stream<CompletableFuture<T>> futures) {
-        return allOf(futures.collect(toList()));
-    }
-
     public static <T> Stream<T> getAllOf(List<CompletableFuture<T>> futures) {
         CompletableFuture.allOf(
                 futures.toArray(new CompletableFuture[0])

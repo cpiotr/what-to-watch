@@ -35,6 +35,11 @@ public class RedisCache implements CacheProvider<String> {
     private final TimeUnit expiryUnit;
 
     public RedisCache(StringRedisTemplate cache, long expiryInterval, TimeUnit expiryUnit, CircuitBreaker circuitBreaker) {
+        this.cache = cache;
+        this.expiryInterval = expiryInterval;
+        this.expiryUnit = expiryUnit;
+        this.circuitBreaker = circuitBreaker;
+
         Metrics.gauge(
                 Names.createName(RedisCache.class, List.of(expiryUnit, expiryInterval, "miss", "count")),
                 missCounter,
@@ -44,10 +49,6 @@ public class RedisCache implements CacheProvider<String> {
                 requestCounter,
                 AtomicLong::get);
 
-        this.cache = cache;
-        this.expiryInterval = expiryInterval;
-        this.expiryUnit = expiryUnit;
-        this.circuitBreaker = circuitBreaker;
     }
 
     @PostConstruct
