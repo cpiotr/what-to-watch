@@ -22,7 +22,7 @@
                  infinite-scroll='filmList.nextPage()'
                  infinite-scroll-disabled='filmList.busy'>
                 <div class="col-sm-4 mb-4 d-flex" ng-repeat-start="film in filmList.items">
-                    <div class="col-sm p-3 border rounded shadow-sm">
+                    <div class="col-sm p-3 border rounded shadow-sm filmbox">
                         <div class="text-center mb-2">
                             <a class="btn btn-outline-primary p-1" href="{{film.link}}">
                                 <img class="poster" src="{{film.poster}}" alt="{{film.title}}"/>

@@ -34,3 +34,7 @@ div[role=main] {
 .shadow-sm {
     box-shadow: 0rem 0rem .5em .0rem rgba(0,0,0,.075) !important;
 }
+
+.filmbox:hover {
+	border: 1px solid #AAA !important;
+}
