@@ -193,7 +193,7 @@ public class MetacriticScores implements ScoresProvider {
 
     private Title extractTitle(Element searchResult) {
         var title = MetacriticSelectors.TITLE.extractFrom(searchResult).orElse("");
-        var year = MetacriticSelectors.RELEASE_DATE.extractFrom(searchResult)
+        var year = MetacriticSelectors.RELEASE_YEAR.extractFrom(searchResult)
                 .map(Integer::parseInt)
                 .orElse(MISSING_YEAR);
 

@@ -2,31 +2,16 @@ package pl.ciruk.whattowatch.core.score.metacritic;
 
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.Extractable;
-import pl.ciruk.whattowatch.utils.text.NumberToken;
-import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 public enum MetacriticSelectors implements Extractable<Optional<String>> {
     LINK_TO_DETAILS(details -> details.select(".product_title a")
             .stream()
             .map(link -> link.attr("href"))
             .findFirst()),
-    AVERAGE_GRADE(details -> details.select(".simple_summary .metascore_w.movie")
-            .stream()
-            .map(Element::text)
-            .findFirst()
-            .filter(MetacriticSelectors::isValidScore)),
-    NUMBER_OF_GRADES(details -> Optional.of(String.valueOf(
-            details.select(".simple_summary div.chart div.count")
-                    .stream()
-                    .map(Element::text)
-                    .map(NumberTokenizer::new)
-                    .filter(NumberTokenizer::hasMoreTokens)
-                    .map(NumberTokenizer::nextToken)
-                    .mapToLong(NumberToken::asSimpleLong)
-                    .sum()))),
     NEW_YORK_TIMES_GRADE(details -> details.select(".critic_reviews .review")
             .stream()
             .filter(review -> review.select(".source").text().equalsIgnoreCase("The New York Times"))
@@ -40,15 +25,18 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
             .stream()
             .map(Element::text)
             .findFirst()),
-    RELEASE_DATE(details -> details.select(".main_stats p")
+    RELEASE_YEAR(details -> details.select(".main_stats p")
             .stream()
             .map(Element::text)
             .map(MetacriticSelectors::extractYear)
+            .filter(MetacriticSelectors::isValidNumber)
             .findFirst()),
     ;
 
-    private static boolean isValidScore(String scoreAsText) {
-        return !scoreAsText.isEmpty() && !scoreAsText.equalsIgnoreCase("tbd");
+    private static final Pattern NUMBER = Pattern.compile("[0-9]+");
+
+    private static boolean isValidNumber(String yearAsText) {
+        return NUMBER.matcher(yearAsText).matches();
     }
 
     private static String extractYear(String dateAsText) {
