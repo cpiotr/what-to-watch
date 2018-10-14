@@ -61,9 +61,7 @@ public class ImdbWebScores implements ScoresProvider {
     public Stream<Score> findScoresBy(Description description) {
         LOGGER.debug("findScoresBy - Description: {}", description);
 
-        var url = new HttpUrl.Builder()
-                .scheme("http")
-                .host("www.imdb.com")
+        var url = createUrlBuilder()
                 .addPathSegment("search")
                 .addPathSegment("title")
                 .addQueryParameter("title", description.titleAsText())
@@ -82,6 +80,12 @@ public class ImdbWebScores implements ScoresProvider {
 
         return firstResult.stream()
                 .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score));
+    }
+
+    private HttpUrl.Builder createUrlBuilder() {
+        return new HttpUrl.Builder()
+                .scheme("http")
+                .host("www.imdb.com");
     }
 
     private Optional<Element> findFirstResult(Element searchResults, Description description) {
@@ -118,9 +122,10 @@ public class ImdbWebScores implements ScoresProvider {
     }
 
     private Optional<Element> getDetails(String linkToDetails) {
-        var url = "http://www.imdb.com/" + linkToDetails;
+        var url = createUrlBuilder()
+                .addPathSegment(linkToDetails);
 
-        return httpConnection.connectToAndGet(url);
+        return httpConnection.connectToAndGet(url.toString());
     }
 
     private Optional<Integer> extractYearFrom(Element result) {
