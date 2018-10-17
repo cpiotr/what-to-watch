@@ -82,7 +82,7 @@ public class ImdbWebScores implements ScoresProvider {
                 .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score));
     }
 
-    private HttpUrl.Builder createUrlBuilder() {
+    private static HttpUrl.Builder createUrlBuilder() {
         return new HttpUrl.Builder()
                 .scheme("http")
                 .host("www.imdb.com");
@@ -122,10 +122,9 @@ public class ImdbWebScores implements ScoresProvider {
     }
 
     private Optional<Element> getDetails(String linkToDetails) {
-        var url = createUrlBuilder()
-                .addPathSegment(linkToDetails);
+        var url = createUrlBuilder().toString() + linkToDetails;
 
-        return httpConnection.connectToAndGet(url.toString());
+        return httpConnection.connectToAndGet(url);
     }
 
     private Optional<Integer> extractYearFrom(Element result) {
