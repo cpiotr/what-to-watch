@@ -59,7 +59,8 @@ public class FilmwebScores implements ScoresProvider {
         LOGGER.debug("findScoresBy - Description: {}", description);
 
         return scoresForTitle(description.getTitle())
-                .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score))
+                .filter(Score::isSignificant);
     }
 
     private Stream<Score> scoresForTitle(Title title) {
