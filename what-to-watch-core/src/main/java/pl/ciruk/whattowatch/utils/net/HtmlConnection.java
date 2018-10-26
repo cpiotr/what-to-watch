@@ -2,16 +2,15 @@ package pl.ciruk.whattowatch.utils.net;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
+import okhttp3.internal.http.RetryAndFollowUpInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -68,14 +67,20 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Response execute(Request.Builder requestBuilder) throws IOException {
-        Request build = requestBuilder.build();
-
+        var request = requestBuilder.build();
         try {
-            return requestsTimer.recordCallable(
-                    () -> okHttpClient.newCall(build).execute()
-            );
+            return executeRequest(request);
         } catch (Exception e) {
             throw new IOException(e);
+        }
+    }
+
+    private Response executeRequest(Request request) throws Exception {
+        Call networkCall = okHttpClient.newCall(request);
+        try {
+            return requestsTimer.recordCallable(networkCall::execute);
+        } catch (SocketTimeoutException e) {
+            return requestsTimer.recordCallable(networkCall::execute);
         }
     }
 
