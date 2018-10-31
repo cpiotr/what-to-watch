@@ -69,18 +69,17 @@ public class HtmlConnection implements HttpConnection<String> {
     private Response execute(Request.Builder requestBuilder) throws IOException {
         var request = requestBuilder.build();
         try {
-            return executeRequest(request);
+            return requestsTimer.recordCallable(() -> executeRequest(request));
         } catch (Exception e) {
             throw new IOException(e);
         }
     }
 
     private Response executeRequest(Request request) throws Exception {
-        Call networkCall = okHttpClient.newCall(request);
         try {
-            return requestsTimer.recordCallable(networkCall::execute);
+            return okHttpClient.newCall(request).execute();
         } catch (SocketTimeoutException e) {
-            return requestsTimer.recordCallable(networkCall::execute);
+            return okHttpClient.newCall(request).execute();
         }
     }
 
