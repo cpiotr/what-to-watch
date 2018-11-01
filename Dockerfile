@@ -18,13 +18,12 @@ ENV JMX_OPTS="-Dcom.sun.management.jmxremote \
 	-Dcom.sun.management.jmxremote.port=9999 \
 	-Dcom.sun.management.jmxremote.ssl=false"
 
-ENV JVM_OPTS="-Xmx1G -Xms1G \
+ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-Xss2M \
 	-XX:+TieredCompilation \
 	-XX:InitialCodeCacheSize=128m \
 	-XX:ReservedCodeCacheSize=128m \
 	-XX:-UseBiasedLocking \
-	-XX:+AggressiveOpts \
 	-XX:+PreserveFramePointer \
 	-XX:+IgnoreUnrecognizedVMOptions \
 	-XX:+UnlockExperimentalVMOptions \
