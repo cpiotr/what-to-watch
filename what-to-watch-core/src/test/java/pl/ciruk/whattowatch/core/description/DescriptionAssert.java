@@ -20,7 +20,7 @@ public class DescriptionAssert extends AbstractAssert<DescriptionAssert, Descrip
                 || itemTitle.getTitle().equalsIgnoreCase(title);
 
         Assertions.assertThat(descriptionHasTitle)
-                .as("Has title: " + title)
+                .as("Expected title: <%s>. Actual: <%s>", title, itemTitle.asText())
                 .isTrue();
 
         return this;
