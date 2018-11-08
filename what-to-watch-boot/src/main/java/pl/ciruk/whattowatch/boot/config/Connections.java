@@ -41,7 +41,7 @@ public class Connections {
     @Value("${redis.pool.maxActive:8}")
     private Integer redisPoolMaxActive;
 
-    @Value("${http.pool.maxIdle:32}")
+    @Value("${http.pool.maxIdle:64}")
     private Integer httpPoolMaxIdle;
 
     @Value("${w2w.cache.expiry.long.interval}")
@@ -58,13 +58,13 @@ public class Connections {
 
     @Bean
     OkHttpClient httpClient() {
-        var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20_000, TimeUnit.SECONDS);
+        var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20, TimeUnit.SECONDS);
         var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
         return new OkHttpClient.Builder()
                 .connectionPool(connectionPool)
                 .retryOnConnectionFailure(true)
-                .readTimeout(5_000, TimeUnit.MILLISECONDS)
-                .connectTimeout(1_000, TimeUnit.MILLISECONDS)
+                .readTimeout(2_000, TimeUnit.MILLISECONDS)
+                .connectTimeout(500, TimeUnit.MILLISECONDS)
                 .eventListener(metricsEventListener)
                 .build();
     }
