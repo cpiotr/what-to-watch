@@ -15,6 +15,9 @@ import pl.ciruk.whattowatch.boot.cache.Cached;
 import pl.ciruk.whattowatch.boot.cache.NotCached;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
+import pl.ciruk.whattowatch.core.filter.FilmFilter;
+import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbWebScores;
@@ -38,6 +41,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
@@ -122,6 +126,21 @@ public class Beans {
     @Bean
     Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider) {
         return new Bootstrap(filmSuggestionProvider);
+    }
+
+    @Bean
+    FilmByScoreFilter filmByScoreFilter() {
+        return new FilmByScoreFilter(0.65);
+    }
+
+    @Bean
+    Predicate<Film> atLeastOneCriticScore() {
+        return film -> film.getScores().stream().anyMatch(score -> score.getType().equals(ScoreType.CRITIC));
+    }
+
+    @Bean
+    FilmFilter filmFilter(List<Predicate<Film>> filters) {
+        return new FilmFilter(filters);
     }
 
     @PostConstruct

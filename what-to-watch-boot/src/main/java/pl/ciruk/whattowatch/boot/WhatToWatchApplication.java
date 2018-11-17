@@ -8,6 +8,7 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbWebScores;
@@ -56,6 +57,7 @@ public class WhatToWatchApplication {
                 sampleScoreProviders(threadPool, connection),
                 threadPool,
                 CacheBuilder.newBuilder().build());
+        FilmByScoreFilter scoreFilter = new FilmByScoreFilter(0.65);
 
         Stopwatch started = Stopwatch.createStarted();
 
@@ -63,7 +65,7 @@ public class WhatToWatchApplication {
             CompletableFutures.getAllOf(suggestions.suggestFilms(1))
                     .limit(100)
                     .filter(Film::isNotEmpty)
-                    .filter(Film::isWorthWatching)
+                    .filter(scoreFilter)
                     .forEach(System.out::println);
             started.stop();
 
@@ -82,7 +84,7 @@ public class WhatToWatchApplication {
         return new JsoupConnection(new CachedConnection(cache, createHttpConnection()));
     }
 
-    public static HtmlConnection createHttpConnection() {
+    private static HtmlConnection createHttpConnection() {
         return new HtmlConnection(createHttpClient());
     }
 

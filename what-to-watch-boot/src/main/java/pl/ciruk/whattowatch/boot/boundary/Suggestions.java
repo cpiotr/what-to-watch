@@ -5,9 +5,9 @@ import io.micrometer.core.instrument.Timer;
 import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
-import pl.ciruk.whattowatch.utils.concurrent.AsyncExecutionException;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
@@ -34,11 +34,13 @@ public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final FilmSuggestionProvider suggestions;
+    private FilmFilter filmFilter;
     private final Timer responseTimer;
 
     @Inject
-    public Suggestions(FilmSuggestionProvider suggestions) {
+    public Suggestions(FilmSuggestionProvider suggestions, FilmFilter filmFilter) {
         this.suggestions = suggestions;
+        this.filmFilter = filmFilter;
 
         responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
     }
@@ -57,7 +59,8 @@ public class Suggestions {
             var films = responseTimer.record(() -> findSuggestions(pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
-        } catch (AsyncExecutionException e) {
+        } catch (Exception e) {
+            LOGGER.error("Error while getting suggestions", e);
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
         }
     }
@@ -65,7 +68,7 @@ public class Suggestions {
     private List<FilmResult> findSuggestions(int pageNumber) {
         return CompletableFutures.getAllOf(suggestions.suggestFilms(pageNumber))
                 .distinct()
-                .filter(Film::isWorthWatching)
+                .filter(filmFilter::isWorthWatching)
                 .map(this::toFilmResult)
                 .collect(toList());
     }

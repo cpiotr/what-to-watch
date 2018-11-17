@@ -30,13 +30,6 @@ public class Film {
         return new FilmBuilder();
     }
 
-    public boolean isWorthWatching() {
-        return isNotEmpty()
-                && normalizedScore() > 0.65
-                && !scoresOfType(ScoreType.AMATEUR).isEmpty()
-                && !scoresOfType(ScoreType.CRITIC).isEmpty();
-    }
-
     public Double normalizedScore() {
         var amateurScore = calculateWeightedAverage(scoresOfType(ScoreType.AMATEUR))
                 .map(score -> Doubles.normalizeScore(score, countQuantity(ScoreType.AMATEUR)))
@@ -86,6 +79,10 @@ public class Film {
 
     public boolean isNotEmpty() {
         return this != EMPTY;
+    }
+
+    public boolean isEmpty() {
+        return this == EMPTY;
     }
 
     public Description getDescription() {
