@@ -5,7 +5,7 @@ import static java.lang.Math.*;
 
 public class WilsonScore {
     private static double P_NORMAL_DISTRIBUTION(double qn) {
-        double[] b = {
+        double[] distribution = {
                 1.570796288, 0.03706987906, -0.8364353589e-3,
                 -0.2250947176e-3, 0.6841218299e-5, 0.5824238515e-5,
                 -0.104527497e-5, 0.8360937017e-7, -0.3231081277e-8,
@@ -26,10 +26,10 @@ public class WilsonScore {
         }
 
         double w3 = -log(4.0 * w1 * (1.0 - w1));
-        w1 = b[0];
+        w1 = distribution[0];
         int i = 1;
-        for (; i < 11; i++) {
-            w1 += b[i] * pow(w3, i);
+        for (; i < distribution.length; i++) {
+            w1 += distribution[i] * pow(w3, i);
         }
 
         if (qn > 0.5) {
@@ -40,8 +40,10 @@ public class WilsonScore {
     }
 
     static Double confidenceIntervalLowerBound(long pos, long n, double power) {
-        if (n == 0)
+        if (n == 0) {
             return 0.0;
+        }
+
         double z = P_NORMAL_DISTRIBUTION(1 - power / 2);
         double phat = 1.0 * pos / n;
         return (phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n);

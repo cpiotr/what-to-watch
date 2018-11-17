@@ -22,7 +22,9 @@ public class FilmTest {
                 .scores(scores)
                 .build();
 
-        assertThat(film.isWorthWatching()).isTrue();
+        assertThat(film.isWorthWatching())
+                .describedAs("Score: %f", film.normalizedScore())
+                .isTrue();
     }
 
     @Test

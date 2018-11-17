@@ -54,10 +54,11 @@ public class Film {
     }
 
     private long countQuantity(ScoreType type) {
-        return significantScores()
+        long totalQuantity = significantScores()
                 .filter(score -> score.getType().equals(type))
                 .mapToLong(Score::getQuantity)
                 .sum();
+        return totalQuantity * type.getScale();
     }
 
     private List<Score> scoresOfType(ScoreType type) {
