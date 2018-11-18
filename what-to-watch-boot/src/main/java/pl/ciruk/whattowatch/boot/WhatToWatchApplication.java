@@ -84,7 +84,7 @@ public class WhatToWatchApplication {
         return new JsoupConnection(new CachedConnection(cache, createHttpConnection()));
     }
 
-    private static HtmlConnection createHttpConnection() {
+    public static HtmlConnection createHttpConnection() {
         return new HtmlConnection(createHttpClient());
     }
 
