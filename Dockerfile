@@ -27,7 +27,7 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-XX:+PreserveFramePointer \
 	-XX:+IgnoreUnrecognizedVMOptions \
 	-XX:+UnlockExperimentalVMOptions \
-	-XX:+UseZGC \
+	-XX:+UseJVMCICompiler \
 	-Xlog:gc:stdout:time"
 
 COPY ./ /what-to-watch/
