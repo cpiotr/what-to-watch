@@ -17,11 +17,13 @@ public class FilmFilter {
         if (film.isEmpty()) {
             return false;
         }
+
         for (Predicate<Film> filter : filters) {
             if (!filter.test(film)) {
                 return false;
             }
         }
+
         return true;
     }
 }

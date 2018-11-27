@@ -39,7 +39,7 @@ public class JsonConnection implements HttpConnection<JsonNode> {
             return Optional.ofNullable(
                     objectMapper.readTree(text));
         } catch (IOException e) {
-            LOGGER.warn("parseFrom - Cannot parse json: {}", text, e);
+            LOGGER.warn("Cannot parse json: {}", text, e);
             return Optional.empty();
         }
     }

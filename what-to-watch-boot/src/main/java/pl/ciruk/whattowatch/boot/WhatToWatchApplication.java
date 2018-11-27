@@ -74,7 +74,7 @@ public class WhatToWatchApplication {
 
             System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
         } catch (InterruptedException e) {
-            LOGGER.error("main - Processing error", e);
+            LOGGER.error("Processing error", e);
         } finally {
             jedisPool.destroy();
         }
@@ -149,7 +149,7 @@ public class WhatToWatchApplication {
         try {
             properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties"));
         } catch (Exception e) {
-            LOGGER.error("loadDevProperties - Cannot load application-dev properties", e);
+            LOGGER.error("Cannot load application-dev properties", e);
         }
         return properties;
     }

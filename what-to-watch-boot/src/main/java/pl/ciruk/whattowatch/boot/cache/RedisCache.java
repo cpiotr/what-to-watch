@@ -53,8 +53,8 @@ public class RedisCache implements CacheProvider<String> {
 
     @PostConstruct
     private void init() {
-        LOGGER.info("init - RedisCache created");
-        LOGGER.info("init - Cache expiry: {} {}", expiryInterval, expiryUnit);
+        LOGGER.info("RedisCache created");
+        LOGGER.info("Cache expiry: {} {}", expiryInterval, expiryUnit);
     }
 
     @Override

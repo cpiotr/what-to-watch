@@ -45,7 +45,7 @@ public class Scores {
 
     @PostConstruct
     void init() {
-        LOGGER.debug("init - ScoresProviders: {}", scoresProviders);
+        LOGGER.debug("ScoresProviders: {}", scoresProviders);
     }
 
     @GET

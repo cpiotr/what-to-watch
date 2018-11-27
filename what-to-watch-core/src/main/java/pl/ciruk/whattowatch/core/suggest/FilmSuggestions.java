@@ -50,7 +50,7 @@ public class FilmSuggestions implements FilmSuggestionProvider {
 
     @Override
     public Stream<CompletableFuture<Film>> suggestFilms(int pageNumber) {
-        LOGGER.info("suggestFilms");
+        LOGGER.info("Page number: {}", pageNumber);
 
         return titles.streamOfTitles(pageNumber)
                 .map(this::getOrFindFilmByTitle);

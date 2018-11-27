@@ -39,7 +39,7 @@ public class Titles {
     public void findAll(
             @Suspended AsyncResponse asyncResponse,
             @PathParam("pageNumber") int pageNumber) {
-        LOGGER.info("findAll - Page number: {}", pageNumber);
+        LOGGER.info("Page number: {}", pageNumber);
 
         asyncResponse.resume(
                 Response.ok(titles.streamOfTitles(pageNumber).collect(toList())).build()

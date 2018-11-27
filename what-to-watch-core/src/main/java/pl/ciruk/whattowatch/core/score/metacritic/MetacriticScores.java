@@ -68,7 +68,7 @@ public class MetacriticScores implements ScoresProvider {
 
     @Override
     public Stream<Score> findScoresBy(Description description) {
-        LOGGER.debug("findScoresBy - Description: {}", description);
+        LOGGER.debug("Description: {}", description);
 
         var linkToDetails = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom);
@@ -79,20 +79,20 @@ public class MetacriticScores implements ScoresProvider {
 
         var metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
         if (!metacriticScore.isPresent()) {
-            LOGGER.warn("findScoresBy - Missing Metacritic score for: {}", description.getTitle());
+            LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
         var nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
         if (!nytScore.isPresent()) {
-            LOGGER.warn("findScoresBy - Missing NYT score for: {}", description.getTitle());
+            LOGGER.warn("Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
         }
 
         var averageScoreStream = metacriticScore.stream();
         var nytScoreStream = nytScore.stream();
         return Stream.concat(averageScoreStream, nytScoreStream)
-                .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
 
     private Optional<Element> followDetailsLinkAndFindPageWithScores(Optional<String> linkToDetails) {

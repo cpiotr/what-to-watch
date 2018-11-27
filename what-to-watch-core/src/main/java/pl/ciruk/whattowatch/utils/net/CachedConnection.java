@@ -23,11 +23,11 @@ public class CachedConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndGet(String url) {
-        LOGGER.trace("connectToAndGet - Url: {}", url);
+        LOGGER.trace("Url: {}", url);
 
         var optionalDocument = cache.get(url);
         if (!optionalDocument.isPresent()) {
-            LOGGER.trace("connectToAndGet - Cache miss for: {}", url);
+            LOGGER.trace("Cache miss for: {}", url);
             optionalDocument = connection.connectToAndGet(url);
             optionalDocument.ifPresent(content -> cache.put(url, content));
         }
@@ -36,8 +36,8 @@ public class CachedConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-        LOGGER.trace("connectToAndConsume - Url: {}", url);
-        LOGGER.trace("connectToAndConsume - Method currently does not rely on cache");
+        LOGGER.trace("Url: {}", url);
+        LOGGER.trace("Method currently does not rely on cache");
 
         return connection.connectToAndConsume(url, action);
     }

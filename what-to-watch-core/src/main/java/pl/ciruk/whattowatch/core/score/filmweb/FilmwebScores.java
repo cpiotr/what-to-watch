@@ -56,10 +56,10 @@ public class FilmwebScores implements ScoresProvider {
 
     @Override
     public Stream<Score> findScoresBy(Description description) {
-        LOGGER.debug("findScoresBy - Description: {}", description);
+        LOGGER.debug("Description: {}", description);
 
         return scoresForTitle(description.getTitle())
-                .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score))
+                .peek(score -> LOGGER.debug("Score for {}: {}", description, score))
                 .filter(Score::isSignificant);
     }
 

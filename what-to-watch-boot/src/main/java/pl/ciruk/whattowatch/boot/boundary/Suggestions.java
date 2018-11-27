@@ -50,7 +50,7 @@ public class Suggestions {
     @Produces(MediaType.APPLICATION_JSON)
     @ManagedAsync
     public void get(@Suspended AsyncResponse asyncResponse, @PathParam("pageNumber") int pageNumber) {
-        LOGGER.info("get - Page number: {}", pageNumber);
+        LOGGER.info("Page number: {}", pageNumber);
 
         asyncResponse.setTimeout(90, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));

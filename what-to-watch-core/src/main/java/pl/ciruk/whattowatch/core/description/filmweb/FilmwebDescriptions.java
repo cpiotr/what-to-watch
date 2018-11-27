@@ -60,7 +60,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 
     @Override
     public Optional<Description> findDescriptionBy(Title title) {
-        LOGGER.debug("findDescriptionBy - Title: {}", title);
+        LOGGER.debug("Title: {}", title);
 
         var foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
                 .filter(Objects::nonNull)
@@ -69,7 +69,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
                 .peek(description -> description.foundFor(title))
                 .findAny();
         if (!foundDescription.isPresent()) {
-            LOGGER.warn("findDescriptionBy - Missing description for: {}", title);
+            LOGGER.warn("Missing description for: {}", title);
             missingDescriptions.incrementAndGet();
         }
 

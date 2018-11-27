@@ -47,7 +47,7 @@ public class EkinoTitles implements TitleProvider {
 
     @Override
     public Stream<Title> streamOfTitles(int pageNumber) {
-        LOGGER.debug("streamOfTitles - Page number: {}", pageNumber);
+        LOGGER.debug("Page number: {}", pageNumber);
 
         return generatePageUrlsForRequest(pageNumber)
                 .peek(url -> LOGGER.debug("Loading films from: {}", url))
@@ -60,7 +60,7 @@ public class EkinoTitles implements TitleProvider {
 
     private Stream<String> generatePageUrlsForRequest(int requestNumber) {
         int startFromPage = (requestNumber - 1) * pagesPerRequest;
-        LOGGER.debug("generatePageUrlsForRequest - Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
+        LOGGER.debug("Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
         return IntStream.range(startFromPage, startFromPage + pagesPerRequest)
                 .boxed()
                 .map(index -> String.format(TITLES_PAGE_PATTERN, index));

@@ -19,7 +19,6 @@ public class FilmByScoreFilter implements Predicate<Film> {
     @Override
     public boolean test(Film film) {
         Double score = film.normalizedScore();
-        double delta = score - minimalAcceptedScore;
         if (Double.compare(score, minimalAcceptedScore) >= 0) {
             return true;
         }

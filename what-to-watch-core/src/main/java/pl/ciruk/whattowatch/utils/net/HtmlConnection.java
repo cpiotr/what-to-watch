@@ -30,7 +30,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndGet(String url) {
-        LOGGER.trace("connectToAndGet - Url: {}", url);
+        LOGGER.trace("Url: {}", url);
 
         var requestBuilder = buildRequestTo(url);
         return connectToAndGet(requestBuilder, url);
@@ -38,7 +38,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     @Override
     public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
-        LOGGER.trace("connectToAndConsume - Url: {}", url);
+        LOGGER.trace("Url: {}", url);
         var builder = buildRequestTo(url);
 
         action.accept(builder);
@@ -52,7 +52,7 @@ public class HtmlConnection implements HttpConnection<String> {
                     .map(Response::body)
                     .flatMap(responseBody -> extractBodyAsString(responseBody, url));
         } catch (IOException e) {
-            LOGGER.warn("connectToAndGet - Could not get {}", url, e);
+            LOGGER.warn("Could not get {}", url, e);
             return Optional.empty();
         }
     }
@@ -61,7 +61,7 @@ public class HtmlConnection implements HttpConnection<String> {
         try {
             return Optional.of(responseBody.string());
         } catch (IOException e) {
-            LOGGER.warn("connectToAndGet - Could not get {}", url, e);
+            LOGGER.warn("Could not get {}", url, e);
             return Optional.empty();
         }
     }

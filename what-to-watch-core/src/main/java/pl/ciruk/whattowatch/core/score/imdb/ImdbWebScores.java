@@ -59,7 +59,7 @@ public class ImdbWebScores implements ScoresProvider {
 
     @Override
     public Stream<Score> findScoresBy(Description description) {
-        LOGGER.debug("findScoresBy - Description: {}", description);
+        LOGGER.debug("Description: {}", description);
 
         var url = createUrlBuilder()
                 .addPathSegment("search")
@@ -73,13 +73,13 @@ public class ImdbWebScores implements ScoresProvider {
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (!firstResult.isPresent()) {
-            LOGGER.warn("findScoresBy - Missing score for {}", description);
-            LOGGER.trace("findScoresBy - Search query: {}", url.toString());
+            LOGGER.warn("Missing score for {}", description);
+            LOGGER.trace("Search query: {}", url.toString());
             missingScores.incrementAndGet();
         }
 
         return firstResult.stream()
-                .peek(score -> LOGGER.debug("findScoresBy - Score for {}: {}", description, score));
+                .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
 
     private static HttpUrl.Builder createUrlBuilder() {
