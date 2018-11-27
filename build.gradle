@@ -19,14 +19,14 @@ allprojects {
         mavenCentral()
         jcenter()
     }
+
+    pmd {
+        rulePriority = 3
+    }
 }
 
-pmd {
-    sourceSets = [sourceSets.main, sourceSets.test]
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10.2'
+wrapper {
+    gradleVersion = '5.0'
 }
 
 println("[what-to-watch] Building version: $version")

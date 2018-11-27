@@ -45,6 +45,7 @@ import static java.util.stream.Collectors.toList;
 @Measurement(iterations = 10, time = 5)
 @Fork(1)
 @State(Scope.Thread)
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class FilmSuggestionsBenchmark {
     private static final int NUMBER_OF_TITLES = 200;
     private static final int NUMBER_OF_THREADS = 16;
@@ -100,7 +101,7 @@ public class FilmSuggestionsBenchmark {
     }
 
     @Benchmark
-    public void fixedPool(Blackhole bh) {
+    public void fixed(Blackhole bh) {
         Stream<Film> films = CompletableFutures.getAllOf(
                 suggestionsFixedPool.suggestFilms(1));
         int numberOfFilms = (int) films
