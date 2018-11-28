@@ -25,11 +25,11 @@ import static java.util.stream.Collectors.toList;
 public class Titles {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private TitleProvider titles;
+    private final TitleProvider titleProvider;
 
     @Inject
-    public Titles(TitleProvider titles) {
-        this.titles = titles;
+    public Titles(TitleProvider titleProvider) {
+        this.titleProvider = titleProvider;
     }
 
     @GET
@@ -42,7 +42,7 @@ public class Titles {
         LOGGER.info("Page number: {}", pageNumber);
 
         asyncResponse.resume(
-                Response.ok(titles.streamOfTitles(pageNumber).collect(toList())).build()
+                Response.ok(titleProvider.streamOfTitles(pageNumber).collect(toList())).build()
         );
 
         asyncResponse.setTimeout(20, TimeUnit.SECONDS);

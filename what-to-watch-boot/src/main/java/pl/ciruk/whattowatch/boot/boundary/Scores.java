@@ -36,7 +36,7 @@ import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUs
 public class Scores {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private List<ScoresProvider> scoresProviders;
+    private final List<ScoresProvider> scoresProviders;
 
     @Inject
     public Scores(List<ScoresProvider> scoresProviders) {

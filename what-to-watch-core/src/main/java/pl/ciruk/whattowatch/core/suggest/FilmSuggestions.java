@@ -27,13 +27,12 @@ import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUs
 public class FilmSuggestions implements FilmSuggestionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private TitleProvider titles;
-    private DescriptionProvider descriptions;
-    private List<ScoresProvider> scoresProviders;
+    private final TitleProvider titles;
+    private final DescriptionProvider descriptions;
+    private final List<ScoresProvider> scoresProviders;
     private final ExecutorService executorService;
     private final AtomicLong suggestedFilms = new AtomicLong();
     private final Cache<Title, Film> cache;
-
 
     public FilmSuggestions(
             TitleProvider titles,

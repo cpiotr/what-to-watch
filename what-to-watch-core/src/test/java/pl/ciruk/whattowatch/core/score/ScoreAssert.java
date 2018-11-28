@@ -3,7 +3,7 @@ package pl.ciruk.whattowatch.core.score;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
-public class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
+public final class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
     private ScoreAssert(Score actual, Class<?> selfType) {
         super(actual, selfType);
     }

@@ -4,6 +4,7 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 final class Responses {
     private Responses() {
         throw new AssertionError();

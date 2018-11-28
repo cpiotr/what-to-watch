@@ -6,10 +6,12 @@ import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.utils.math.Doubles;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class Film {
     private static final Film EMPTY = Film.builder().build();
 
@@ -74,7 +76,7 @@ public class Film {
                 .mapToDouble(score -> score.getGrade() * score.getQuantity())
                 .sum();
         return Optional.of(weightedScore / totalQuantity)
-                .filter(Doubles.isGreaterThan(0.0));
+                .filter(Doubles.greaterThan(0.0));
     }
 
     public boolean isNotEmpty() {
@@ -101,25 +103,33 @@ public class Film {
         this.scores = scores;
     }
 
+    @Override
     public String toString() {
         return "Film(description=" + this.getDescription() + ", scores=" + this.getScores() + ")";
     }
 
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Film)) return false;
-        final Film other = (Film) o;
-        if (!other.canEqual(this)) return false;
-        final Object this$description = this.getDescription();
-        final Object other$description = other.getDescription();
-        return this$description == null ? other$description == null : this$description.equals(other$description);
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (!(object instanceof Film)) {
+            return false;
+        }
+        Film other = (Film) object;
+        if (!other.canEqual(this)) {
+            return false;
+        }
+        final Object thisDescription = this.getDescription();
+        final Object otherDescription = other.getDescription();
+        return Objects.equals(thisDescription, otherDescription);
     }
 
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
         int result = 1;
-        final Object $description = this.getDescription();
-        result = result * PRIME + ($description == null ? 43 : $description.hashCode());
+        var description = this.getDescription();
+        result = result * 59 + (description == null ? 43 : description.hashCode());
         return result;
     }
 
@@ -148,6 +158,7 @@ public class Film {
             return new Film(description, scores);
         }
 
+        @Override
         public String toString() {
             return "Film.FilmBuilder(description=" + this.description + ", scores=" + this.scores + ")";
         }

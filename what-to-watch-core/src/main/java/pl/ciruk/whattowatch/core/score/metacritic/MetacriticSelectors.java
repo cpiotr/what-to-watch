@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("PMD.FieldDeclarationsShouldBeAtStartOfClass")
 public enum MetacriticSelectors implements Extractable<Optional<String>> {
     LINK_TO_DETAILS(details -> details.select(".product_title a")
             .stream()

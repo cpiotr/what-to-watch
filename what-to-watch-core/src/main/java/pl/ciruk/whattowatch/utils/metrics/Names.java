@@ -6,12 +6,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class Names {
     private Names() {
         throw new AssertionError();
     }
 
-    public static <T> String createName(Class<?> clazz) {
+    public static String createName(Class<?> clazz) {
         return createName(clazz, List.of());
     }
 

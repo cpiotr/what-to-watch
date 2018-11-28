@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.title.ekino;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
@@ -9,13 +10,17 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EkinoTitlesIT {
+class EkinoTitlesIT {
 
     private TitleProvider provider;
 
-    @Test
-    public void shouldFetchTitlesForValidUser() {
+    @BeforeEach
+    void setUp() {
         provider = new EkinoTitles(TestConnections.jsoup(), 1);
+    }
+
+    @Test
+    void shouldFetchTitlesForValidUser() {
 
         Stream<Title> titles = provider.streamOfTitles(1);
 

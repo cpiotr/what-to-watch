@@ -62,13 +62,13 @@ public class FilmwebDescriptions implements DescriptionProvider {
     public Optional<Description> findDescriptionBy(Title title) {
         LOGGER.debug("Title: {}", title);
 
-        var foundDescription = Stream.of(title.getOriginalTitle(), title.getTitle())
+        var foundDescription = Stream.of(title.getOriginalTitle(), title.getLocalTitle())
                 .filter(Objects::nonNull)
                 .filter(not(String::isEmpty))
                 .flatMap(t -> filmsForTitle(t, title.getYear()))
                 .peek(description -> description.foundFor(title))
                 .findAny();
-        if (!foundDescription.isPresent()) {
+        if (foundDescription.isEmpty()) {
             LOGGER.warn("Missing description for: {}", title);
             missingDescriptions.incrementAndGet();
         }

@@ -3,7 +3,8 @@ package pl.ciruk.whattowatch.utils.net;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class UserAgents {
+@SuppressWarnings("PMD.ClassNamingConventions")
+final class UserAgents {
     private static final List<String> AGENTS = List.of(
             "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) Otter/0.1.01 Safari/538.1",
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) Otter/0.0.01 Safari/538.1",
@@ -38,9 +39,13 @@ class UserAgents {
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36 OPR/32.0.1948.25"
     );
 
-    private static final AtomicInteger index = new AtomicInteger(0);
+    private static final AtomicInteger INDEX = new AtomicInteger(0);
+
+    private UserAgents() {
+        throw new AssertionError();
+    }
 
     static String next() {
-        return AGENTS.get(index.incrementAndGet() % AGENTS.size());
+        return AGENTS.get(INDEX.incrementAndGet() % AGENTS.size());
     }
 }

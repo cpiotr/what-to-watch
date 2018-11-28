@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.core.title;
 
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
@@ -7,17 +9,14 @@ import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 public class Title {
     public static final int MISSING_YEAR = 0;
 
-    private String originalTitle;
+    private final String originalTitle;
+    private final String localTitle;
+    private final int year;
+    private final String url;
 
-    private String title;
-
-    private int year;
-
-    private String url;
-
-    private Title(String originalTitle, String title, int year, String url) {
+    private Title(String originalTitle, String localTitle, int year, String url) {
         this.originalTitle = originalTitle;
-        this.title = title;
+        this.localTitle = localTitle;
         this.year = year;
         this.url = url;
     }
@@ -29,14 +28,14 @@ public class Title {
     public String asText() {
         return Optional.ofNullable(getOriginalTitle())
                 .filter(not(String::isEmpty))
-                .orElse(getTitle());
+                .orElse(getLocalTitle());
     }
 
     public boolean matches(Title otherTitle) {
-        boolean hasMatchingTitle = matchesAlphanumerically(otherTitle.getOriginalTitle(), title)
-                || matchesAlphanumerically(otherTitle.getTitle(), title)
+        boolean hasMatchingTitle = matchesAlphanumerically(otherTitle.getOriginalTitle(), localTitle)
+                || matchesAlphanumerically(otherTitle.getLocalTitle(), localTitle)
                 || matchesAlphanumerically(otherTitle.getOriginalTitle(), originalTitle)
-                || matchesAlphanumerically(otherTitle.getTitle(), originalTitle);
+                || matchesAlphanumerically(otherTitle.getLocalTitle(), originalTitle);
         boolean hasMatchingYear = Math.abs(otherTitle.year - year) <= 1;
 
         return hasMatchingTitle && hasMatchingYear;
@@ -53,7 +52,7 @@ public class Title {
     private String unify(String text) {
         return text
                 .replaceAll("\\W", "")
-                .toLowerCase();
+                .toLowerCase(Locale.getDefault());
     }
 
     @Override
@@ -65,8 +64,8 @@ public class Title {
         return this.originalTitle;
     }
 
-    public String getTitle() {
-        return this.title;
+    public String getLocalTitle() {
+        return this.localTitle;
     }
 
     public int getYear() {
@@ -77,33 +76,40 @@ public class Title {
         return this.url;
     }
 
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Title)) return false;
-        final Title other = (Title) o;
-        if (!other.canEqual(this)) return false;
-        final Object this$originalTitle = this.getOriginalTitle();
-        final Object other$originalTitle = other.getOriginalTitle();
-        if (this$originalTitle == null ? other$originalTitle != null : !this$originalTitle.equals(other$originalTitle))
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (!(object instanceof Title)) {
             return false;
-        final Object this$title = this.getTitle();
-        final Object other$title = other.getTitle();
-        if (this$title == null ? other$title != null : !this$title.equals(other$title)) return false;
+        }
+        final Title other = (Title) object;
+        if (!other.canEqual(this)) {
+            return false;
+        }
+        if (!Objects.equals(this.getOriginalTitle(), other.getOriginalTitle())) {
+            return false;
+        }
+        if (!Objects.equals(this.getLocalTitle(), other.getLocalTitle())) {
+            return false;
+        }
         return this.getYear() == other.getYear();
     }
 
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
+        int prime = 59;
         int result = 1;
-        final Object $originalTitle = this.getOriginalTitle();
-        result = result * PRIME + ($originalTitle == null ? 43 : $originalTitle.hashCode());
-        final Object $title = this.getTitle();
-        result = result * PRIME + ($title == null ? 43 : $title.hashCode());
-        result = result * PRIME + this.getYear();
+        final Object originalTitle = this.getOriginalTitle();
+        result = result * prime + (originalTitle == null ? 43 : originalTitle.hashCode());
+        final Object title = this.getLocalTitle();
+        result = result * prime + (title == null ? 43 : title.hashCode());
+        result = result * prime + this.getYear();
         return result;
     }
 
-    protected boolean canEqual(Object other) {
+    private boolean canEqual(Object other) {
         return other instanceof Title;
     }
 
@@ -140,6 +146,7 @@ public class Title {
             return new Title(originalTitle, title, year, url);
         }
 
+        @Override
         public String toString() {
             return "Title.TitleBuilder(originalTitle=" + this.originalTitle + ", title=" + this.title + ", year=" + this.year + ", url=" + this.url + ")";
         }

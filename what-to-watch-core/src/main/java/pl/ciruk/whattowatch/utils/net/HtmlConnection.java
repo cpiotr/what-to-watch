@@ -2,8 +2,10 @@ package pl.ciruk.whattowatch.utils.net;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import okhttp3.*;
-import okhttp3.internal.http.RetryAndFollowUpInterceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.metrics.Names;
@@ -75,7 +77,7 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    private Response executeRequest(Request request) throws Exception {
+    private Response executeRequest(Request request) throws IOException {
         try {
             return okHttpClient.newCall(request).execute();
         } catch (SocketTimeoutException e) {

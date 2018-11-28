@@ -27,6 +27,7 @@ import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LIN
 import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
 import static pl.ciruk.whattowatch.utils.stream.Optionals.mergeUsing;
 
+@SuppressWarnings("PMD.TooManyMethods") // TODO
 public class MetacriticScores implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int NYT_SCORE_WEIGHT = 10;
@@ -78,13 +79,13 @@ public class MetacriticScores implements ScoresProvider {
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
         var metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
-        if (!metacriticScore.isPresent()) {
+        if (metacriticScore.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
         var nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
-        if (!nytScore.isPresent()) {
+        if (nytScore.isEmpty()) {
             LOGGER.warn("Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
         }
@@ -140,7 +141,7 @@ public class MetacriticScores implements ScoresProvider {
                 .map(Element::text)
                 .mapToDouble(Double::valueOf)
                 .count();
-        return Optional.of(count).filter(Doubles.isGreaterThan(0.0));
+        return Optional.of(count).filter(Doubles.greaterThan(0.0));
     }
 
     private Optional<Score> nytScoreFrom(Element htmlWithScores) {

@@ -50,18 +50,18 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
 
     private static Optional<String> extractSpanValueForItem(String pageAsText, String item) {
         var span = "<span itemprop=\"" + item + "\">";
-        var from = pageAsText.indexOf(span);
-        if (from < 0) {
+        var fromIndex = pageAsText.indexOf(span);
+        if (fromIndex < 0) {
             return Optional.empty();
         }
 
-        from += span.length();
+        fromIndex += span.length();
 
-        var to = pageAsText.indexOf("</span>", from);
-        if (to < from) {
+        var toIndex = pageAsText.indexOf("</span>", fromIndex);
+        if (toIndex < fromIndex) {
             return Optional.empty();
         }
 
-        return Optional.of(pageAsText.substring(from, to));
+        return Optional.of(pageAsText.substring(fromIndex, toIndex));
     }
 }

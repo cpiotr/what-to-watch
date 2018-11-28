@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public enum ImdbSelectors implements Extractable<Optional<String>> {
     YEAR(result -> result.select(".lister-item-content .lister-item-header .lister-item-year")
             .stream()

@@ -3,8 +3,8 @@ package pl.ciruk.whattowatch.core.description;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
-public class DescriptionAssert extends AbstractAssert<DescriptionAssert, Description> {
-
+@SuppressWarnings("PMD.ClassNamingConventions")
+public final class DescriptionAssert extends AbstractAssert<DescriptionAssert, Description> {
     private DescriptionAssert(Description description, Class<?> selfType) {
         super(description, selfType);
     }
@@ -17,7 +17,7 @@ public class DescriptionAssert extends AbstractAssert<DescriptionAssert, Descrip
         var itemTitle = actual.getTitle();
 
         var descriptionHasTitle = itemTitle.getOriginalTitle().equalsIgnoreCase(title)
-                || itemTitle.getTitle().equalsIgnoreCase(title);
+                || itemTitle.getLocalTitle().equalsIgnoreCase(title);
 
         Assertions.assertThat(descriptionHasTitle)
                 .as("Expected title: <%s>. Actual: <%s>", title, itemTitle.asText())

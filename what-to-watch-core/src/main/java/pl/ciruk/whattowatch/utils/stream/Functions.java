@@ -2,7 +2,8 @@ package pl.ciruk.whattowatch.utils.stream;
 
 import java.util.function.UnaryOperator;
 
-public class Functions {
+@SuppressWarnings("PMD.ClassNamingConventions")
+public final class Functions {
     private Functions() {
         throw new AssertionError();
     }

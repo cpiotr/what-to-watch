@@ -45,7 +45,7 @@ import static java.util.stream.Collectors.toList;
 @Measurement(iterations = 10, time = 5)
 @Fork(1)
 @State(Scope.Thread)
-@SuppressWarnings("PMD.BeanMembersShouldSerialize")
+@SuppressWarnings("PMD")
 public class FilmSuggestionsBenchmark {
     private static final int NUMBER_OF_TITLES = 200;
     private static final int NUMBER_OF_THREADS = 16;

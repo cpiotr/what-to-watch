@@ -23,7 +23,6 @@ import static org.mockito.Mockito.*;
 
 class FilmSuggestionsTest {
 
-    private TitleProvider titleProvider;
     private DescriptionProvider descriptionProvider;
     private ScoresProvider scoreProvider;
     private Cache<Title, Film> cache;
@@ -33,7 +32,7 @@ class FilmSuggestionsTest {
 
     @BeforeEach
     void setUp() {
-        titleProvider = mock(TitleProvider.class);
+        TitleProvider titleProvider = mock(TitleProvider.class);
         title = createTitle();
         when(titleProvider.streamOfTitles(1))
                 .thenAnswer(ignored -> Stream.of(title));
@@ -60,7 +59,7 @@ class FilmSuggestionsTest {
     void shouldNotSearchForFilmWhenCached() {
         cache.put(title, Film.builder().build());
 
-        List<Film> films = CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
+        CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
                 .collect(toList());
 
         verifyZeroInteractions(descriptionProvider);
@@ -69,7 +68,7 @@ class FilmSuggestionsTest {
 
     @Test
     void shouldSearchForFilm() {
-        List<Film> films = CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
+        CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
                 .collect(toList());
 
         verify(descriptionProvider).findDescriptionOfAsync(title);

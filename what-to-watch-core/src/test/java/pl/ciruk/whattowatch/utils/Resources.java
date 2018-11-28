@@ -7,14 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+@SuppressWarnings({"PMD.UseProperClassLoader", "PMD.ClassNamingConventions"})
 public final class Resources {
     public static String readContentOf(String resourceName) {
         try {
             var url = Resources.class.getClassLoader().getResource(resourceName);
             var uri = Objects.requireNonNull(url).toURI();
-            return new String(
-                    Files.readAllBytes(Paths.get(uri)),
-                    Charset.defaultCharset());
+            return Files.readString(Paths.get(uri), Charset.defaultCharset());
         } catch (IOException | URISyntaxException e) {
             throw new AssertionError(e);
         }

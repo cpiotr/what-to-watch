@@ -3,7 +3,7 @@ package pl.ciruk.whattowatch.utils.text;
 import com.google.common.base.Strings;
 
 public class NumberToken {
-    private String value;
+    private final String value;
 
     public NumberToken(String value) {
         this.value = value.replaceAll(",", ".")

@@ -46,9 +46,7 @@ class FilmByScoreFilterTest {
                 .description(DataModel.description())
                 .build();
 
-        boolean accepted = filter.test(film);
-
-        assertThat(accepted).isFalse();
+        filter.test(film);
 
         ArgumentCaptor<ILoggingEvent> captor = ArgumentCaptor.forClass(ILoggingEvent.class);
         verify(appender).doAppend(captor.capture());

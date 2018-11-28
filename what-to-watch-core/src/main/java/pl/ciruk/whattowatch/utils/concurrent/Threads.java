@@ -9,8 +9,13 @@ import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class Threads {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private Threads() {
+        throw new AssertionError();
+    }
 
     public static void setThreadNamePrefix(String threadPrefix, ExecutorService pool) {
         try {

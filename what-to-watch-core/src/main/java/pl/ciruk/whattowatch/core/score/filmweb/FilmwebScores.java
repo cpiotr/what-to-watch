@@ -102,8 +102,8 @@ public class FilmwebScores implements ScoresProvider {
         return score.getGrade() > 0 && score.getQuantity() > 0;
     }
 
-    private Score parseScore(String s) {
-        var numberTokenizer = new NumberTokenizer(s);
+    private Score parseScore(String scoreText) {
+        var numberTokenizer = new NumberTokenizer(scoreText);
         var rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
         var quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
         return Score.builder()

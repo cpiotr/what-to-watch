@@ -22,6 +22,9 @@ allprojects {
 
     pmd {
         rulePriority = 3
+
+        ruleSets = []
+        ruleSetFiles = files("$rootProject.projectDir/config/pmd-rules.xml")
     }
 }
 

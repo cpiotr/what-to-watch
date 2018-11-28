@@ -3,12 +3,9 @@ package pl.ciruk.whattowatch.core.score;
 public class Score {
 
     private final double grade;
-
     private final long quantity;
-
-    private String source;
-
-    private ScoreType type;
+    private final String source;
+    private final ScoreType type;
 
     private Score(double grade, long quantity, String source, ScoreType type) {
         this.grade = grade;
@@ -65,6 +62,7 @@ public class Score {
         return this.type;
     }
 
+    @Override
     public String toString() {
         return "Score(grade=" + this.getGrade() + ", quantity=" + this.getQuantity() + ", source=" + this.getSource() + ", type=" + this.getType() + ")";
     }
@@ -102,6 +100,7 @@ public class Score {
             return new Score(grade, quantity, source, type);
         }
 
+        @Override
         public String toString() {
             return "Score.ScoreBuilder(grade=" + this.grade + ", quantity=" + this.quantity + ", source=" + this.source + ", type=" + this.type + ")";
         }

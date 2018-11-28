@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.title.Title;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class DataModel {
     private DataModel() {
         throw new AssertionError();

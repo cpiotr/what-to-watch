@@ -32,29 +32,34 @@ import java.util.concurrent.TimeUnit;
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
+@SuppressWarnings("PMD.TooManyMethods")
 public class Connections {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @Value("${redis.host}")
-    private String redisHost;
+    private final String redisHost;
+    private final Integer redisPoolMaxActive;
+    private final Integer httpPoolMaxIdle;
+    private final long longExpiryInterval;
+    private final TimeUnit longExpiryUnit;
+    private final long shortExpiryInterval;
+    private final TimeUnit shortExpiryUnit;
 
-    @Value("${redis.pool.maxActive:8}")
-    private Integer redisPoolMaxActive;
-
-    @Value("${http.pool.maxIdle:64}")
-    private Integer httpPoolMaxIdle;
-
-    @Value("${w2w.cache.expiry.long.interval}")
-    private long longExpiryInterval = 10;
-
-    @Value("${w2w.cache.expiry.long.unit}")
-    private TimeUnit longExpiryUnit = TimeUnit.DAYS;
-
-    @Value("${w2w.cache.expiry.short.interval}")
-    private long shortExpiryInterval = 10;
-
-    @Value("${w2w.cache.expiry.short.unit}")
-    private TimeUnit shortExpiryUnit = TimeUnit.DAYS;
+    public Connections(
+            @Value("${redis.host}") String redisHost,
+            @Value("${redis.pool.maxActive:8}") Integer redisPoolMaxActive,
+            @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
+            @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
+            @Value("${w2w.cache.expiry.long.unit:DAYS}") TimeUnit longExpiryUnit,
+            @Value("${w2w.cache.expiry.short.interval:10}") long shortExpiryInterval,
+            @Value("${w2w.cache.expiry.short.unit:MINUTES}") TimeUnit shortExpiryUnit) {
+        this.redisHost = redisHost;
+        this.redisPoolMaxActive = redisPoolMaxActive;
+        this.httpPoolMaxIdle = httpPoolMaxIdle;
+        this.longExpiryInterval = longExpiryInterval;
+        this.longExpiryUnit = longExpiryUnit;
+        this.shortExpiryInterval = shortExpiryInterval;
+        this.shortExpiryUnit = shortExpiryUnit;
+    }
 
     @Bean
     OkHttpClient httpClient() {
@@ -145,7 +150,7 @@ public class Connections {
     }
 
     @PostConstruct
-    private void logConfiguration() {
+    void logConfiguration() {
         logConfigurationEntry(LOGGER, "Redis host", redisHost);
         logConfigurationEntry(LOGGER, "Redis thread pool max active", redisPoolMaxActive);
         logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);

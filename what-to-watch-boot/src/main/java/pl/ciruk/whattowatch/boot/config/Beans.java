@@ -46,14 +46,20 @@ import java.util.function.Predicate;
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
+@SuppressWarnings("PMD.TooManyMethods")
 public class Beans {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @Value("${w2w.pool.size:16}")
-    private Integer filmPoolSize;
+    private final Integer filmPoolSize;
+    private final Integer titlePagesPerRequest;
 
-    @Value("${w2w.titles.pagesPerRequest:10}")
-    private Integer titlePagesPerRequest;
+    public Beans(
+            @Value("${w2w.pool.size:16}") Integer filmPoolSize,
+            @Value("${w2w.titles.pagesPerRequest:10}") Integer titlePagesPerRequest) {
+        this.filmPoolSize = filmPoolSize;
+        this.titlePagesPerRequest = titlePagesPerRequest;
+    }
+
 
     @Bean
     ExecutorService executorService() {
@@ -144,7 +150,7 @@ public class Beans {
     }
 
     @PostConstruct
-    private void logConfiguration() {
+    void logConfiguration() {
         logConfigurationEntry(LOGGER, "Thread pool size", filmPoolSize);
         logConfigurationEntry(LOGGER, "Number of title pages crawled per request", titlePagesPerRequest);
     }

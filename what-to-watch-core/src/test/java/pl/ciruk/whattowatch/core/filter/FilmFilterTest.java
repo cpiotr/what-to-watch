@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.filter;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.suggest.Film;
@@ -8,6 +7,7 @@ import pl.ciruk.whattowatch.core.suggest.Film;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,7 +32,7 @@ class FilmFilterTest {
 
         boolean worthWatching = filmFilter.isWorthWatching(Film.builder().build());
 
-        Assertions.assertThat(worthWatching).isTrue();
+        assertThat(worthWatching).isTrue();
     }
 
     @Test
@@ -42,7 +42,7 @@ class FilmFilterTest {
 
         boolean worthWatching = filmFilter.isWorthWatching(Film.builder().build());
 
-        Assertions.assertThat(worthWatching).isFalse();
+        assertThat(worthWatching).isFalse();
     }
 
     @Test
@@ -52,7 +52,7 @@ class FilmFilterTest {
 
         boolean worthWatching = filmFilter.isWorthWatching(Film.empty());
 
-        Assertions.assertThat(worthWatching).isFalse();
+        assertThat(worthWatching).isFalse();
     }
 
 

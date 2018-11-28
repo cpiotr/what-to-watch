@@ -11,7 +11,12 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class CompletableFutures {
+    private CompletableFutures() {
+        throw new AssertionError();
+    }
+
     public static <T> CompletableFuture<Stream<T>> allOf(List<CompletableFuture<T>> futures) {
         CompletableFuture.allOf(
                 futures.toArray(new CompletableFuture[0])
@@ -44,6 +49,7 @@ public final class CompletableFutures {
         return (first, second) -> first.thenCombineAsync(second, combinator, executorService);
     }
 
+    @SuppressWarnings("PMD.ShortMethodName")
     public static <T> CompletableFuture<T> of(Future<T> future) {
         return CompletableFuture.supplyAsync(() -> {
             try {

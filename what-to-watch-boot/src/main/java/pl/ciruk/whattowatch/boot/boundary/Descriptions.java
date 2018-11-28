@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 @Component
 @Path("/descriptions")
 public class Descriptions {
-    private DescriptionProvider filmwebDescriptions;
+    private final DescriptionProvider filmwebDescriptions;
 
     @Inject
     public Descriptions(DescriptionProvider filmwebDescriptions) {

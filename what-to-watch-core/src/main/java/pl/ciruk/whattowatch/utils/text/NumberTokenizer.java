@@ -5,12 +5,10 @@ import static java.lang.Character.isSpaceChar;
 
 public class NumberTokenizer {
     private static final String VALID_MID_CHARS = ",./";
-
     private static final String VALID_SUFFIXES = "%";
 
-    private String input;
-
-    private int index = 0;
+    private final String input;
+    private int index;
 
     public NumberTokenizer(String input) {
         this.input = input;
@@ -24,6 +22,7 @@ public class NumberTokenizer {
         return index < input.length();
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public NumberToken nextToken() {
         StringBuilder buffer = new StringBuilder();
         while (index < input.length()

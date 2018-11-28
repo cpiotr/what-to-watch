@@ -6,7 +6,7 @@ import pl.ciruk.whattowatch.core.score.Score;
 
 import static org.assertj.core.api.Assertions.within;
 
-public class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
+public final class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
     private ScoreAssert(Score actual, Class<?> selfType) {
         super(actual, selfType);
     }

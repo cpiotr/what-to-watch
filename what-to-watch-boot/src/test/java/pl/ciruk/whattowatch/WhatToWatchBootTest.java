@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.*;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,15 +17,20 @@ import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 
 import java.lang.invoke.MethodHandles;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = WhatToWatchBoot.class)
 @ContextConfiguration(classes = WhatToWatchBootTest.TestConfig.class)
 @TestPropertySource(locations = "classpath:application-dev.properties")
 public class WhatToWatchBootTest {
 
+    @Autowired
+    private TestConfig testConfig;
+
     @Test
     public void contextLoads() {
-        // Check if application context finds all beans and dependencies
+        assertThat(testConfig).isNotNull();
     }
 
     @ComponentScan("pl.ciruk.whattowatch")

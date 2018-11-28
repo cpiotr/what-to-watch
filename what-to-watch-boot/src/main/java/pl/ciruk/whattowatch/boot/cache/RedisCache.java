@@ -52,7 +52,7 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     @PostConstruct
-    private void init() {
+    void init() {
         LOGGER.info("RedisCache created");
         LOGGER.info("Cache expiry: {} {}", expiryInterval, expiryUnit);
     }

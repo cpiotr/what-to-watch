@@ -3,19 +3,16 @@ package pl.ciruk.whattowatch.core.description;
 import pl.ciruk.whattowatch.core.title.Title;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Description {
     private static final Description EMPTY = Description.builder().build();
 
-    private Title title;
-
+    private final Title title;
+    private final String poster;
+    private final String plot;
+    private final List<String> genres;
     private Title foundFor;
-
-    private String poster;
-
-    private String plot;
-
-    private List<String> genres;
 
     private Description(Title title, Title foundFor, String poster, String plot, List<String> genres) {
         this.title = title;
@@ -74,25 +71,26 @@ public class Description {
         return this.genres;
     }
 
-    public boolean equals(Object o) {
-        if (o == this) {
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
             return true;
         }
-        if (!(o instanceof Description)) {
+        if (!(object instanceof Description)) {
             return false;
         }
-        final Description other = (Description) o;
+        final Description other = (Description) object;
         if (!other.canEqual(this)) {
             return false;
         }
         final Object otherTitle = other.getTitle();
-        return title == null ? otherTitle == null : title.equals(otherTitle);
+        return Objects.equals(title, otherTitle);
     }
 
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
         int result = 1;
-        result = result * PRIME + (title == null ? 43 : title.hashCode());
+        result = result * 59 + (title == null ? 43 : title.hashCode());
         return result;
     }
 
@@ -139,6 +137,7 @@ public class Description {
             return new Description(title, foundFor, poster, plot, genres);
         }
 
+        @Override
         public String toString() {
             return "Description.DescriptionBuilder(" +
                     "title=" + this.title + ", " +

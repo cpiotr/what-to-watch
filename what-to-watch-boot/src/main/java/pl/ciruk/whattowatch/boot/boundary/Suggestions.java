@@ -33,13 +33,13 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final FilmSuggestionProvider suggestions;
-    private FilmFilter filmFilter;
+    private final FilmSuggestionProvider suggestionsProvider;
+    private final FilmFilter filmFilter;
     private final Timer responseTimer;
 
     @Inject
-    public Suggestions(FilmSuggestionProvider suggestions, FilmFilter filmFilter) {
-        this.suggestions = suggestions;
+    public Suggestions(FilmSuggestionProvider suggestionsProvider, FilmFilter filmFilter) {
+        this.suggestionsProvider = suggestionsProvider;
         this.filmFilter = filmFilter;
 
         responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
@@ -66,7 +66,7 @@ public class Suggestions {
     }
 
     private List<FilmResult> findSuggestions(int pageNumber) {
-        return CompletableFutures.getAllOf(suggestions.suggestFilms(pageNumber))
+        return CompletableFutures.getAllOf(suggestionsProvider.suggestFilms(pageNumber))
                 .distinct()
                 .filter(filmFilter::isWorthWatching)
                 .map(this::toFilmResult)

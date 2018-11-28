@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.boot.config;
 
 import org.slf4j.Logger;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 final class Configs {
     private Configs() {
         throw new AssertionError();
