@@ -50,7 +50,7 @@ public class Connections {
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
             @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
             @Value("${w2w.cache.expiry.long.unit:DAYS}") TimeUnit longExpiryUnit,
-            @Value("${w2w.cache.expiry.short.interval:10}") long shortExpiryInterval,
+            @Value("${w2w.cache.expiry.short.interval:20}") long shortExpiryInterval,
             @Value("${w2w.cache.expiry.short.unit:MINUTES}") TimeUnit shortExpiryUnit) {
         this.redisHost = redisHost;
         this.redisPoolMaxActive = redisPoolMaxActive;
