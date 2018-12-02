@@ -64,7 +64,7 @@ public class RedisCache implements CacheProvider<String> {
         var optionalValue = Failsafe.with(circuitBreaker)
                 .withFallback(Optional.empty())
                 .get(() -> getValueFromCache(key));
-        if (!optionalValue.isPresent()) {
+        if (optionalValue.isEmpty()) {
             missCounter.incrementAndGet();
         }
         return optionalValue;
