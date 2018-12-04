@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.core.filter;
 
 import pl.ciruk.whattowatch.core.suggest.Film;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 

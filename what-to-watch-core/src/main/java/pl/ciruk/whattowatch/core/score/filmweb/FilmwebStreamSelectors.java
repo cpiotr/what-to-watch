@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public enum FilmwebStreamSelectors implements Extractable<Stream<Element>> {
     FILMS_FROM_SEARCH_RESULT(page -> page.select("ul.resultsList li .filmPreview__card .filmPreview__header")
             .stream()),;
-    private Function<Element, Stream<Element>> extractor;
+    private final Function<Element, Stream<Element>> extractor;
 
     FilmwebStreamSelectors(Function<Element, Stream<Element>> extractor) {
         this.extractor = extractor;

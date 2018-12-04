@@ -26,7 +26,7 @@ public class CachedConnection implements HttpConnection<String> {
         LOGGER.trace("Url: {}", url);
 
         var optionalDocument = cache.get(url);
-        if (!optionalDocument.isPresent()) {
+        if (optionalDocument.isEmpty()) {
             LOGGER.trace("Cache miss for: {}", url);
             optionalDocument = connection.connectToAndGet(url);
             optionalDocument.ifPresent(content -> cache.put(url, content));

@@ -116,7 +116,7 @@ public class FilmwebScores implements ScoresProvider {
 
     private Consumer<Optional<?>> logIfMissing(Title title) {
         return score -> {
-            if (!score.isPresent()) {
+            if (score.isEmpty()) {
                 LOGGER.warn("Missing score for: {}", title);
                 missingScores.incrementAndGet();
             }

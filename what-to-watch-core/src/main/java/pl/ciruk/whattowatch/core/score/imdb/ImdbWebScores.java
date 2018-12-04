@@ -72,7 +72,7 @@ public class ImdbWebScores implements ScoresProvider {
         var firstResult = httpConnection.connectToAndGet(url.toString())
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
-        if (!firstResult.isPresent()) {
+        if (firstResult.isEmpty()) {
             LOGGER.warn("Missing score for {}", description);
             LOGGER.trace("Search query: {}", url.toString());
             missingScores.incrementAndGet();

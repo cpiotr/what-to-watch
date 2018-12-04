@@ -49,7 +49,7 @@ public enum ImdbSelectors implements Extractable<Optional<String>> {
             .filter(not(String::isEmpty))
             .findFirst()),;
 
-    private Function<Element, Optional<String>> extractor;
+    private final Function<Element, Optional<String>> extractor;
 
     ImdbSelectors(Function<Element, Optional<String>> extractor) {
         this.extractor = extractor;

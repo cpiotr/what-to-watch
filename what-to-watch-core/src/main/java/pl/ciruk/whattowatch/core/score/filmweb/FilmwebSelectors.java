@@ -27,7 +27,7 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
             .findFirst()),
     SCORE_FROM_DETAILS(details -> extractScoreFromText(details.toString()));
 
-    private Function<Element, Optional<String>> extractor;
+    private final Function<Element, Optional<String>> extractor;
 
     FilmwebSelectors(Function<Element, Optional<String>> extractor) {
         this.extractor = extractor;

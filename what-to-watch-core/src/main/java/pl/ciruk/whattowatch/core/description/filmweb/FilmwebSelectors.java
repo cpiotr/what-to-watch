@@ -31,7 +31,7 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
 
     public static final String ROOT_URL = "http://filmweb.pl";
 
-    private Function<Element, Optional<String>> extractor;
+    private final Function<Element, Optional<String>> extractor;
 
     FilmwebSelectors(Function<Element, Optional<String>> extractor) {
         this.extractor = extractor;

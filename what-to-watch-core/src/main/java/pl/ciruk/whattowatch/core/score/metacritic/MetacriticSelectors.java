@@ -44,7 +44,7 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
         return dateAsText.replaceAll(".+, ", "");
     }
 
-    private Function<Element, Optional<String>> extractor;
+    private final Function<Element, Optional<String>> extractor;
 
     MetacriticSelectors(Function<Element, Optional<String>> extractor) {
         this.extractor = extractor;
