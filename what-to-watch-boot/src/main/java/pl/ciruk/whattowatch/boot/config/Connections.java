@@ -109,7 +109,7 @@ public class Connections {
     @Bean
     @Primary
     StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        return new StringRedisTemplate(redisConnectionFactory());
+        return new StringRedisTemplate(redisConnectionFactory);
     }
 
     @Bean
