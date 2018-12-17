@@ -73,18 +73,21 @@ public class MetacriticScores implements ScoresProvider {
 
         var linkToDetails = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom);
-        var htmlWithScores = linkToDetails
-                .flatMap(this::getCriticScoresFor)
+        if (linkToDetails.isEmpty()) {
+            return Stream.empty();
+        }
+
+        var optionalHtmlWithScores = getCriticScoresFor(linkToDetails.get())
                 .map(this::extractCriticReviews)
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
-        var metacriticScore = htmlWithScores.flatMap(this::extractScoreFrom);
+        var metacriticScore = optionalHtmlWithScores.flatMap(htmlWithScores -> extractScoreFrom(htmlWithScores, linkToDetails.get()));
         if (metacriticScore.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
-        var nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
+        var nytScore = optionalHtmlWithScores.flatMap(this::nytScoreFrom);
         if (nytScore.isEmpty()) {
             LOGGER.warn("Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
@@ -107,21 +110,22 @@ public class MetacriticScores implements ScoresProvider {
         return page.select("#main_content .critic_reviews").first();
     }
 
-    private Optional<Score> extractScoreFrom(Element htmlWithScores) {
+    private Optional<Score> extractScoreFrom(Element htmlWithScores, String link) {
         var averageGrade = averageGradeFrom(htmlWithScores);
         var numberOfReviews = numberOfReviewsFrom(htmlWithScores);
         return mergeUsing(
                 averageGrade,
                 numberOfReviews,
-                this::createScore);
+                (rating, count) -> createScore(rating, count, link));
     }
 
-    private Score createScore(Double rating, Double count) {
+    private Score createScore(Double rating, Double count, String link) {
         return Score.builder()
                 .grade(rating)
                 .quantity(count.intValue())
                 .source("Metacritic")
                 .type(ScoreType.CRITIC)
+                .url(metacriticUrlBuilder().build().resolve(link).toString())
                 .build();
     }
 

@@ -30,15 +30,18 @@ public class FilmwebProxy {
     }
 
     public Optional<Element> getPageWithFilmDetailsFor(String href) {
-        var url = new HttpUrl.Builder()
+        return Optional.ofNullable(href)
+                .map(this::resolveLink)
+                .flatMap(connection::connectToAndGet);
+    }
+
+    public String resolveLink(String href) {
+        HttpUrl url = new HttpUrl.Builder()
                 .scheme("http")
                 .host(HOST)
                 .build()
                 .resolve(href);
-
-        return Optional.ofNullable(url)
-                .map(Object::toString)
-                .flatMap(connection::connectToAndGet);
+        return url.toString();
     }
 
     private static int next(int year) {

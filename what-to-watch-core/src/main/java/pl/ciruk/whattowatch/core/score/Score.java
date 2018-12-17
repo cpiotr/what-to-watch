@@ -1,17 +1,18 @@
 package pl.ciruk.whattowatch.core.score;
 
 public class Score {
-
     private final double grade;
     private final long quantity;
     private final String source;
     private final ScoreType type;
+    private final String url;
 
-    private Score(double grade, long quantity, String source, ScoreType type) {
+    private Score(double grade, long quantity, String source, ScoreType type, String url) {
         this.grade = grade;
         this.quantity = quantity;
         this.source = source;
         this.type = type;
+        this.url = url;
     }
 
     public static Score amateur(double grade) {
@@ -62,9 +63,19 @@ public class Score {
         return this.type;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     @Override
     public String toString() {
-        return "Score(grade=" + this.getGrade() + ", quantity=" + this.getQuantity() + ", source=" + this.getSource() + ", type=" + this.getType() + ")";
+        return "Score(" +
+                "grade=" + this.getGrade() + ", " +
+                "quantity=" + this.getQuantity() + ", " +
+                "source=" + this.getSource() + ", " +
+                "type=" + this.getType() +
+                "url=" + this.getUrl() +
+                ")";
     }
 
     public static class ScoreBuilder {
@@ -72,6 +83,7 @@ public class Score {
         private long quantity;
         private String source;
         private ScoreType type;
+        private String url;
 
         ScoreBuilder() {
         }
@@ -96,13 +108,13 @@ public class Score {
             return this;
         }
 
-        public Score build() {
-            return new Score(grade, quantity, source, type);
+        public Score.ScoreBuilder url(String url) {
+            this.url = url;
+            return this;
         }
 
-        @Override
-        public String toString() {
-            return "Score.ScoreBuilder(grade=" + this.grade + ", quantity=" + this.quantity + ", source=" + this.source + ", type=" + this.type + ")";
+        public Score build() {
+            return new Score(grade, quantity, source, type, url);
         }
     }
 }

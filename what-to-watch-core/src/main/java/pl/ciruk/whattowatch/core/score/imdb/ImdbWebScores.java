@@ -17,6 +17,7 @@ import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -150,10 +151,18 @@ public class ImdbWebScores implements ScoresProvider {
                 .quantity(quantity)
                 .source("IMDb")
                 .type(ScoreType.AMATEUR)
+                .url(extractLink(element))
                 .build();
         return Optional.of(imdbScore)
                 .filter(score -> score.getGrade() > 0.0)
                 .filter(score -> score.getQuantity() > 0);
+    }
+
+    private String extractLink(Element element) {
+        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(element)
+                .map(link -> createUrlBuilder().build().resolve(link))
+                .map(HttpUrl::toString)
+                .orElse(null);
     }
 
     private double asPercentage(double imdbRating) {

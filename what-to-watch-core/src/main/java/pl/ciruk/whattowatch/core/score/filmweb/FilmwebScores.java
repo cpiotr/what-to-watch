@@ -95,14 +95,14 @@ public class FilmwebScores implements ScoresProvider {
     private Optional<Score> findScoreInDetailsPage(String linkToDetails) {
         return filmwebProxy.getPageWithFilmDetailsFor(linkToDetails)
                 .flatMap(FilmwebSelectors.SCORE_FROM_DETAILS::extractFrom)
-                .map(this::parseScore);
+                .map(scoreText -> createScore(scoreText, linkToDetails));
     }
 
     private boolean isPositive(Score score) {
         return score.getGrade() > 0 && score.getQuantity() > 0;
     }
 
-    private Score parseScore(String scoreText) {
+    private Score createScore(String scoreText, String link) {
         var numberTokenizer = new NumberTokenizer(scoreText);
         var rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
         var quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
@@ -111,6 +111,7 @@ public class FilmwebScores implements ScoresProvider {
                 .quantity(quantity)
                 .source("Filmweb")
                 .type(ScoreType.AMATEUR)
+                .url(filmwebProxy.resolveLink(link))
                 .build();
     }
 
