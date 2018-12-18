@@ -11,7 +11,7 @@ import pl.ciruk.whattowatch.boot.WhatToWatchApplication;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
-import pl.ciruk.whattowatch.core.score.imdb.ImdbWebScores;
+import pl.ciruk.whattowatch.core.score.imdb.ImdbScores;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScores;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
@@ -125,7 +125,7 @@ public class FilmSuggestionsBenchmark {
         return List.of(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
                 new MetacriticScores(jsoupConnection, executorService),
-                new ImdbWebScores(jsoupConnection, executorService)
+                new ImdbScores(jsoupConnection, executorService)
         );
     }
 

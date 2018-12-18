@@ -15,14 +15,14 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ImdbWebScoresIT {
+public class ImdbScoresIT {
     private ScoresProvider scores;
 
     @BeforeEach
     public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scores = new ImdbWebScores(connection, Executors.newSingleThreadExecutor());
+        scores = new ImdbScores(connection, Executors.newSingleThreadExecutor());
     }
 
     @Test

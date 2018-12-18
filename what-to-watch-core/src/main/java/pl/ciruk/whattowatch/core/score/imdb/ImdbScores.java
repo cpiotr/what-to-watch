@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 import static pl.ciruk.whattowatch.core.score.imdb.ImdbSelectors.*;
 import static pl.ciruk.whattowatch.core.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEARCH_RESULT;
 
-public class ImdbWebScores implements ScoresProvider {
+public class ImdbScores implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
 
@@ -37,7 +37,7 @@ public class ImdbWebScores implements ScoresProvider {
 
     private final AtomicLong missingScores = new AtomicLong();
 
-    public ImdbWebScores(
+    public ImdbScores(
             HttpConnection<Element> httpConnection,
             ExecutorService executorService) {
         this.httpConnection = httpConnection;
@@ -95,29 +95,29 @@ public class ImdbWebScores implements ScoresProvider {
                 .findAny();
     }
 
-    private boolean matchesTitleFromDescription(Element result, Description description) {
+    private boolean matchesTitleFromDescription(Element searchResult, Description description) {
         var descriptionTitle = description.getTitle();
-        return extractTitleFrom(result).matches(descriptionTitle)
-                || extractFullTitleFrom(result).matches(descriptionTitle);
+        return extractTitleFrom(searchResult).matches(descriptionTitle)
+                || extractFullTitleFrom(searchResult).matches(descriptionTitle);
     }
 
-    private Title extractTitleFrom(Element result) {
+    private Title extractTitleFrom(Element searchResult) {
         return Title.builder()
-                .title(TITLE.extractFrom(result).orElse(""))
-                .year(extractYearFrom(result).orElse(Title.MISSING_YEAR))
+                .title(TITLE.extractFrom(searchResult).orElse(""))
+                .year(extractYearFrom(searchResult).orElse(Title.MISSING_YEAR))
                 .build();
     }
 
-    private Title extractFullTitleFrom(Element result) {
+    private Title extractFullTitleFrom(Element searchResult) {
         return Title.builder()
-                .title(TITLE.extractFrom(result).orElse(""))
-                .originalTitle(getOriginalTitle(result).orElse(""))
-                .year(extractYearFrom(result).orElse(Title.MISSING_YEAR))
+                .title(TITLE.extractFrom(searchResult).orElse(""))
+                .originalTitle(getOriginalTitle(searchResult).orElse(""))
+                .year(extractYearFrom(searchResult).orElse(Title.MISSING_YEAR))
                 .build();
     }
 
-    private Optional<String> getOriginalTitle(Element result) {
-        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(result)
+    private Optional<String> getOriginalTitle(Element searchResult) {
+        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(searchResult)
                 .flatMap(this::getDetails)
                 .flatMap(ImdbSelectors.ORIGINAL_TITLE::extractFrom);
     }
@@ -128,18 +128,18 @@ public class ImdbWebScores implements ScoresProvider {
         return httpConnection.connectToAndGet(url);
     }
 
-    private Optional<Integer> extractYearFrom(Element result) {
-        return YEAR.extractFrom(result).map(Integer::parseInt);
+    private Optional<Integer> extractYearFrom(Element searchResult) {
+        return YEAR.extractFrom(searchResult).map(Integer::parseInt);
     }
 
-    private Optional<Score> extractScore(Element element) {
-        var grade = SCORE.extractFrom(element)
+    private Optional<Score> extractScore(Element searchResult) {
+        var grade = SCORE.extractFrom(searchResult)
                 .map(NumberTokenizer::new)
                 .filter(NumberTokenizer::hasMoreTokens)
                 .map(NumberTokenizer::nextToken)
                 .map(NumberToken::asNormalizedDouble)
                 .orElse(-1.0);
-        var quantity = NUMBER_OF_SCORES.extractFrom(element)
+        var quantity = NUMBER_OF_SCORES.extractFrom(searchResult)
                 .map(NumberTokenizer::new)
                 .filter(NumberTokenizer::hasMoreTokens)
                 .map(NumberTokenizer::nextToken)
@@ -151,15 +151,15 @@ public class ImdbWebScores implements ScoresProvider {
                 .quantity(quantity)
                 .source("IMDb")
                 .type(ScoreType.AMATEUR)
-                .url(extractLink(element))
+                .url(extractLink(searchResult))
                 .build();
         return Optional.of(imdbScore)
                 .filter(score -> score.getGrade() > 0.0)
                 .filter(score -> score.getQuantity() > 0);
     }
 
-    private String extractLink(Element element) {
-        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(element)
+    private String extractLink(Element searchResult) {
+        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(searchResult)
                 .map(link -> createUrlBuilder().build().resolve(link))
                 .map(HttpUrl::toString)
                 .orElse(null);
