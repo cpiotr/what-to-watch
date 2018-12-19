@@ -102,18 +102,20 @@ public class ImdbScores implements ScoresProvider {
     }
 
     private Title extractTitleFrom(Element searchResult) {
-        return Title.builder()
-                .title(TITLE.extractFrom(searchResult).orElse(""))
-                .year(extractYearFrom(searchResult).orElse(Title.MISSING_YEAR))
+        return extractTitleBuilderFrom(searchResult)
                 .build();
     }
 
     private Title extractFullTitleFrom(Element searchResult) {
+        return extractTitleBuilderFrom(searchResult)
+                .originalTitle(getOriginalTitle(searchResult).orElse(""))
+                .build();
+    }
+
+    private Title.TitleBuilder extractTitleBuilderFrom(Element searchResult) {
         return Title.builder()
                 .title(TITLE.extractFrom(searchResult).orElse(""))
-                .originalTitle(getOriginalTitle(searchResult).orElse(""))
-                .year(extractYearFrom(searchResult).orElse(Title.MISSING_YEAR))
-                .build();
+                .year(extractYearFrom(searchResult).orElse(Title.MISSING_YEAR));
     }
 
     private Optional<String> getOriginalTitle(Element searchResult) {
@@ -123,7 +125,7 @@ public class ImdbScores implements ScoresProvider {
     }
 
     private Optional<Element> getDetails(String linkToDetails) {
-        var url = createUrlBuilder().toString() + linkToDetails;
+        var url = createUrlBuilder().build().resolve(linkToDetails);
 
         return httpConnection.connectToAndGet(url);
     }

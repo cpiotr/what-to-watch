@@ -7,7 +7,7 @@ import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import java.util.Optional;
 
 public class FilmwebProxy {
-    public static final String HOST = "www.filmweb.pl";
+    private static final String HOST = "www.filmweb.pl";
     private final HttpConnection<Element> connection;
 
     public FilmwebProxy(HttpConnection<Element> connection) {
@@ -35,13 +35,12 @@ public class FilmwebProxy {
                 .flatMap(connection::connectToAndGet);
     }
 
-    public String resolveLink(String href) {
-        HttpUrl url = new HttpUrl.Builder()
+    public HttpUrl resolveLink(String href) {
+        return new HttpUrl.Builder()
                 .scheme("http")
                 .host(HOST)
                 .build()
                 .resolve(href);
-        return url.toString();
     }
 
     private static int next(int year) {

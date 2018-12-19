@@ -111,7 +111,7 @@ public class FilmwebScores implements ScoresProvider {
                 .quantity(quantity)
                 .source("Filmweb")
                 .type(ScoreType.AMATEUR)
-                .url(filmwebProxy.resolveLink(link))
+                .url(filmwebProxy.resolveLink(link).toString())
                 .build();
     }
 

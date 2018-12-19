@@ -71,23 +71,25 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> findScoresBy(Description description) {
         LOGGER.debug("Description: {}", description);
 
-        var linkToDetails = metacriticSummaryOf(description.getTitle())
+        var optionalLinkToDetails = metacriticSummaryOf(description.getTitle())
                 .flatMap(LINK_TO_DETAILS::extractFrom);
-        if (linkToDetails.isEmpty()) {
+        if (optionalLinkToDetails.isEmpty()) {
             return Stream.empty();
         }
 
-        var optionalHtmlWithScores = getCriticScoresFor(linkToDetails.get())
+        String linkToDetails = optionalLinkToDetails.get();
+        var htmlWithScores = getCriticScoresFor(linkToDetails)
                 .map(this::extractCriticReviews)
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
-        var metacriticScore = optionalHtmlWithScores.flatMap(htmlWithScores -> extractScoreFrom(htmlWithScores, linkToDetails.get()));
+        var metacriticScore = htmlWithScores
+                .flatMap(this::extractScoreFrom);
         if (metacriticScore.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
-        var nytScore = optionalHtmlWithScores.flatMap(this::nytScoreFrom);
+        var nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
         if (nytScore.isEmpty()) {
             LOGGER.warn("Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
@@ -96,11 +98,12 @@ public class MetacriticScores implements ScoresProvider {
         var averageScoreStream = metacriticScore.stream();
         var nytScoreStream = nytScore.stream();
         return Stream.concat(averageScoreStream, nytScoreStream)
+                .map(scoreBuilder -> scoreBuilder.url(resolve(linkToDetails)).build())
                 .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
 
-    private Optional<Element> followDetailsLinkAndFindPageWithScores(Optional<String> linkToDetails) {
-        return linkToDetails.flatMap(this::getPage)
+    private Optional<Element> followDetailsLinkAndFindPageWithScores(String linkToDetails) {
+        return getPage(linkToDetails)
                 .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
                 .flatMap(this::getPage)
                 .map(this::extractCriticReviews);
@@ -110,23 +113,25 @@ public class MetacriticScores implements ScoresProvider {
         return page.select("#main_content .critic_reviews").first();
     }
 
-    private Optional<Score> extractScoreFrom(Element htmlWithScores, String link) {
+    private Optional<Score.ScoreBuilder> extractScoreFrom(Element htmlWithScores) {
         var averageGrade = averageGradeFrom(htmlWithScores);
         var numberOfReviews = numberOfReviewsFrom(htmlWithScores);
         return mergeUsing(
                 averageGrade,
                 numberOfReviews,
-                (rating, count) -> createScore(rating, count, link));
+                this::createScore);
     }
 
-    private Score createScore(Double rating, Double count, String link) {
+    private Score.ScoreBuilder createScore(Double rating, Double count) {
         return Score.builder()
                 .grade(rating)
                 .quantity(count.intValue())
                 .source("Metacritic")
-                .type(ScoreType.CRITIC)
-                .url(metacriticUrlBuilder().build().resolve(link).toString())
-                .build();
+                .type(ScoreType.CRITIC);
+    }
+
+    private String resolve(String link) {
+        return metacriticUrlBuilder().build().resolve(link).toString();
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {
@@ -148,15 +153,14 @@ public class MetacriticScores implements ScoresProvider {
         return Optional.of(count).filter(Doubles.greaterThan(0.0));
     }
 
-    private Optional<Score> nytScoreFrom(Element htmlWithScores) {
+    private Optional<Score.ScoreBuilder> nytScoreFrom(Element htmlWithScores) {
         return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
                 .map(grade -> (Double.valueOf(grade) / 100.0))
                 .map(percentage -> Score.builder()
                         .grade(percentage)
                         .quantity(NYT_SCORE_WEIGHT)
                         .source("New York Times")
-                        .type(ScoreType.CRITIC)
-                        .build());
+                        .type(ScoreType.CRITIC));
     }
 
     private Optional<Element> getSearchResultsFor(Title title) {
@@ -171,7 +175,7 @@ public class MetacriticScores implements ScoresProvider {
         var builder = metacriticUrlBuilder();
         Arrays.stream(pathSegments).forEach(builder::addPathSegments);
         var url = builder.build();
-        return connection.connectToAndGet(url.toString());
+        return connection.connectToAndGet(url);
     }
 
     private HttpUrl.Builder metacriticUrlBuilder() {
