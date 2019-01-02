@@ -1,5 +1,4 @@
 # what-to-watch
-=============
 
 ## Running
 ```
