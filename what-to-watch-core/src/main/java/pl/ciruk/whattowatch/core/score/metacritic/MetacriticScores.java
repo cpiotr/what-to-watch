@@ -7,10 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
-import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
-import pl.ciruk.whattowatch.utils.math.Doubles;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -25,12 +23,9 @@ import java.util.stream.Stream;
 
 import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
-import static pl.ciruk.whattowatch.utils.stream.Optionals.mergeUsing;
 
-@SuppressWarnings("PMD.TooManyMethods") // TODO
 public class MetacriticScores implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int NYT_SCORE_WEIGHT = 10;
 
     private final HttpConnection<Element> connection;
 
@@ -71,33 +66,31 @@ public class MetacriticScores implements ScoresProvider {
     public Stream<Score> findScoresBy(Description description) {
         LOGGER.debug("Description: {}", description);
 
-        var optionalLinkToDetails = metacriticSummaryOf(description.getTitle())
-                .flatMap(LINK_TO_DETAILS::extractFrom);
-        if (optionalLinkToDetails.isEmpty()) {
-            return Stream.empty();
-        }
+        return metacriticSummaryOf(description.getTitle())
+                .flatMap(LINK_TO_DETAILS::extractFrom)
+                .stream()
+                .flatMap(linkToDetails -> findScores(linkToDetails, description));
+    }
 
-        String linkToDetails = optionalLinkToDetails.get();
-        var htmlWithScores = getCriticScoresFor(linkToDetails)
+    private Stream<Score> findScores(String linkToDetails, Description description) {
+        var htmlWithScores = getPage(linkToDetails, "critic-reviews")
                 .map(this::extractCriticReviews)
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
-        var metacriticScore = htmlWithScores
-                .flatMap(this::extractScoreFrom);
-        if (metacriticScore.isEmpty()) {
+        var metacriticScoreBuilder = htmlWithScores
+                .flatMap(MetacriticScoreUtil::extractToScoreBuilder);
+        if (metacriticScoreBuilder.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
-        var nytScore = htmlWithScores.flatMap(this::nytScoreFrom);
-        if (nytScore.isEmpty()) {
+        var nytScoreBuilder = htmlWithScores.flatMap(NewYorkTimesScoreUtil::extractToScoreBuilder);
+        if (nytScoreBuilder.isEmpty()) {
             LOGGER.warn("Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
         }
 
-        var averageScoreStream = metacriticScore.stream();
-        var nytScoreStream = nytScore.stream();
-        return Stream.concat(averageScoreStream, nytScoreStream)
+        return Stream.concat(metacriticScoreBuilder.stream(), nytScoreBuilder.stream())
                 .map(scoreBuilder -> scoreBuilder.url(resolve(linkToDetails)).build())
                 .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
@@ -113,23 +106,6 @@ public class MetacriticScores implements ScoresProvider {
         return page.select("#main_content .critic_reviews").first();
     }
 
-    private Optional<Score.ScoreBuilder> extractScoreFrom(Element htmlWithScores) {
-        var averageGrade = averageGradeFrom(htmlWithScores);
-        var numberOfReviews = numberOfReviewsFrom(htmlWithScores);
-        return mergeUsing(
-                averageGrade,
-                numberOfReviews,
-                this::createScore);
-    }
-
-    private Score.ScoreBuilder createScore(Double rating, Double count) {
-        return Score.builder()
-                .grade(rating)
-                .quantity(count.intValue())
-                .source("Metacritic")
-                .type(ScoreType.CRITIC);
-    }
-
     private String resolve(String link) {
         HttpUrl httpUrl = metacriticUrlBuilder().build();
         return Optional.ofNullable(httpUrl.resolve(link))
@@ -137,41 +113,8 @@ public class MetacriticScores implements ScoresProvider {
                 .orElseThrow(() -> new IllegalArgumentException("Could not resolve: " + link));
     }
 
-    private Optional<Double> averageGradeFrom(Element htmlWithScores) {
-        return MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
-                .map(Element::text)
-                .mapToDouble(Double::valueOf)
-                .average()
-                .stream()
-                .map(grade -> grade / 100.0)
-                .boxed()
-                .findFirst();
-    }
-
-    private Optional<Double> numberOfReviewsFrom(Element htmlWithScores) {
-        double count = MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
-                .map(Element::text)
-                .mapToDouble(Double::valueOf)
-                .count();
-        return Optional.of(count).filter(Doubles.greaterThan(0.0));
-    }
-
-    private Optional<Score.ScoreBuilder> nytScoreFrom(Element htmlWithScores) {
-        return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
-                .map(grade -> (Double.valueOf(grade) / 100.0))
-                .map(percentage -> Score.builder()
-                        .grade(percentage)
-                        .quantity(NYT_SCORE_WEIGHT)
-                        .source("New York Times")
-                        .type(ScoreType.CRITIC));
-    }
-
     private Optional<Element> getSearchResultsFor(Title title) {
         return getPage("search", "movie", title.asText(), "results");
-    }
-
-    private Optional<Element> getCriticScoresFor(String href) {
-        return getPage(href, "critic-reviews");
     }
 
     private Optional<Element> getPage(String... pathSegments) {
