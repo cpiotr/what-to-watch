@@ -131,7 +131,10 @@ public class MetacriticScores implements ScoresProvider {
     }
 
     private String resolve(String link) {
-        return metacriticUrlBuilder().build().resolve(link).toString();
+        HttpUrl httpUrl = metacriticUrlBuilder().build();
+        return Optional.ofNullable(httpUrl.resolve(link))
+                .map(Object::toString)
+                .orElseThrow(() -> new IllegalArgumentException("Could not resolve: " + link));
     }
 
     private Optional<Double> averageGradeFrom(Element htmlWithScores) {
