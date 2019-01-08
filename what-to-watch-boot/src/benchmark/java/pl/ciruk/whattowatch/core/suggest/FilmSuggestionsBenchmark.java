@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import com.google.common.cache.CacheBuilder;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -32,6 +31,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +66,7 @@ public class FilmSuggestionsBenchmark {
                 sampleDescriptionProvider(connection, workStealingPool),
                 sampleScoreProviders(connection, workStealingPool),
                 workStealingPool,
-                CacheBuilder.newBuilder().build()
+                new ConcurrentHashMap<>()
         );
 
         fixedPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
@@ -75,7 +75,7 @@ public class FilmSuggestionsBenchmark {
                 sampleDescriptionProvider(connection, fixedPool),
                 sampleScoreProviders(connection, fixedPool),
                 fixedPool,
-                CacheBuilder.newBuilder().build()
+                new ConcurrentHashMap<>()
         );
     }
 

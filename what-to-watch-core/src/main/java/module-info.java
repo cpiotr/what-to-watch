@@ -17,6 +17,5 @@ module what.to.watch.core {
     requires org.slf4j;
     requires micrometer.core;
     requires okhttp3;
-    requires com.google.common;
     requires com.fasterxml.jackson.databind;
 }

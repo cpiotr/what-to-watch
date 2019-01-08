@@ -1,7 +1,5 @@
 package pl.ciruk.whattowatch.boot;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.cache.CacheBuilder;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
@@ -29,10 +27,12 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -57,10 +57,10 @@ public class WhatToWatchApplication {
                 sampleDescriptionProvider(threadPool, connection),
                 sampleScoreProviders(threadPool, connection),
                 threadPool,
-                CacheBuilder.newBuilder().build());
+                new ConcurrentHashMap<>());
         FilmByScoreFilter scoreFilter = new FilmByScoreFilter(0.65);
 
-        Stopwatch started = Stopwatch.createStarted();
+        long startTime = System.currentTimeMillis();
 
         try {
             CompletableFutures.getAllOf(suggestions.suggestFilms(1))
@@ -68,12 +68,12 @@ public class WhatToWatchApplication {
                     .filter(Film::isNotEmpty)
                     .filter(scoreFilter)
                     .forEach(System.out::println);
-            started.stop();
+            long stopTime = System.currentTimeMillis();
 
             threadPool.shutdown();
             threadPool.awaitTermination(10, TimeUnit.SECONDS);
 
-            System.out.println("Found in " + started.elapsed(TimeUnit.MILLISECONDS) + "ms");
+            System.out.println("Found in " + (stopTime - startTime) + "ms");
         } catch (InterruptedException e) {
             LOGGER.error("Processing error", e);
         } finally {
@@ -148,7 +148,10 @@ public class WhatToWatchApplication {
     private static Properties loadDevProperties() {
         Properties properties = new Properties();
         try {
-            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties"));
+            InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties");
+            if (resourceAsStream != null) {
+                properties.load(resourceAsStream);
+            }
         } catch (Exception e) {
             LOGGER.error("Cannot load application-dev properties", e);
         }

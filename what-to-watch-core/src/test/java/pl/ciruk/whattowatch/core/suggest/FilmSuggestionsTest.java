@@ -1,7 +1,5 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -13,8 +11,10 @@ import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
@@ -25,7 +25,7 @@ class FilmSuggestionsTest {
 
     private DescriptionProvider descriptionProvider;
     private ScoresProvider scoreProvider;
-    private Cache<Title, Film> cache;
+    private Map<Title, Film> cache;
     private FilmSuggestions filmSuggestions;
     private Title title;
     private Description description;
@@ -46,7 +46,7 @@ class FilmSuggestionsTest {
         when(scoreProvider.findScoresByAsync(description))
                 .thenAnswer(ignored -> CompletableFuture.completedFuture(Stream.of(Score.critic(1.0, 100))));
 
-        cache = CacheBuilder.newBuilder().build();
+        cache = new ConcurrentHashMap<>();
         filmSuggestions = new FilmSuggestions(
                 titleProvider,
                 descriptionProvider,

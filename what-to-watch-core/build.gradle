@@ -36,7 +36,6 @@ integrationTest {
 }
 
 dependencies {
-    compile "com.google.guava:guava:$guavaVersion"
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"

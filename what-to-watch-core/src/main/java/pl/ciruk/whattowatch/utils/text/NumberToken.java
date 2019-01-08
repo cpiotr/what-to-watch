@@ -1,7 +1,5 @@
 package pl.ciruk.whattowatch.utils.text;
 
-import com.google.common.base.Strings;
-
 public class NumberToken {
     private final String value;
 
@@ -11,7 +9,7 @@ public class NumberToken {
     }
 
     public double asNormalizedDouble() {
-        if (Strings.isNullOrEmpty(value)) {
+        if (value.isBlank()) {
             return 0.0;
         }
 
@@ -51,6 +49,6 @@ public class NumberToken {
     }
 
     public boolean isEmpty() {
-        return Strings.isNullOrEmpty(value);
+        return value.isBlank();
     }
 }

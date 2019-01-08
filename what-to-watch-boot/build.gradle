@@ -46,7 +46,6 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-data-redis"
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.springframework.boot:spring-boot-starter-undertow:$springBootVersion"
-    compile "com.google.guava:guava:$guavaVersion"
     compile "redis.clients:jedis:$jedisVersion"
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "net.jodah:failsafe:$failsafeVersion"

@@ -1,10 +1,9 @@
 package pl.ciruk.whattowatch.utils.metrics;
 
-import com.google.common.collect.Streams;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class Names {
@@ -23,7 +22,7 @@ public final class Names {
     public static String createName(Class<?> clazz, Iterable<?> tags) {
         Stream<String> stream = Stream.concat(
                 Stream.of(clazz.getSimpleName()),
-                Streams.stream(tags).map(Object::toString));
+                StreamSupport.stream(tags.spliterator(), false).map(Object::toString));
 
         return stream.collect(Collectors.joining("."));
     }

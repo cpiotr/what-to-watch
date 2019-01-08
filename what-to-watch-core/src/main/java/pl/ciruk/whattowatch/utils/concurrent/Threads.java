@@ -1,13 +1,14 @@
 package pl.ciruk.whattowatch.utils.concurrent;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class Threads {
@@ -28,10 +29,16 @@ public final class Threads {
     }
 
     public static ThreadFactory createThreadFactory(String threadNamePrefix) {
-        return new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat(threadNamePrefix + "-%s")
-                .setUncaughtExceptionHandler((thread, throwable) -> LOGGER.error("Uncaught exception in {}", thread, throwable))
-                .build();
+        return new ThreadFactory() {
+            private final AtomicLong counter = new AtomicLong();
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                thread.setName(threadNamePrefix + "-" + counter.incrementAndGet());
+                thread.setDaemon(true);
+                thread.setUncaughtExceptionHandler((t, throwable) -> LOGGER.error("Uncaught exception in {}", t, throwable));
+                return thread;
+            }
+        };
     }
 }

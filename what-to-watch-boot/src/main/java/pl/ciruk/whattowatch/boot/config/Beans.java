@@ -1,9 +1,6 @@
 package pl.ciruk.whattowatch.boot.config;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -26,21 +23,15 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestions;
-import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitles;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
-import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Predicate;
 
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
@@ -106,27 +97,17 @@ public class Beans {
     }
 
     @Bean
-    Cache<Title, Film> cache() {
-        Cache<Title, Film> filmCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(Duration.ofHours(1))
-                .maximumSize(1000)
-                .recordStats()
-                .build();
-        GuavaCacheMetrics.monitor(
-                Metrics.globalRegistry,
-                filmCache,
-                Names.createName(FilmSuggestions.class, "cache"));
-        return filmCache;
-    }
-
-    @Bean
     FilmSuggestionProvider filmSuggestions(
             TitleProvider titleProvider,
             DescriptionProvider descriptionProvider,
             List<ScoresProvider> scoreProviders,
-            ExecutorService executorService,
-            Cache<Title, Film> cache) {
-        return new FilmSuggestions(titleProvider, descriptionProvider, scoreProviders, executorService, cache);
+            ExecutorService executorService) {
+        return new FilmSuggestions(
+                titleProvider,
+                descriptionProvider,
+                scoreProviders,
+                executorService,
+                new ConcurrentHashMap<>());
     }
 
     @Bean
