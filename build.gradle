@@ -11,7 +11,7 @@ buildscript {
 apply plugin: 'org.springframework.boot'
 
 allprojects {
-    version = "${version}"
+    version "${version != 'unspecified' ? version : 'SNAPSHOT'}"
 
     apply plugin: 'pmd'
 
