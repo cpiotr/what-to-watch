@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -77,15 +78,24 @@ public class FilmSuggestions implements FilmSuggestionProvider {
         Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
                 scoresProvider -> scoresProvider.findScoresByAsync(description);
 
-        return scoresProviders.stream()
+        var scoresFuture = scoresProviders.stream()
                 .map(toScoresOfAsync)
-                .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService))
+                .reduce(completedFuture(Stream.empty()), combineByConcatenation());
+        return scoresFuture
                 .thenApply(stream -> stream.collect(toList()))
-                .thenApply(scores -> Film.builder()
-                        .description(description)
-                        .scores(scores)
-                        .build())
+                .thenApply(scores -> createFilm(description, scores))
                 .thenApply(recordFilm());
+    }
+
+    private Film createFilm(Description description, List<Score> scores) {
+        return Film.builder()
+                .description(description)
+                .scores(scores)
+                .build();
+    }
+
+    private BinaryOperator<CompletableFuture<Stream<Score>>> combineByConcatenation() {
+        return combineUsing(Stream::concat, executorService);
     }
 
     private UnaryOperator<Film> recordFilm() {

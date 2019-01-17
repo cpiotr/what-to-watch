@@ -51,7 +51,6 @@ public class Beans {
         this.titlePagesPerRequest = titlePagesPerRequest;
     }
 
-
     @Bean
     ExecutorService executorService() {
         String threadPrefix = "WhatToWatch";
