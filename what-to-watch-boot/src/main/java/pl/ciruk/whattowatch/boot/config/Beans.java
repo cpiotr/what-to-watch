@@ -43,12 +43,15 @@ public class Beans {
 
     private final Integer filmPoolSize;
     private final Integer titlePagesPerRequest;
+    private final Double filmScoreThreshold;
 
     public Beans(
             @Value("${w2w.pool.size:16}") Integer filmPoolSize,
-            @Value("${w2w.titles.pagesPerRequest:10}") Integer titlePagesPerRequest) {
+            @Value("${w2w.titles.pagesPerRequest:10}") Integer titlePagesPerRequest,
+            @Value("${w2w.suggestions.filter.scoreThreshold:0.6}") Double filmScoreThreshold) {
         this.filmPoolSize = filmPoolSize;
         this.titlePagesPerRequest = titlePagesPerRequest;
+        this.filmScoreThreshold = filmScoreThreshold;
     }
 
     @Bean
@@ -116,7 +119,7 @@ public class Beans {
 
     @Bean
     FilmByScoreFilter filmByScoreFilter() {
-        return new FilmByScoreFilter(0.65);
+        return new FilmByScoreFilter(filmScoreThreshold);
     }
 
     @Bean
@@ -133,5 +136,6 @@ public class Beans {
     void logConfiguration() {
         logConfigurationEntry(LOGGER, "Thread pool size", filmPoolSize);
         logConfigurationEntry(LOGGER, "Number of title pages crawled per request", titlePagesPerRequest);
+        logConfigurationEntry(LOGGER, "Film score threshold", filmScoreThreshold);
     }
 }
