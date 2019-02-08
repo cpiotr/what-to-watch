@@ -15,7 +15,7 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestions;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
-import pl.ciruk.whattowatch.core.title.ekino.EkinoTitles;
+import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
@@ -114,7 +114,7 @@ public class WhatToWatchApplication {
 
     private static TitleProvider sampleTitleProvider() {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new EkinoTitles(keepCookiesConnection, 20);
+        return new EkinoTitleProvider(keepCookiesConnection, 20);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

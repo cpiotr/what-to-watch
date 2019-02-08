@@ -10,13 +10,13 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EkinoTitlesIT {
+class EkinoTitleProviderIT {
 
     private TitleProvider provider;
 
     @BeforeEach
     void setUp() {
-        provider = new EkinoTitles(TestConnections.jsoup(), 1);
+        provider = new EkinoTitleProvider(TestConnections.jsoup(), 1);
     }
 
     @Test

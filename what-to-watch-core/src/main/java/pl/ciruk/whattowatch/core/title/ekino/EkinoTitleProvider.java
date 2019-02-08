@@ -16,10 +16,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class EkinoTitles implements TitleProvider {
+public class EkinoTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final String BASE_URL = "http://ekino-tv.pl";
+    private static final String BASE_URL = "https://ekino-tv.pl";
 
     private static final String TITLES_PAGE_PATTERN = BASE_URL + "/movie/cat/strona%%5B%d%%5D+";
 
@@ -29,7 +29,7 @@ public class EkinoTitles implements TitleProvider {
 
     private final AtomicLong numberOfTitles = new AtomicLong();
 
-    public EkinoTitles(HttpConnection<Element> connection, int pagesPerRequest) {
+    public EkinoTitleProvider(HttpConnection<Element> connection, int pagesPerRequest) {
         this.connection = connection;
         this.pagesPerRequest = pagesPerRequest;
 
