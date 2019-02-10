@@ -85,7 +85,7 @@ public class ImdbScores implements ScoresProvider {
 
     private static HttpUrl.Builder createUrlBuilder() {
         return new HttpUrl.Builder()
-                .scheme("http")
+                .scheme("https")
                 .host("www.imdb.com");
     }
 

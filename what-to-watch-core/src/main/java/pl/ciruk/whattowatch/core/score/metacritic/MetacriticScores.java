@@ -126,7 +126,7 @@ public class MetacriticScores implements ScoresProvider {
 
     private HttpUrl.Builder metacriticUrlBuilder() {
         return new HttpUrl.Builder()
-                .scheme("http")
+                .scheme("https")
                 .host("www.metacritic.com");
     }
 

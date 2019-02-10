@@ -16,7 +16,7 @@ public class FilmwebProxy {
 
     public Optional<Element> searchFor(String title, int year) {
         var url = new HttpUrl.Builder()
-                .scheme("http")
+                .scheme("https")
                 .host(HOST)
                 .addPathSegment("search/film")
                 .addQueryParameter("q", title)
