@@ -14,18 +14,32 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public class HtmlConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final int BACKOFF_THRESHOLD = 2;
 
     private final OkHttpClient okHttpClient;
-
     private final Timer requestsTimer;
+    private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
+    private final IntConsumer backOffFunction;
 
-    public HtmlConnection(OkHttpClient httpClientSupplier) {
-        this.okHttpClient = httpClientSupplier;
+    public HtmlConnection(OkHttpClient httpClient) {
+        this(httpClient, HtmlConnection::backOff);
+    }
+
+    HtmlConnection(OkHttpClient httpClient, IntConsumer backOffFunction) {
+        this.okHttpClient = httpClient;
+        this.backOffFunction = backOffFunction;
 
         this.requestsTimer = Metrics.timer(Names.createName(HtmlConnection.class, "request"));
     }
@@ -79,9 +93,30 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private Response executeRequest(Request request) throws IOException {
         try {
-            return okHttpClient.newCall(request).execute();
+            return executeOrWait(request);
         } catch (SocketTimeoutException e) {
-            return okHttpClient.newCall(request).execute();
+            return executeOrWait(request);
+        }
+    }
+
+    private Response executeOrWait(Request request) throws IOException {
+        String domain = request.url().topPrivateDomain();
+        AtomicInteger errors = errorsByDomain.computeIfAbsent(domain, key -> new AtomicInteger());
+        int errorsValue = errors.get();
+        if (errorsValue >= BACKOFF_THRESHOLD) {
+            LOGGER.info("Backing off of {}", domain);
+            backOffFunction.accept(errorsValue);
+        }
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            if (errorsValue > 0) {
+                errors.decrementAndGet();
+            }
+            return response;
+        } catch (IOException e) {
+            errors.incrementAndGet();
+            throw e;
         }
     }
 
@@ -100,5 +135,12 @@ public class HtmlConnection implements HttpConnection<String> {
                 : "";
 
         return String.format("%s://%s%s/", uri.getScheme(), uri.getHost(), port);
+    }
+
+    private static void backOff(int errorsValue) {
+        double exponential = Math.pow(2, errorsValue % 6);
+        long waitTimeMillis = (long) (exponential * 100);
+        LOGGER.debug("Waiting {} ms", waitTimeMillis);
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(waitTimeMillis));
     }
 }
