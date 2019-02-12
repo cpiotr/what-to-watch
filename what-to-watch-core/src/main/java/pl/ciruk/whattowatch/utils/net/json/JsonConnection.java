@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.utils.net.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +23,13 @@ public class JsonConnection implements HttpConnection<JsonNode> {
     }
 
     @Override
-    public Optional<JsonNode> connectToAndGet(String url) {
+    public Optional<JsonNode> connectToAndGet(HttpUrl url) {
         return connection.connectToAndGet(url)
                 .flatMap(this::parseFrom);
     }
 
     @Override
-    public Optional<JsonNode> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+    public Optional<JsonNode> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
         return connection.connectToAndConsume(url, action)
                 .flatMap(this::parseFrom);
     }

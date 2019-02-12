@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.utils.net.html;
 
+import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -16,13 +17,13 @@ public class JsoupConnection implements HttpConnection<Element> {
     }
 
     @Override
-    public Optional<Element> connectToAndGet(String url) {
+    public Optional<Element> connectToAndGet(HttpUrl url) {
         return connection.connectToAndGet(url)
                 .map(Jsoup::parse);
     }
 
     @Override
-    public Optional<Element> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+    public Optional<Element> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
         return connection.connectToAndConsume(url, action)
                 .map(Jsoup::parse);
     }

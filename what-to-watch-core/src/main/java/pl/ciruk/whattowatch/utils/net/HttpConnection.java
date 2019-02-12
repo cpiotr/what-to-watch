@@ -8,11 +8,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public interface HttpConnection<T> {
-    Optional<T> connectToAndGet(String url);
-
-    default Optional<T> connectToAndGet(HttpUrl url) {
-        return connectToAndGet(url.toString());
+    default Optional<T> connectToAndGet(String url) {
+        return connectToAndGet(HttpUrl.get(url));
     }
 
-    Optional<T> connectToAndConsume(String url, Consumer<Request.Builder> action);
+    Optional<T> connectToAndGet(HttpUrl url);
+
+    Optional<T> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action);
+
+    default Optional<T> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+        return connectToAndConsume(HttpUrl.get(url), action);
+    }
 }

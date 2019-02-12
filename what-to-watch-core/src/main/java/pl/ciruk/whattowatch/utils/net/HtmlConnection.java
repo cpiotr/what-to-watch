@@ -2,10 +2,7 @@ package pl.ciruk.whattowatch.utils.net;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.metrics.Names;
@@ -13,8 +10,6 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +40,7 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     @Override
-    public Optional<String> connectToAndGet(String url) {
+    public Optional<String> connectToAndGet(HttpUrl url) {
         LOGGER.trace("Url: {}", url);
 
         var requestBuilder = buildRequestTo(url);
@@ -53,7 +48,7 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     @Override
-    public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+    public Optional<String> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
         LOGGER.trace("Url: {}", url);
         var builder = buildRequestTo(url);
 
@@ -61,7 +56,7 @@ public class HtmlConnection implements HttpConnection<String> {
         return connectToAndGet(builder, url);
     }
 
-    private Optional<String> connectToAndGet(Request.Builder requestBuilder, String url) {
+    private Optional<String> connectToAndGet(Request.Builder requestBuilder, HttpUrl url) {
         try (var response = execute(requestBuilder)) {
             return Optional.of(response)
                     .filter(Response::isSuccessful)
@@ -73,7 +68,7 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    private Optional<String> extractBodyAsString(ResponseBody responseBody, String url) {
+    private Optional<String> extractBodyAsString(ResponseBody responseBody, HttpUrl url) {
         try {
             return Optional.of(responseBody.string());
         } catch (IOException e) {
@@ -120,21 +115,12 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    private Request.Builder buildRequestTo(String url) {
+    private Request.Builder buildRequestTo(HttpUrl url) {
         return new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", UserAgents.next())
                 .addHeader("Accept-Language", "en-US")
-                .addHeader("Referer", rootDomainFor(url));
-    }
-
-    private static String rootDomainFor(String url) {
-        var uri = URI.create(url);
-        var port = uri.getPort() > -1
-                ? ":" + uri.getPort()
-                : "";
-
-        return String.format("%s://%s%s/", uri.getScheme(), uri.getHost(), port);
+                .addHeader("Referer", url.resolve("/").toString());
     }
 
     private static void backOff(int errorsValue) {

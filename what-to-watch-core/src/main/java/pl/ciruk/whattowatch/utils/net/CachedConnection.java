@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.utils.net;
 
+import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,20 +23,20 @@ public class CachedConnection implements HttpConnection<String> {
     }
 
     @Override
-    public Optional<String> connectToAndGet(String url) {
+    public Optional<String> connectToAndGet(HttpUrl url) {
         LOGGER.trace("Url: {}", url);
 
-        var optionalDocument = cache.get(url);
+        var optionalDocument = cache.get(url.toString());
         if (optionalDocument.isEmpty()) {
             LOGGER.trace("Cache miss for: {}", url);
             optionalDocument = connection.connectToAndGet(url);
-            optionalDocument.ifPresent(content -> cache.put(url, content));
+            optionalDocument.ifPresent(content -> cache.put(url.toString(), content));
         }
         return optionalDocument;
     }
 
     @Override
-    public Optional<String> connectToAndConsume(String url, Consumer<Request.Builder> action) {
+    public Optional<String> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
         LOGGER.trace("Url: {}", url);
         LOGGER.trace("Method currently does not rely on cache");
 
