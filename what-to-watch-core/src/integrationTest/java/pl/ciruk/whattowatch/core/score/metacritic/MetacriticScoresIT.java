@@ -14,18 +14,18 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MetacriticScoresIT {
+class MetacriticScoresIT {
     private MetacriticScores scores;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScore() {
+    void shouldRetrieveMeaningfulScore() {
         Title title = titleOfRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -37,7 +37,7 @@ public class MetacriticScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreWhenTitleCausesRedirects() {
+    void shouldRetrieveMeaningfulScoreWhenTitleCausesRedirects() {
         Title title = titleOfFilmCausingRedirects();
         Description description = Description.builder()
                 .title(title)
@@ -49,7 +49,7 @@ public class MetacriticScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreForTitleWithSpecialChars() {
+    void shouldRetrieveMeaningfulScoreForTitleWithSpecialChars() {
         Title title = Title.builder()
                 .title("T2: Trainspotting")
                 .year(2017)
@@ -64,7 +64,7 @@ public class MetacriticScoresIT {
     }
 
     @Test
-    public void shouldRetrieveMultipleScores() {
+    void shouldRetrieveMultipleScores() {
         Title title = titleOfRespectfulFilm();
         Description description = Description.builder()
                 .title(title)

@@ -117,8 +117,10 @@ public class MetacriticScores implements ScoresProvider {
         return getPage("search", "movie", title.asText(), "results");
     }
 
-    private Optional<Element> getPage(String... pathSegments) {
-        var builder = metacriticUrlBuilder();
+    private Optional<Element> getPage(String firstSegment, String... pathSegments) {
+        var builder = metacriticUrlBuilder()
+                .build()
+                .newBuilder(firstSegment);
         Arrays.stream(pathSegments).forEach(builder::addPathSegments);
         var url = builder.build();
         return connection.connectToAndGet(url);
