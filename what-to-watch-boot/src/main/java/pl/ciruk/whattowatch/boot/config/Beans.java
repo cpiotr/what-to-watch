@@ -17,7 +17,7 @@ import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
-import pl.ciruk.whattowatch.core.score.imdb.ImdbScores;
+import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
@@ -85,7 +85,7 @@ public class Beans {
 
     @Bean
     ScoresProvider imdbScores(@Cached HttpConnection<Element> httpConnection, ExecutorService executorService) {
-        return new ImdbScores(httpConnection, executorService);
+        return new ImdbScoresProvider(httpConnection, executorService);
     }
 
     @Bean

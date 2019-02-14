@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 import static pl.ciruk.whattowatch.core.score.imdb.ImdbSelectors.*;
 import static pl.ciruk.whattowatch.core.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEARCH_RESULT;
 
-public class ImdbScores implements ScoresProvider {
+public class ImdbScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
 
@@ -37,7 +37,7 @@ public class ImdbScores implements ScoresProvider {
 
     private final AtomicLong missingScores = new AtomicLong();
 
-    public ImdbScores(
+    public ImdbScoresProvider(
             HttpConnection<Element> httpConnection,
             ExecutorService executorService) {
         this.httpConnection = httpConnection;
