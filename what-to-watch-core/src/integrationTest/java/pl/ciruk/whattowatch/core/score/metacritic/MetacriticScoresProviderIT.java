@@ -14,14 +14,14 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MetacriticScoresIT {
-    private MetacriticScores scores;
+class MetacriticScoresProviderIT {
+    private MetacriticScoresProvider scores;
 
     @BeforeEach
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scores = new MetacriticScores(connection, Executors.newSingleThreadExecutor());
+        scores = new MetacriticScoresProvider(connection, Executors.newSingleThreadExecutor());
     }
 
     @Test

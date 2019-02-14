@@ -7,7 +7,7 @@ import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbScores;
-import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScores;
+import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
@@ -78,7 +78,7 @@ public class FilmSuggestionsIT {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
                 new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
-                new MetacriticScores(jsoupConnection, executorService),
+                new MetacriticScoresProvider(jsoupConnection, executorService),
                 new ImdbScores(jsoupConnection, executorService)
         );
     }

@@ -10,7 +10,7 @@ import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbScores;
-import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScores;
+import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestions;
@@ -108,7 +108,7 @@ public class WhatToWatchApplication {
         return List.of(
                 new FilmwebScores(new FilmwebProxy(connection), executorService),
                 new ImdbScores(connection, executorService),
-                new MetacriticScores(connection, executorService)
+                new MetacriticScoresProvider(connection, executorService)
         );
     }
 

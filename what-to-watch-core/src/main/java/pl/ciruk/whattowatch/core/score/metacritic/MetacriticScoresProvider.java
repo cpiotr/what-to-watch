@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
 
-public class MetacriticScores implements ScoresProvider {
+public class MetacriticScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final HttpConnection<Element> connection;
@@ -35,7 +35,7 @@ public class MetacriticScores implements ScoresProvider {
 
     private final AtomicLong missingNewYorkTimesScores = new AtomicLong();
 
-    public MetacriticScores(
+    public MetacriticScoresProvider(
             HttpConnection<Element> connection,
             ExecutorService executorService) {
         this.connection = connection;
