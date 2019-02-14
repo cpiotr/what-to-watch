@@ -9,7 +9,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import pl.ciruk.whattowatch.boot.WhatToWatchApplication;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
-import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
+import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
@@ -123,7 +123,7 @@ public class FilmSuggestionsBenchmark {
             ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScores(new FilmwebProxy(jsoupConnection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection), executorService),
                 new MetacriticScoresProvider(jsoupConnection, executorService),
                 new ImdbScoresProvider(jsoupConnection, executorService)
         );

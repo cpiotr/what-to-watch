@@ -15,15 +15,15 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilmwebScoresIT {
+public class FilmwebScoresProviderIT {
 
-    private FilmwebScores scores;
+    private FilmwebScoresProvider scores;
 
     @BeforeEach
     public void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scores = new FilmwebScores(
+        scores = new FilmwebScoresProvider(
                 new FilmwebProxy(connection),
                 Executors.newSingleThreadExecutor());
     }

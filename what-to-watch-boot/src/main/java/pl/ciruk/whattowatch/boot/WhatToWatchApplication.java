@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
-import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScores;
+import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
@@ -106,7 +106,7 @@ public class WhatToWatchApplication {
             ExecutorService executorService,
             JsoupConnection connection) {
         return List.of(
-                new FilmwebScores(new FilmwebProxy(connection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(connection), executorService),
                 new ImdbScoresProvider(connection, executorService),
                 new MetacriticScoresProvider(connection, executorService)
         );

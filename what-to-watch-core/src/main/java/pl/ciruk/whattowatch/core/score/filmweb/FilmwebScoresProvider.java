@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
-public class FilmwebScores implements ScoresProvider {
+public class FilmwebScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final FilmwebProxy filmwebProxy;
@@ -34,7 +34,7 @@ public class FilmwebScores implements ScoresProvider {
 
     private final AtomicLong missingScores = new AtomicLong();
 
-    public FilmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
+    public FilmwebScoresProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
         this.executorService = executorService;
 
