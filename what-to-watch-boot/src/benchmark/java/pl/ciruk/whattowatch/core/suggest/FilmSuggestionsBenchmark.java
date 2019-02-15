@@ -50,9 +50,9 @@ public class FilmSuggestionsBenchmark {
     private static final int NUMBER_OF_TITLES = 200;
     private static final int NUMBER_OF_THREADS = 16;
 
-    private FilmSuggestions suggestionsWorkStealing;
+    private FilmSuggestionProvider suggestionsWorkStealing;
 
-    private FilmSuggestions suggestionsFixedPool;
+    private FilmSuggestionProvider suggestionsFixedPool;
     private ExecutorService workStealingPool;
     private ExecutorService fixedPool;
 
@@ -61,7 +61,7 @@ public class FilmSuggestionsBenchmark {
         HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection();
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
-        suggestionsWorkStealing = new FilmSuggestions(
+        suggestionsWorkStealing = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, workStealingPool),
                 sampleScoreProviders(connection, workStealingPool),
@@ -70,7 +70,7 @@ public class FilmSuggestionsBenchmark {
         );
 
         fixedPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-        suggestionsFixedPool= new FilmSuggestions(
+        suggestionsFixedPool= new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, fixedPool),
                 sampleScoreProviders(connection, fixedPool),

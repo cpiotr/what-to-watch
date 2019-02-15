@@ -22,7 +22,6 @@ import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
-import pl.ciruk.whattowatch.core.suggest.FilmSuggestions;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
@@ -104,7 +103,7 @@ public class Beans {
             DescriptionProvider descriptionProvider,
             List<ScoresProvider> scoreProviders,
             ExecutorService executorService) {
-        return new FilmSuggestions(
+        return new FilmSuggestionProvider(
                 titleProvider,
                 descriptionProvider,
                 scoreProviders,

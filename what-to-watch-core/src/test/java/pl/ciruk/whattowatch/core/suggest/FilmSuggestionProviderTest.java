@@ -21,12 +21,12 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.*;
 
-class FilmSuggestionsTest {
+class FilmSuggestionProviderTest {
 
     private DescriptionProvider descriptionProvider;
     private ScoresProvider scoreProvider;
     private Map<Title, Film> cache;
-    private FilmSuggestions filmSuggestions;
+    private FilmSuggestionProvider filmSuggestionProvider;
     private Title title;
     private Description description;
 
@@ -47,7 +47,7 @@ class FilmSuggestionsTest {
                 .thenAnswer(ignored -> CompletableFuture.completedFuture(Stream.of(Score.critic(1.0, 100))));
 
         cache = new ConcurrentHashMap<>();
-        filmSuggestions = new FilmSuggestions(
+        filmSuggestionProvider = new FilmSuggestionProvider(
                 titleProvider,
                 descriptionProvider,
                 List.of(scoreProvider),
@@ -59,7 +59,7 @@ class FilmSuggestionsTest {
     void shouldNotSearchForFilmWhenCached() {
         cache.put(title, Film.builder().build());
 
-        CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
+        CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());
 
         verifyZeroInteractions(descriptionProvider);
@@ -68,7 +68,7 @@ class FilmSuggestionsTest {
 
     @Test
     void shouldSearchForFilm() {
-        CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
+        CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());
 
         verify(descriptionProvider).findDescriptionOfAsync(title);

@@ -32,17 +32,17 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilmSuggestionsIT {
+public class FilmSuggestionProviderIT {
     private static final int NUMBER_OF_TITLES = 50;
 
-    private FilmSuggestions suggestions;
+    private FilmSuggestionProvider suggestions;
     private ExecutorService pool;
 
     @BeforeEach
     public void setUp() {
         HtmlConnection htmlConnection = TestConnections.html();
         pool = Executors.newWorkStealingPool(32);
-        suggestions = new FilmSuggestions(
+        suggestions = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(htmlConnection, pool),
                 sampleScoreProviders(htmlConnection, pool),
@@ -88,7 +88,7 @@ public class FilmSuggestionsIT {
             List<Title> titles = reader.lines()
                     .limit(NUMBER_OF_TITLES)
                     .map(line -> line.split(";"))
-                    .map(FilmSuggestionsIT::buildTitle)
+                    .map(FilmSuggestionProviderIT::buildTitle)
                     .collect(toList());
             return (int pageNumber) -> titles.stream();
         } catch (IOException e) {

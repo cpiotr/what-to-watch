@@ -13,7 +13,7 @@ import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
-import pl.ciruk.whattowatch.core.suggest.FilmSuggestions;
+import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
@@ -52,7 +52,7 @@ public class WhatToWatchApplication {
         CacheProvider<String> cache = createJedisCache(jedisPool);
         JsoupConnection connection = createJsoupConnection(cache);
 
-        FilmSuggestions suggestions = new FilmSuggestions(
+        FilmSuggestionProvider suggestions = new FilmSuggestionProvider(
                 sampleTitleProvider(),
                 sampleDescriptionProvider(threadPool, connection),
                 sampleScoreProviders(threadPool, connection),
