@@ -59,6 +59,7 @@ public class Suggestions {
             var films = responseTimer.record(() -> findSuggestions(pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
+            LOGGER.info("Finished providing suggestions for page {}", pageNumber);
         } catch (Exception e) {
             LOGGER.error("Error while getting suggestions", e);
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
