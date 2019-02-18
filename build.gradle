@@ -2,9 +2,13 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9")
     }
 }
 
@@ -14,6 +18,7 @@ allprojects {
     version "${version != 'unspecified' ? version : 'SNAPSHOT'}"
 
     apply plugin: 'pmd'
+//    apply plugin: "com.github.spotbugs"
 
     repositories {
         mavenCentral()
