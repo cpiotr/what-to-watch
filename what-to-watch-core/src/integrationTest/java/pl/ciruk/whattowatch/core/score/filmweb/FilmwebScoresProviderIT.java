@@ -52,6 +52,21 @@ public class FilmwebScoresProviderIT {
         assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
     }
 
+    @Test
+    public void shouldRetrieveMeaningfulScoreOfRecentFilmByOriginalTitle() {
+        Title title = Title.builder()
+                .originalTitle("How to Train Your Dragon: The Hidden World")
+                .year(2019)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scores = this.scores.findScoresBy(description);
+
+        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+    }
+
     private Title titleOfRecentAndRespectfulFilm() {
         return Title.builder()
                 .originalTitle("La La Land")

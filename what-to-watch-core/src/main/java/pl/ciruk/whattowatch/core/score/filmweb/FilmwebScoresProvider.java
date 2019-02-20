@@ -76,12 +76,14 @@ public class FilmwebScoresProvider implements ScoresProvider {
 
     private Title extractTitle(Element result) {
         var title = FilmwebSelectors.TITLE_FROM_SEARCH_RESULT.extractFrom(result).orElse("");
+        var originalTtitle = FilmwebSelectors.ORIGINAL_TITLE_FROM_SEARCH_RESULT.extractFrom(result).orElse("");
         var year = FilmwebSelectors.YEAR_FROM_SEARCH_RESULT.extractFrom(result)
                 .filter(not(String::isEmpty))
                 .map(Integer::parseInt)
                 .orElse(0);
         return Title.builder()
                 .title(title)
+                .originalTitle(originalTtitle)
                 .year(year)
                 .build();
     }

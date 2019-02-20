@@ -16,6 +16,10 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
             .stream()
             .map(Element::text)
             .findFirst()),
+    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> result.select(".filmPreview__originalTitle")
+            .stream()
+            .map(Element::text)
+            .findFirst()),
     YEAR_FROM_SEARCH_RESULT(result -> result.select(".filmPreview__year")
             .stream()
             .map(Element::text)
