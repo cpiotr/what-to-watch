@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -19,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class FilmSuggestionProviderTest {
@@ -59,8 +61,9 @@ class FilmSuggestionProviderTest {
     void shouldNotSearchForFilmWhenCached() {
         cache.put(title, Film.builder().build());
 
-        CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
+        List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());
+        assertThat(films).isNotEmpty();
 
         verifyZeroInteractions(descriptionProvider);
         verifyZeroInteractions(scoreProvider);
@@ -68,8 +71,9 @@ class FilmSuggestionProviderTest {
 
     @Test
     void shouldSearchForFilm() {
-        CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
+        List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());
+        assertThat(films).isNotEmpty();
 
         verify(descriptionProvider).findDescriptionOfAsync(title);
         verify(scoreProvider).findScoresByAsync(description);

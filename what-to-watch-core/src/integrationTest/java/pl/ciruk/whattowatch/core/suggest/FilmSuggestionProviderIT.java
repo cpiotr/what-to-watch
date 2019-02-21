@@ -32,14 +32,14 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilmSuggestionProviderIT {
+class FilmSuggestionProviderIT {
     private static final int NUMBER_OF_TITLES = 50;
 
     private FilmSuggestionProvider suggestions;
     private ExecutorService pool;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         HtmlConnection htmlConnection = TestConnections.html();
         pool = Executors.newWorkStealingPool(32);
         suggestions = new FilmSuggestionProvider(
@@ -52,7 +52,7 @@ public class FilmSuggestionProviderIT {
     }
 
     @Test
-    public void shouldSuggestAllFilmsFromSampleTitleProvider() {
+    void shouldSuggestAllFilmsFromSampleTitleProvider() {
         Stream<Film> films = CompletableFutures.getAllOf(
                 suggestions.suggestFilms(1));
         int numberOfFilms = (int) films
@@ -64,7 +64,7 @@ public class FilmSuggestionProviderIT {
     }
 
     @AfterEach
-    public void cleanUp() throws InterruptedException {
+    void cleanUp() throws InterruptedException {
         pool.shutdown();
         pool.awaitTermination(1, TimeUnit.SECONDS);
     }

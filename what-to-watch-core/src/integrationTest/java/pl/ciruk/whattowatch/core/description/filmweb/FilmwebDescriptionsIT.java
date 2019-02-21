@@ -12,12 +12,12 @@ import java.util.concurrent.Executors;
 
 import static pl.ciruk.whattowatch.core.description.DescriptionAssert.assertThat;
 
-public class FilmwebDescriptionsIT {
+class FilmwebDescriptionsIT {
 
     private FilmwebDescriptions descriptions;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptions(
                 new FilmwebProxy(connection),
@@ -25,7 +25,7 @@ public class FilmwebDescriptionsIT {
     }
 
     @Test
-    public void shouldResolveRamboTitleToFirstBlood() {
+    void shouldResolveRamboTitleToFirstBlood() {
         Title title = Title.builder().title("Rambo").year(1982).build();
 
         Description description = descriptions.findDescriptionBy(title)
@@ -35,7 +35,7 @@ public class FilmwebDescriptionsIT {
     }
 
     @Test
-    public void shouldResolveRecentTitle() {
+    void shouldResolveRecentTitle() {
         Title title = Title.builder().title("A United Kingdom").year(2016).build();
 
         Description description = descriptions.findDescriptionBy(title)
@@ -45,7 +45,7 @@ public class FilmwebDescriptionsIT {
     }
 
     @Test
-    public void shouldResolveTitleWhenYearIsOffByOne() {
+    void shouldResolveTitleWhenYearIsOffByOne() {
         Title title = Title.builder().title("He's out there").year(2017).build();
 
         Description description = descriptions.findDescriptionBy(title)
@@ -55,7 +55,7 @@ public class FilmwebDescriptionsIT {
     }
 
     @Test
-    public void shouldResolveDescriptionFromOriginalTitle() {
+    void shouldResolveDescriptionFromOriginalTitle() {
         Title title = Title.builder().title("Pasażer - HD").originalTitle("The Commuter").year(2018).build();
 
         Description description = descriptions.findDescriptionBy(title)

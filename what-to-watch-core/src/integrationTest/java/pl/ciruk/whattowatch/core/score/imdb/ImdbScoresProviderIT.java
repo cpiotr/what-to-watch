@@ -15,18 +15,18 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ImdbScoresProviderIT {
+class ImdbScoresProviderIT {
     private ScoresProvider scores;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new ImdbScoresProvider(connection, Executors.newSingleThreadExecutor());
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfOldFilm() {
+    void shouldRetrieveMeaningfulScoreOfOldFilm() {
         Title title = titleOfOldAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -38,7 +38,7 @@ public class ImdbScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfRecentFilm() {
+    void shouldRetrieveMeaningfulScoreOfRecentFilm() {
         Title title = titleOfRecentAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -50,7 +50,7 @@ public class ImdbScoresProviderIT {
     }
 
     @Test
-    public void shouldCheckOnlyFirstTitleFromSearchResults() {
+    void shouldCheckOnlyFirstTitleFromSearchResults() {
         Title title = Title.builder().originalTitle("Hidden").year(2015).build();
         Description description = Description.builder()
                 .title(title)
@@ -62,7 +62,7 @@ public class ImdbScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfFilmWithSpecialCharsInTitle() {
+    void shouldRetrieveMeaningfulScoreOfFilmWithSpecialCharsInTitle() {
         Title title = Title.builder()
                 .originalTitle("Radin!")
                 .year(2016)
@@ -77,7 +77,7 @@ public class ImdbScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfPolishFilm() {
+    void shouldRetrieveMeaningfulScoreOfPolishFilm() {
         Title title = Title.builder()
                 .originalTitle("Powidoki")
                 .title("Powidoki")
@@ -93,7 +93,7 @@ public class ImdbScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfDocumentary() {
+    void shouldRetrieveMeaningfulScoreOfDocumentary() {
         Title title = Title.builder()
                 .originalTitle("Life, animated")
                 .year(2016)

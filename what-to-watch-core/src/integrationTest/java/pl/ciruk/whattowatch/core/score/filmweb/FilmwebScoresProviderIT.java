@@ -15,12 +15,12 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilmwebScoresProviderIT {
+class FilmwebScoresProviderIT {
 
     private FilmwebScoresProvider scores;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new FilmwebScoresProvider(
@@ -29,7 +29,7 @@ public class FilmwebScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScore() {
+    void shouldRetrieveMeaningfulScore() {
         Title title = titleOfOldAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -41,7 +41,7 @@ public class FilmwebScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfRecentFilm() {
+    void shouldRetrieveMeaningfulScoreOfRecentFilm() {
         Title title = titleOfRecentAndRespectfulFilm();
         Description description = Description.builder()
                 .title(title)
@@ -53,7 +53,7 @@ public class FilmwebScoresProviderIT {
     }
 
     @Test
-    public void shouldRetrieveMeaningfulScoreOfRecentFilmByOriginalTitle() {
+    void shouldRetrieveMeaningfulScoreOfRecentFilmByOriginalTitle() {
         Title title = Title.builder()
                 .originalTitle("How to Train Your Dragon: The Hidden World")
                 .year(2019)

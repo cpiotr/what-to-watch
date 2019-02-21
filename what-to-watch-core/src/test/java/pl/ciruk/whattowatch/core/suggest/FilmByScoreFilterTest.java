@@ -17,7 +17,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class FilmByScoreFilterTest {
-
     @Test
     void shouldAcceptScoreAboveThreshold() {
         FilmByScoreFilter filter = new FilmByScoreFilter(0.35);
@@ -33,6 +32,7 @@ class FilmByScoreFilterTest {
     @Test
     void shouldLogScoreWhenMissedBySmallMargin() {
         Logger logger = (Logger) LoggerFactory.getLogger(FilmByScoreFilter.class);
+        @SuppressWarnings("unchecked")
         Appender<ILoggingEvent> appender = mock(Appender.class);
         logger.addAppender(appender);
 
