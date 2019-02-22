@@ -73,7 +73,7 @@ public class Score {
                 "grade=" + this.getGrade() + ", " +
                 "quantity=" + this.getQuantity() + ", " +
                 "source=" + this.getSource() + ", " +
-                "type=" + this.getType() +
+                "type=" + this.getType() + ", " +
                 "url=" + this.getUrl() +
                 ")";
     }
