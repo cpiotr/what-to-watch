@@ -1,4 +1,4 @@
-FROM openjdk:11-slim
+FROM openjdk:11.0.2-slim
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
