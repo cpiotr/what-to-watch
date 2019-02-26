@@ -24,13 +24,14 @@ import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
-import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
@@ -56,14 +57,11 @@ public class Beans {
     @Bean
     ExecutorService executorService() {
         String threadPrefix = "WhatToWatch";
-        ExecutorService threadPoolExecutor = new ThreadPoolExecutor(
+        ExecutorService threadPoolExecutor = new ForkJoinPool(
                 filmPoolSize,
-                filmPoolSize,
-                0,
-                TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(10_000),
-                Threads.createThreadFactory(threadPrefix));
-
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                (thread, exception) -> LOGGER.info("[{}] Uncaught exception", thread.getName(), exception),
+                true);
         return ExecutorServiceMetrics.monitor(Metrics.globalRegistry, threadPoolExecutor, threadPrefix);
     }
 

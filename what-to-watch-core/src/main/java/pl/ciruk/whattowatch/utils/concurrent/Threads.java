@@ -7,8 +7,10 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class Threads {
@@ -36,9 +38,50 @@ public final class Threads {
                 Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                 thread.setName(threadNamePrefix + "-" + counter.incrementAndGet());
                 thread.setDaemon(true);
-                thread.setUncaughtExceptionHandler((t, throwable) -> LOGGER.error("Uncaught exception in {}", t, throwable));
+                thread.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
                 return thread;
             }
         };
+    }
+
+    public static Thread.UncaughtExceptionHandler createUncaughtExceptionHandler() {
+        return (thread, throwable) -> LOGGER.error("[{}] Uncaught exception", thread.getName(), throwable);
+    }
+
+    public static <T> T manageBlocking(Supplier<T> supplier) {
+        SupplierManagedBlock<T> managedBlock = new SupplierManagedBlock<>(supplier);
+        try {
+            ForkJoinPool.managedBlock(managedBlock);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
+        return managedBlock.getResult();
+    }
+
+    private static class SupplierManagedBlock<T> implements ForkJoinPool.ManagedBlocker {
+        private final Supplier<T> supplier;
+        private T result;
+        private boolean finished;
+
+        private SupplierManagedBlock(final Supplier<T> supplier) {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public boolean block() {
+            result = supplier.get();
+            finished = true;
+            return true;
+        }
+
+        @Override
+        public boolean isReleasable() {
+            return finished;
+        }
+
+        public T getResult() {
+            return result;
+        }
     }
 }

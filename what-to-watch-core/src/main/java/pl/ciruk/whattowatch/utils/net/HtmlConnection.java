@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Timer;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class HtmlConnection implements HttpConnection<String> {
     private Response executeRequest(Request request) throws IOException {
         try {
             return executeOrWait(request);
-        } catch (SocketTimeoutException e) {
+        } catch (RetryableException e) {
             return executeOrWait(request);
         }
     }
@@ -103,16 +104,19 @@ public class HtmlConnection implements HttpConnection<String> {
             backOffFunction.accept(errorsValue);
         }
 
-        try {
-            Response response = okHttpClient.newCall(request).execute();
-            if (errorsValue > 0) {
-                errors.decrementAndGet();
+        return Threads.manageBlocking(() -> {
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                errors.set(0);
+                return response;
+            } catch (SocketTimeoutException e) {
+                errors.incrementAndGet();
+                throw new RetryableException(e);
+            } catch (IOException e) {
+                errors.incrementAndGet();
+                throw new NonRetryableException(e);
             }
-            return response;
-        } catch (IOException e) {
-            errors.incrementAndGet();
-            throw e;
-        }
+        });
     }
 
     private Request.Builder buildRequestTo(HttpUrl url) {
@@ -128,5 +132,16 @@ public class HtmlConnection implements HttpConnection<String> {
         long waitTimeMillis = (long) (exponential * 100);
         LOGGER.debug("Waiting {} ms", waitTimeMillis);
         LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(waitTimeMillis));
+    }
+
+    static class RetryableException extends RuntimeException {
+        RetryableException(Throwable cause) {
+            super(cause);
+        }
+    }
+    static class NonRetryableException extends RuntimeException {
+        public NonRetryableException(Throwable cause) {
+            super(cause);
+        }
     }
 }
