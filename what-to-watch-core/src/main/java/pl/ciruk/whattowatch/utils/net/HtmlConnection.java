@@ -63,7 +63,7 @@ public class HtmlConnection implements HttpConnection<String> {
                     .filter(Response::isSuccessful)
                     .map(Response::body)
                     .flatMap(responseBody -> extractBodyAsString(responseBody, url));
-        } catch (IOException e) {
+        } catch (RuntimeException e) {
             LOGGER.warn("Could not get {}", url, e);
             return Optional.empty();
         }
@@ -78,16 +78,19 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    private Response execute(Request.Builder requestBuilder) throws IOException {
+    @SuppressWarnings("PMD.AvoidRethrowingException")
+    private Response execute(Request.Builder requestBuilder) {
         var request = requestBuilder.build();
         try {
             return requestsTimer.recordCallable(() -> executeRequest(request));
+        } catch (HtmlConnectionException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IOException(e);
+            throw new AssertionError(e);
         }
     }
 
-    private Response executeRequest(Request request) throws IOException {
+    private Response executeRequest(Request request) {
         try {
             return executeOrWait(request);
         } catch (RetryableException e) {
@@ -95,7 +98,7 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    private Response executeOrWait(Request request) throws IOException {
+    private Response executeOrWait(Request request) {
         String domain = request.url().topPrivateDomain();
         AtomicInteger errors = errorsByDomain.computeIfAbsent(domain, key -> new AtomicInteger());
         int errorsValue = errors.get();
@@ -120,11 +123,13 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Request.Builder buildRequestTo(HttpUrl url) {
+        HttpUrl referer = Optional.ofNullable(url.resolve("/"))
+                .orElse(url);
         return new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", UserAgents.next())
                 .addHeader("Accept-Language", "en-US")
-                .addHeader("Referer", url.resolve("/").toString());
+                .addHeader("Referer", referer.toString());
     }
 
     private static void backOff(int errorsValue) {
@@ -134,13 +139,20 @@ public class HtmlConnection implements HttpConnection<String> {
         LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(waitTimeMillis));
     }
 
-    static class RetryableException extends RuntimeException {
+    static class HtmlConnectionException extends RuntimeException {
+        HtmlConnectionException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    static class RetryableException extends HtmlConnectionException {
         RetryableException(Throwable cause) {
             super(cause);
         }
     }
-    static class NonRetryableException extends RuntimeException {
-        public NonRetryableException(Throwable cause) {
+
+    static class NonRetryableException extends HtmlConnectionException {
+        NonRetryableException(Throwable cause) {
             super(cause);
         }
     }
