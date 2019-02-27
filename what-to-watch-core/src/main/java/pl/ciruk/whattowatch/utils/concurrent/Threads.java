@@ -64,7 +64,7 @@ public final class Threads {
         private T result;
         private boolean finished;
 
-        private SupplierManagedBlock(final Supplier<T> supplier) {
+        private SupplierManagedBlock(Supplier<T> supplier) {
             this.supplier = supplier;
         }
 
@@ -80,7 +80,7 @@ public final class Threads {
             return finished;
         }
 
-        public T getResult() {
+        T getResult() {
             return result;
         }
     }

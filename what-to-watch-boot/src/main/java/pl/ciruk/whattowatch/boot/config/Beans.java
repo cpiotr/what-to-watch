@@ -24,6 +24,7 @@ import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
+import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import javax.annotation.PostConstruct;
@@ -60,8 +61,9 @@ public class Beans {
         ExecutorService threadPoolExecutor = new ForkJoinPool(
                 filmPoolSize,
                 ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-                (thread, exception) -> LOGGER.info("[{}] Uncaught exception", thread.getName(), exception),
+                Threads.createUncaughtExceptionHandler(),
                 true);
+        Threads.setThreadNamePrefix(threadPrefix, threadPoolExecutor);
         return ExecutorServiceMetrics.monitor(Metrics.globalRegistry, threadPoolExecutor, threadPrefix);
     }
 
