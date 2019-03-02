@@ -70,12 +70,12 @@ public class ImdbScoresProvider implements ScoresProvider {
                 .addQueryParameter("title_type", "feature,tv_movie,documentary")
                 .build();
 
-        var firstResult = httpConnection.connectToAndGet(url.toString())
+        var firstResult = httpConnection.connectToAndGet(url)
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (firstResult.isEmpty()) {
             LOGGER.warn("Missing score for {}", description);
-            LOGGER.trace("Search query: {}", url.toString());
+            LOGGER.trace("Search query: {}", url);
             missingScores.incrementAndGet();
         }
 

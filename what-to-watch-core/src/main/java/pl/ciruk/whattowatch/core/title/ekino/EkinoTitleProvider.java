@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.title.ekino;
 
 import io.micrometer.core.instrument.Metrics;
+import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +42,6 @@ public class EkinoTitleProvider implements TitleProvider {
         logConfiguration();
     }
 
-    private void logConfiguration() {
-        LOGGER.info("Pages per request: {}", pagesPerRequest);
-    }
-
     @Override
     public Stream<Title> streamOfTitles(int pageNumber) {
         LOGGER.debug("Page number: {}", pageNumber);
@@ -58,12 +55,17 @@ public class EkinoTitleProvider implements TitleProvider {
                 .peek(ignored -> numberOfTitles.incrementAndGet());
     }
 
-    private Stream<String> generatePageUrlsForRequest(int requestNumber) {
+    private void logConfiguration() {
+        LOGGER.info("Pages per request: {}", pagesPerRequest);
+    }
+
+    private Stream<HttpUrl> generatePageUrlsForRequest(int requestNumber) {
         int startFromPage = (requestNumber - 1) * pagesPerRequest;
         LOGGER.debug("Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
         return IntStream.range(startFromPage, startFromPage + pagesPerRequest)
                 .boxed()
-                .map(index -> String.format(TITLES_PAGE_PATTERN, index));
+                .map(index -> String.format(TITLES_PAGE_PATTERN, index))
+                .map(HttpUrl::get);
     }
 
     private Title parseToTitle(Element linkToTitle) {

@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.utils.net;
 
 import okhttp3.Call;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ class HtmlConnectionTest {
 
     private void connectToAndGet(String invalidUrl) {
         try {
-            connection.connectToAndGet(invalidUrl);
+            connection.connectToAndGet(HttpUrl.get(invalidUrl));
         } catch (Exception e) {
             LOGGER.debug("Expected", e);
         }

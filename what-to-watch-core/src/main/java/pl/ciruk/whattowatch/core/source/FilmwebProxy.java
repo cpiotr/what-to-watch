@@ -24,9 +24,7 @@ public class FilmwebProxy {
                 .addQueryParameter("endYear", String.valueOf(next(year)))
                 .build();
 
-        return Optional.of(url)
-                .map(Object::toString)
-                .flatMap(connection::connectToAndGet);
+        return connection.connectToAndGet(url);
     }
 
     public Optional<Element> getPageWithFilmDetailsFor(String href) {
