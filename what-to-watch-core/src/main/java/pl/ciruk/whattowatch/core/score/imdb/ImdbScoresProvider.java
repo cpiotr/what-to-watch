@@ -17,7 +17,6 @@ import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -81,12 +80,6 @@ public class ImdbScoresProvider implements ScoresProvider {
 
         return firstResult.stream()
                 .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
-    }
-
-    private static HttpUrl.Builder createUrlBuilder() {
-        return new HttpUrl.Builder()
-                .scheme("https")
-                .host("www.imdb.com");
     }
 
     private Optional<Element> findFirstResult(Element searchResults, Description description) {
@@ -169,5 +162,11 @@ public class ImdbScoresProvider implements ScoresProvider {
 
     private double asPercentage(double imdbRating) {
         return imdbRating / MAX_IMDB_SCORE;
+    }
+
+    private static HttpUrl.Builder createUrlBuilder() {
+        return new HttpUrl.Builder()
+                .scheme("https")
+                .host("www.imdb.com");
     }
 }
