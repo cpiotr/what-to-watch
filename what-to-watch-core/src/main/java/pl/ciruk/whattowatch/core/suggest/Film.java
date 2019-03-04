@@ -117,9 +117,6 @@ public class Film {
             return false;
         }
         Film other = (Film) object;
-        if (!other.canEqual(this)) {
-            return false;
-        }
         final Object thisDescription = this.getDescription();
         final Object otherDescription = other.getDescription();
         return Objects.equals(thisDescription, otherDescription);
@@ -131,10 +128,6 @@ public class Film {
         var description = this.getDescription();
         result = result * 59 + (description == null ? 43 : description.hashCode());
         return result;
-    }
-
-    private boolean canEqual(Object other) {
-        return other instanceof Film;
     }
 
     public static class FilmBuilder {

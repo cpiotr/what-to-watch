@@ -14,12 +14,12 @@ public class Bootstrap {
 
     private final FilmSuggestionProvider filmSuggestions;
 
-    public Bootstrap(FilmSuggestionProvider filmSuggestions) {
+    Bootstrap(FilmSuggestionProvider filmSuggestions) {
         this.filmSuggestions = filmSuggestions;
     }
 
     @PostConstruct
-    protected void onStartup() {
+    void onStartup() {
         LOGGER.info("Startup processing");
 
         long numberOfFilms = filmSuggestions.suggestFilms(1)

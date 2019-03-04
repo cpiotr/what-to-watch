@@ -3,7 +3,7 @@ package pl.ciruk.whattowatch.utils.text;
 public class NumberToken {
     private final String value;
 
-    public NumberToken(String value) {
+    NumberToken(String value) {
         this.value = value.replaceAll(",", ".")
                 .replaceAll("[\\p{Z}\\p{Zs}\\s]", "");
     }
@@ -33,10 +33,6 @@ public class NumberToken {
         } catch (NumberFormatException e) {
             return -1L;
         }
-    }
-
-    public String asString() {
-        return value;
     }
 
     private boolean isFraction() {

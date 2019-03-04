@@ -11,10 +11,6 @@ public final class Names {
         throw new AssertionError();
     }
 
-    public static String createName(Class<?> clazz) {
-        return createName(clazz, List.of());
-    }
-
     public static <T> String createName(Class<?> clazz, T tag) {
         return createName(clazz, List.of(tag));
     }

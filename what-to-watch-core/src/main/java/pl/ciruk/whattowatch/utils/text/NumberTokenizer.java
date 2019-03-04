@@ -65,11 +65,11 @@ public class NumberTokenizer {
         return hasPrevious() && isDigit(previous());
     }
 
-    boolean hasPrevious() {
+    private boolean hasPrevious() {
         return index > 0;
     }
 
-    char previous() {
+    private char previous() {
         return input.charAt(index - 1);
     }
 }

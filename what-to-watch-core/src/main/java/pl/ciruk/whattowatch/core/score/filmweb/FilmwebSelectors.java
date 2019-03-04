@@ -25,10 +25,6 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
             .map(Element::text)
             .map(year -> year.replaceAll("\\W", ""))
             .findFirst()),
-    SCORE_FROM_SEARCH_RESULT(result -> result.select(".rateInfo .box")
-            .stream()
-            .map(Element::text)
-            .findFirst()),
     SCORE_FROM_DETAILS(details -> extractScoreFromText(details.toString()));
 
     private final Function<Element, Optional<String>> extractor;
