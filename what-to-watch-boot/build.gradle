@@ -37,8 +37,6 @@ benchmark {
 }
 
 dependencies {
-    runtime("org.springframework.boot:spring-boot-properties-migrator")
-
     compile "org.springframework.boot:spring-boot-starter-actuator"
     runtime "io.micrometer:micrometer-registry-prometheus"
 
