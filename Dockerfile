@@ -27,9 +27,9 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-XX:ReservedCodeCacheSize=128m \
 	-XX:-UseBiasedLocking \
 	-XX:+PreserveFramePointer \
-	-XX:+IgnoreUnrecognizedVMOptions \
 	-XX:+UnlockExperimentalVMOptions \
-	-XX:+UseJVMCICompiler \
+	-XX:+UseZGC \
+	-XX:+UseNUMA \
 	-Xlog:gc:stdout:time"
 
 COPY ./ /what-to-watch/
