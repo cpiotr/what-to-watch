@@ -11,18 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import pl.ciruk.whattowatch.boot.cache.*;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.net.CachedConnection;
 import pl.ciruk.whattowatch.utils.net.HtmlConnection;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
@@ -107,37 +102,24 @@ public class Connections {
     }
 
     @Bean
-    @Primary
-    StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        return new StringRedisTemplate(redisConnectionFactory);
-    }
-
-    @Bean
-    RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHost);
-
+    JedisPool redisConnectionPool() {
         var poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(redisPoolMaxActive);
         poolConfig.setMaxWaitMillis(1_000);
         poolConfig.setMinEvictableIdleTimeMillis(100);
-        var jedisClientConfiguration = JedisClientConfiguration.builder()
-                .usePooling()
-                .poolConfig(poolConfig)
-                .build();
-
-        return new JedisConnectionFactory(redisStandaloneConfiguration, jedisClientConfiguration);
+        return new JedisPool(poolConfig, redisHost);
     }
 
     @Bean
     @LongExpiry
-    CacheProvider<String> longExpiryCache(StringRedisTemplate redisTemplate, CircuitBreaker circuitBreaker) {
-        return new RedisCache(redisTemplate, longExpiryInterval, longExpiryUnit, circuitBreaker);
+    CacheProvider<String> longExpiryCache(JedisPool jedisPool, CircuitBreaker circuitBreaker) {
+        return new RedisCache(jedisPool, longExpiryInterval, longExpiryUnit, circuitBreaker);
     }
 
     @Bean
     @ShortExpiry
-    CacheProvider<String> shortExpiryCache(StringRedisTemplate redisTemplate, CircuitBreaker circuitBreaker) {
-        return new RedisCache(redisTemplate, shortExpiryInterval, shortExpiryUnit, circuitBreaker);
+    CacheProvider<String> shortExpiryCache(JedisPool jedisPool, CircuitBreaker circuitBreaker) {
+        return new RedisCache(jedisPool, shortExpiryInterval, shortExpiryUnit, circuitBreaker);
     }
 
     @Bean
