@@ -1,4 +1,8 @@
 # what-to-watch
+## Building 
+```
+./gradlew clean build
+```
 
 ## Running
 ```
