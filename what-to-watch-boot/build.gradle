@@ -37,8 +37,7 @@ benchmark {
 }
 
 dependencies {
-    compile "org.springframework.boot:spring-boot-starter-actuator"
-    runtime "io.micrometer:micrometer-registry-prometheus"
+    runtime "io.micrometer:micrometer-registry-jmx"
 
     compile "org.springframework.boot:spring-boot-starter-jersey"
     compile "org.springframework.boot:spring-boot-starter-web"
