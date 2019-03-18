@@ -15,9 +15,7 @@ public class FilmwebProxy {
     }
 
     public Optional<Element> searchFor(String title, int year) {
-        var url = new HttpUrl.Builder()
-                .scheme("https")
-                .host(HOST)
+        var url = createHttpBuilder()
                 .addPathSegment("search/film")
                 .addQueryParameter("q", title)
                 .addQueryParameter("startYear", String.valueOf(previous(year)))
@@ -34,18 +32,22 @@ public class FilmwebProxy {
     }
 
     public HttpUrl resolveLink(String href) {
-        return new HttpUrl.Builder()
-                .scheme("http")
-                .host(HOST)
+        return createHttpBuilder()
                 .build()
                 .resolve(href);
     }
 
+    private static HttpUrl.Builder createHttpBuilder() {
+        return new HttpUrl.Builder()
+                .scheme("https")
+                .host(HOST);
+    }
+
     private static int next(int year) {
-        return year+1;
+        return year + 1;
     }
 
     private static int previous(int year) {
-        return year-1;
+        return year - 1;
     }
 }

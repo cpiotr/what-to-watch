@@ -29,8 +29,6 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
             .map(Element::text)
             .findFirst()),;
 
-    public static final String ROOT_URL = "http://filmweb.pl";
-
     private final Function<Element, Optional<String>> extractor;
 
     FilmwebSelectors(Function<Element, Optional<String>> extractor) {
