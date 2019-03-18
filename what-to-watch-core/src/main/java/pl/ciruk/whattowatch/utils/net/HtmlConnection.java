@@ -115,7 +115,7 @@ public class HtmlConnection implements HttpConnection<String> {
             } catch (SocketTimeoutException e) {
                 errors.incrementAndGet();
                 throw new RetryableException(e);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 errors.incrementAndGet();
                 throw new NonRetryableException(e);
             }
