@@ -13,8 +13,8 @@ jar {
     baseName = 'what-to-watch-boot'
 }
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+sourceCompatibility = 1.12
+targetCompatibility = 1.12
 
 repositories {
     mavenCentral()

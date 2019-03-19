@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.suggest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
@@ -11,16 +12,12 @@ import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
+import pl.ciruk.whattowatch.utils.Resources;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.net.HtmlConnection;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +30,7 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FilmSuggestionProviderIT {
-    private static final int NUMBER_OF_TITLES = 50;
+    private static final int NUMBER_OF_TITLES = 25;
 
     private FilmSuggestionProvider suggestions;
     private ExecutorService pool;
@@ -53,14 +50,21 @@ class FilmSuggestionProviderIT {
 
     @Test
     void shouldSuggestAllFilmsFromSampleTitleProvider() {
+        List<String> expectedTitles = provideTitlesFromResource().streamOfTitles(1)
+                .map(Title::asText)
+                .collect(toList());
+
         Stream<Film> films = CompletableFutures.getAllOf(
                 suggestions.suggestFilms(1));
-        int numberOfFilms = (int) films
+        List<String> titles = films
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
-                .count();
+                .map(Film::getDescription)
+                .map(Description::getTitle)
+                .map(Title::asText)
+                .collect(toList());
 
-        assertThat(numberOfFilms).isEqualTo(NUMBER_OF_TITLES);
+        assertThat(titles).containsOnlyElementsOf(expectedTitles);
     }
 
     @AfterEach
@@ -84,16 +88,13 @@ class FilmSuggestionProviderIT {
     }
 
     private static TitleProvider provideTitlesFromResource() {
-        try (InputStream inputStream = getResourceAsStream(); BufferedReader reader = createReader(inputStream)) {
-            List<Title> titles = reader.lines()
-                    .limit(NUMBER_OF_TITLES)
-                    .map(line -> line.split(";"))
-                    .map(FilmSuggestionProviderIT::buildTitle)
-                    .collect(toList());
-            return (int pageNumber) -> titles.stream();
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
+        List<Title> titles = Resources.readContentOf("films-with-my-scores.csv")
+                .lines()
+                .limit(NUMBER_OF_TITLES)
+                .map(line -> line.split(";"))
+                .map(FilmSuggestionProviderIT::buildTitle)
+                .collect(toList());
+        return (int pageNumber) -> titles.stream();
     }
 
     private static Title buildTitle(String[] array) {
@@ -102,13 +103,5 @@ class FilmSuggestionProviderIT {
                 .originalTitle(array[1])
                 .year(Integer.parseInt(array[2]))
                 .build();
-    }
-
-    private static InputStream getResourceAsStream() {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream("films-with-my-scores.csv");
-    }
-
-    private static BufferedReader createReader(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
     }
 }

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -130,8 +131,9 @@ public class FilmSuggestionsBenchmark {
     }
 
     private static TitleProvider provideTitlesFromResource() {
-        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("films.csv");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        try (InputStream inputStream = classLoader.getResourceAsStream("films.csv");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             List<Title> titles = reader.lines()
                     .limit(NUMBER_OF_TITLES)
                     .map(line -> line.split(";"))

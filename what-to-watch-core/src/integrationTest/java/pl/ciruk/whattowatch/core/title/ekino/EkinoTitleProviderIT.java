@@ -20,8 +20,7 @@ class EkinoTitleProviderIT {
     }
 
     @Test
-    void shouldFetchTitlesForValidUser() {
-
+    void shouldProvideCollectionOfTitles() {
         Stream<Title> titles = provider.streamOfTitles(1);
 
         assertThat(titles).isNotEmpty();

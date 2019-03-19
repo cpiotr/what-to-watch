@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.utils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -13,7 +14,7 @@ public final class Resources {
         try {
             var url = Resources.class.getClassLoader().getResource(resourceName);
             var uri = Objects.requireNonNull(url).toURI();
-            return Files.readString(Paths.get(uri), Charset.defaultCharset());
+            return Files.readString(Paths.get(uri), StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException e) {
             throw new AssertionError(e);
         }

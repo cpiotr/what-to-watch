@@ -1,4 +1,4 @@
-FROM openjdk:11.0.2-slim
+FROM openjdk:12-oracle
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
@@ -34,7 +34,7 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 
 COPY ./ /what-to-watch/
 WORKDIR /what-to-watch
-RUN sh -c './gradlew clean build -Pversion=$W2W_VERSION'
+RUN sh -c './gradlew clean build -Pversion=$W2W_VERSION -i --stacktrace'
 RUN sh -c 'ls -al ./what-to-watch-boot/build/libs/'
 
 EXPOSE 8080
