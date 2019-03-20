@@ -21,7 +21,6 @@ ENV JMX_OPTS="-Dcom.sun.management.jmxremote \
 	-Dcom.sun.management.jmxremote.ssl=false"
 
 ENV JVM_OPTS="-Xmx2G -Xms2G \
-	-Xss2M \
 	-XX:+TieredCompilation \
 	-XX:InitialCodeCacheSize=128m \
 	-XX:ReservedCodeCacheSize=128m \

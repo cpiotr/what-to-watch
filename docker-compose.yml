@@ -16,6 +16,16 @@ services:
         - W2W_THREAD_POOL_SIZE=32
         - REDIS_HOST=redis
         - W2W_LOGGING_LEVEL=INFO
+        - JVM_OPTS=-Xmx2G
+          -Xms2G
+          -XX:+TieredCompilation
+          -XX:InitialCodeCacheSize=128m
+          -XX:ReservedCodeCacheSize=128m
+          -XX:-UseBiasedLocking
+          -XX:+PreserveFramePointer
+          -XX:+UnlockExperimentalVMOptions
+          -XX:+UseNUMA
+          -Xlog:gc:stdout:time
       ports:
         - "8080:8080"
         - "9999:9999"
