@@ -37,15 +37,16 @@ benchmark {
 }
 
 dependencies {
-    runtime "io.micrometer:micrometer-registry-jmx"
 
     compile "org.springframework.boot:spring-boot-starter-jersey"
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.springframework.boot:spring-boot-starter-undertow:$springBootVersion"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    runtime "io.micrometer:micrometer-registry-jmx:$micrometerVersion"
+    compile "io.micrometer:micrometer-core:$micrometerVersion"
     compile "redis.clients:jedis:$jedisVersion"
     compile "org.jsoup:jsoup:$jsoupVersion"
     compile "net.jodah:failsafe:$failsafeVersion"
-    compile "io.micrometer:micrometer-core:$micrometerVersion"
     compile "javax.activation:activation:$javaxAnnotationsVersion"
     compile "javax.xml.bind:jaxb-api:$jaxbVersion"
     compile project(":what-to-watch-core")
