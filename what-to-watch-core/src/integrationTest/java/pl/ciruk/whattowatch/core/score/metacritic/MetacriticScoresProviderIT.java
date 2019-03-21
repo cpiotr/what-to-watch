@@ -64,6 +64,21 @@ class MetacriticScoresProviderIT {
     }
 
     @Test
+    void shouldRetrieveMeaningfulScoreForTitleWithSlash() {
+        Title title = Title.builder()
+                .title("Fahrenheit 9/11")
+                .year(2004)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        Stream<Score> scores = this.scores.findScoresBy(description);
+
+        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+    }
+
+    @Test
     void shouldRetrieveMultipleScores() {
         Title title = titleOfRespectfulFilm();
         Description description = Description.builder()

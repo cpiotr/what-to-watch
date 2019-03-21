@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.title;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
@@ -28,7 +29,8 @@ public class Title {
     public String asText() {
         return Optional.ofNullable(getOriginalTitle())
                 .filter(not(String::isEmpty))
-                .orElse(getLocalTitle());
+                .orElse(getLocalTitle())
+                .replace("/", " ");
     }
 
     public boolean matches(Title otherTitle) {
