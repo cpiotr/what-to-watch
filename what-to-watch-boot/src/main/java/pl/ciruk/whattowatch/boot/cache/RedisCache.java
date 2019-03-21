@@ -60,6 +60,7 @@ public class RedisCache implements CacheProvider<String> {
                 .withFallback(Optional.empty())
                 .get(() -> getValueFromCache(key));
         if (optionalValue.isEmpty()) {
+            LOGGER.debug("Missing key: {}", key);
             missCounter.incrementAndGet();
         }
         return optionalValue;
