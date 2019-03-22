@@ -19,12 +19,13 @@ services:
         - JVM_OPTS=-Xmx2G
           -Xms2G
           -XX:+TieredCompilation
-          -XX:InitialCodeCacheSize=128m
-          -XX:ReservedCodeCacheSize=128m
+          -XX:InitialCodeCacheSize=256m
+          -XX:ReservedCodeCacheSize=256m
           -XX:-UseBiasedLocking
           -XX:+PreserveFramePointer
           -XX:+UnlockExperimentalVMOptions
           -XX:+UseNUMA
+          -XX:+UseStringDeduplication
           -Xlog:gc:stdout:time
       ports:
         - "8080:8080"
