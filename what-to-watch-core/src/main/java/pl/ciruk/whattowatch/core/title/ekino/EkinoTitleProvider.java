@@ -11,11 +11,15 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class EkinoTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -62,10 +66,13 @@ public class EkinoTitleProvider implements TitleProvider {
     private Stream<HttpUrl> generatePageUrlsForRequest(int requestNumber) {
         int startFromPage = (requestNumber - 1) * pagesPerRequest;
         LOGGER.debug("Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
-        return IntStream.range(startFromPage, startFromPage + pagesPerRequest)
+
+        List<HttpUrl> urls = IntStream.range(startFromPage, startFromPage + pagesPerRequest)
                 .boxed()
                 .map(index -> String.format(TITLES_PAGE_PATTERN, index))
-                .map(HttpUrl::get);
+                .map(HttpUrl::get)
+                .collect(toList());
+        return urls.parallelStream();
     }
 
     private Title parseToTitle(Element linkToTitle) {
