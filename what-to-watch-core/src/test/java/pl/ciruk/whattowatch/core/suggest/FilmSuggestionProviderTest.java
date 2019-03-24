@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.suggest;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
