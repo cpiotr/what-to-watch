@@ -99,11 +99,12 @@ public class FilmwebDescriptions implements DescriptionProvider {
     }
 
     private Description extractDescriptionFrom(Element pageWithDetails) {
-        var localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(pageWithDetails)
+        Element mainElement = pageWithDetails.selectFirst("div.filmMainHeader");
+        var localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(mainElement)
                 .orElseThrow(MissingValueException::new);
-        var originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(pageWithDetails)
+        var originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement)
                 .orElse("");
-        var extractedYear = extractYearFrom(pageWithDetails)
+        var extractedYear = extractYearFrom(mainElement)
                 .orElseThrow(MissingValueException::new);
 
         var retrievedTitle = Title.builder()
@@ -115,8 +116,8 @@ public class FilmwebDescriptions implements DescriptionProvider {
         return Description.builder()
                 .title(retrievedTitle)
                 .poster(FilmwebSelectors.POSTER.extractFrom(pageWithDetails).orElse(""))
-                .plot(FilmwebSelectors.PLOT.extractFrom(pageWithDetails).orElse(""))
-                .genres(FilmwebStreamSelectors.GENRES.extractFrom(pageWithDetails).collect(toList()))
+                .plot(FilmwebSelectors.PLOT.extractFrom(mainElement).orElse(""))
+                .genres(FilmwebStreamSelectors.GENRES.extractFrom(mainElement).collect(toList()))
                 .build();
     }
 

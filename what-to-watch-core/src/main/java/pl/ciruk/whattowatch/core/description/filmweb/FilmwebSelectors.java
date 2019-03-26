@@ -7,27 +7,21 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
-    YEAR(details -> details.select(".filmMainHeader .hdr span.halfSize")
-            .stream()
-            .map(Element::text)
-            .map(text -> text.replaceAll("[^0-9]", ""))
-            .findFirst()),
-    LOCAL_TITLE(details -> details.select(".filmMainHeader h1.filmTitle a")
-            .stream()
-            .map(Element::text)
-            .findFirst()),
-    ORIGINAL_TITLE(details -> details.select(".filmMainHeader h2")
-            .stream()
-            .map(Element::text)
-            .findFirst()),
-    POSTER(details -> details.select(".filmHeader .filmPosterBox .posterLightbox img")
-            .stream()
-            .map(e -> e.attr("src"))
-            .findFirst()),
-    PLOT(details -> details.select(".filmMainHeader .filmPlot")
-            .stream()
-            .map(Element::text)
-            .findFirst()),;
+    YEAR(details -> {
+        var yearElement = details.selectFirst("div.hdr span.halfSize");
+        return Optional.ofNullable(yearElement)
+                .map(Element::text)
+                .map(text -> Commons.NON_DIGIT.matcher(text).replaceAll(""));
+    }),
+    LOCAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h1.filmTitle a"))
+            .map(Element::text)),
+    ORIGINAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h2"))
+            .map(Element::text)),
+    POSTER(details -> Optional.ofNullable(details.selectFirst("div.filmHeader div.filmPosterBox div.posterLightbox img"))
+            .map(e -> e.attr("src"))),
+    PLOT(details -> Optional.ofNullable(details.selectFirst("div.filmPlot"))
+            .map(Element::text)),
+    ;
 
     private final Function<Element, Optional<String>> extractor;
 
