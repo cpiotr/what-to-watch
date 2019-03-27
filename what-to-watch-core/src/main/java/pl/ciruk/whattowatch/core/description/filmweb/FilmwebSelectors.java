@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.core.description.filmweb;
 
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.Extractable;
+import pl.ciruk.whattowatch.utils.text.Patterns;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -11,7 +12,7 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
         var yearElement = details.selectFirst("div.hdr span.halfSize");
         return Optional.ofNullable(yearElement)
                 .map(Element::text)
-                .map(text -> Commons.NON_DIGIT.matcher(text).replaceAll(""));
+                .map(text -> Patterns.nonDigit().matcher(text).replaceAll(""));
     }),
     LOCAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h1.filmTitle a"))
             .map(Element::text)),
