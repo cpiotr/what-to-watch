@@ -1,4 +1,4 @@
-FROM openjdk:12-oracle
+FROM adoptopenjdk/openjdk12:alpine-slim
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp

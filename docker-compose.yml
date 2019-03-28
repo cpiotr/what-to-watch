@@ -24,6 +24,7 @@ services:
           -XX:-UseBiasedLocking
           -XX:+PreserveFramePointer
           -XX:+UnlockExperimentalVMOptions
+          -XX:+UseShenandoahGC
           -XX:+UseNUMA
           -XX:+UseStringDeduplication
           -Xlog:gc:stdout:time
