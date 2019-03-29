@@ -3,28 +3,21 @@ package pl.ciruk.whattowatch.core.score.filmweb;
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.Extractable;
 import pl.ciruk.whattowatch.utils.stream.Optionals;
+import pl.ciruk.whattowatch.utils.text.Patterns;
 
 import java.util.Optional;
 import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
-    LINK_FROM_SEARCH_RESULT(result -> result.select(".filmPreview__link")
-            .stream()
-            .map(link -> link.attr("href"))
-            .findFirst()),
-    TITLE_FROM_SEARCH_RESULT(result -> result.select(".filmPreview__title")
-            .stream()
+    LINK_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("a.filmPreview__link"))
+            .map(link -> link.attr("href"))),
+    TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("h3.filmPreview__title"))
+            .map(Element::text)),
+    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("div.filmPreview__originalTitle"))
+            .map(Element::text)),
+    YEAR_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("span.filmPreview__year"))
             .map(Element::text)
-            .findFirst()),
-    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> result.select(".filmPreview__originalTitle")
-            .stream()
-            .map(Element::text)
-            .findFirst()),
-    YEAR_FROM_SEARCH_RESULT(result -> result.select(".filmPreview__year")
-            .stream()
-            .map(Element::text)
-            .map(year -> year.replaceAll("\\W", ""))
-            .findFirst()),
+            .map(year -> Patterns.nonDigit().matcher(year).replaceAll(""))),
     SCORE_FROM_DETAILS(details -> extractScoreFromText(details.toString()));
 
     private final Function<Element, Optional<String>> extractor;
