@@ -90,8 +90,9 @@ public class ImdbScoresProvider implements ScoresProvider {
 
     private boolean matchesTitleFromDescription(Element searchResult, Description description) {
         var descriptionTitle = description.getTitle();
-        return extractTitleFrom(searchResult).matches(descriptionTitle)
-                || extractFullTitleFrom(searchResult).matches(descriptionTitle);
+        Element summary = searchResult.selectFirst(".lister-item-content");
+        return extractTitleFrom(summary).matches(descriptionTitle)
+                || extractFullTitleFrom(summary).matches(descriptionTitle);
     }
 
     private Title extractTitleFrom(Element searchResult) {
