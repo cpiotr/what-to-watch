@@ -9,29 +9,21 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("PMD.FieldDeclarationsShouldBeAtStartOfClass")
 public enum MetacriticSelectors implements Extractable<Optional<String>> {
-    LINK_TO_DETAILS(details -> details.select(".product_title a")
+    LINK_TO_DETAILS(details -> Optional.ofNullable(details.selectFirst("h3.product_title a"))
+            .map(link -> link.attr("href"))),
+    NEW_YORK_TIMES_GRADE(details -> details.select("div.critic_reviews div.review")
             .stream()
-            .map(link -> link.attr("href"))
+            .filter(review -> review.select("span.source").text().equalsIgnoreCase("The New York Times"))
+            .map(review -> review.select("div.metascore_w.movie").text())
             .findFirst()),
-    NEW_YORK_TIMES_GRADE(details -> details.select(".critic_reviews .review")
-            .stream()
-            .filter(review -> review.select(".source").text().equalsIgnoreCase("The New York Times"))
-            .map(review -> review.select(".metascore_w.movie").text())
-            .findFirst()),
-    LINK_TO_CRITIC_REVIEWS(details -> details.select(".fxdcol.gu4 .subsection_title a")
-            .stream()
-            .map(link -> link.attr("href"))
-            .findFirst()),
-    TITLE(details -> details.select(".product_title")
-            .stream()
-            .map(Element::text)
-            .findFirst()),
-    RELEASE_YEAR(details -> details.select(".main_stats p")
-            .stream()
+    LINK_TO_CRITIC_REVIEWS(details -> Optional.ofNullable(details.selectFirst("div.fxdcol.gu4 .subsection_title a"))
+            .map(link -> link.attr("href"))),
+    TITLE(details -> Optional.ofNullable(details.selectFirst("h3.product_title"))
+            .map(Element::text)),
+    RELEASE_YEAR(details -> Optional.ofNullable(details.selectFirst("div.main_stats p"))
             .map(Element::text)
             .map(MetacriticSelectors::extractYear)
-            .filter(MetacriticSelectors::isValidNumber)
-            .findFirst()),
+            .filter(MetacriticSelectors::isValidNumber)),
     ;
 
     private static final Pattern NUMBER = Pattern.compile("[0-9]+");

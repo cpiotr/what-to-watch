@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 
 public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
     SEARCH_RESULTS(
-            page -> page.select("div.body .search_results .result").stream()
+            page -> page.select("div.body ul.search_results li.result").stream()
     ),
     CRITIC_REVIEWS(
-            page -> page.select(".critic_reviews .review .metascore_w").stream()
+            page -> page.select("div.critic_reviews div.review div.metascore_w").stream()
     )
     ;
 

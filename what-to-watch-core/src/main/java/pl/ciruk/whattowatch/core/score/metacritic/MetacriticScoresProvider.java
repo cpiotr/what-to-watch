@@ -103,7 +103,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Element extractCriticReviews(Element page) {
-        return page.select("#main_content .critic_reviews").first();
+        return page.selectFirst("div#main_content .critic_reviews");
     }
 
     private String resolve(String link) {
@@ -123,7 +123,8 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .newBuilder(firstSegment);
         Arrays.stream(pathSegments).forEach(builder::addPathSegments);
         var url = builder.build();
-        return connection.connectToAndGet(url);
+        return connection.connectToAndGet(url)
+                .map(page -> page.getElementById("main_content"));
     }
 
     private HttpUrl.Builder metacriticUrlBuilder() {
