@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.boot.cache;
 import io.micrometer.core.instrument.Metrics;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.function.CheckedRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +27,15 @@ public class RedisCache implements CacheProvider<String> {
     private final JedisPool jedisPool;
     private final AtomicLong missCounter = new AtomicLong();
     private final AtomicLong requestCounter = new AtomicLong();
-    private final CircuitBreaker circuitBreaker;
+    private final CircuitBreaker<Optional<String>> circuitBreaker;
     private final long expiryInterval;
     private final TimeUnit expiryUnit;
 
-    public RedisCache(JedisPool jedisPool, long expiryInterval, TimeUnit expiryUnit, CircuitBreaker circuitBreaker) {
+    public RedisCache(
+            JedisPool jedisPool,
+            long expiryInterval,
+            TimeUnit expiryUnit,
+            CircuitBreaker<Optional<String>> circuitBreaker) {
         this.jedisPool = jedisPool;
         this.expiryInterval = expiryInterval;
         this.expiryUnit = expiryUnit;
@@ -56,8 +61,7 @@ public class RedisCache implements CacheProvider<String> {
     public Optional<String> get(String key) {
         requestCounter.incrementAndGet();
 
-        var optionalValue = Failsafe.with(circuitBreaker)
-                .withFallback(Optional.empty())
+        var optionalValue = Failsafe.with(circuitBreaker, Fallback.of(Optional.empty()))
                 .get(() -> getValueFromCache(key));
         if (optionalValue.isEmpty()) {
             LOGGER.debug("Missing key: {}", key);
@@ -75,8 +79,7 @@ public class RedisCache implements CacheProvider<String> {
 
     @Override
     public void put(String key, String value) {
-        Failsafe.with(circuitBreaker)
-                .withFallback(doNothing())
+        Failsafe.with(circuitBreaker, Fallback.of(doNothing()))
                 .run(() -> putValueToCache(key, value));
     }
 

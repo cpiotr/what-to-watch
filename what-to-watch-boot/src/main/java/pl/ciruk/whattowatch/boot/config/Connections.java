@@ -22,6 +22,8 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
@@ -105,30 +107,30 @@ public class Connections {
     JedisPool redisConnectionPool() {
         var poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(redisPoolMaxActive);
-        poolConfig.setMaxWaitMillis(1_000);
+        poolConfig.setMaxWaitMillis(500);
         poolConfig.setMinEvictableIdleTimeMillis(100);
         return new JedisPool(poolConfig, redisHost);
     }
 
     @Bean
     @LongExpiry
-    CacheProvider<String> longExpiryCache(JedisPool jedisPool, CircuitBreaker circuitBreaker) {
+    CacheProvider<String> longExpiryCache(JedisPool jedisPool, CircuitBreaker<Optional<String>> circuitBreaker) {
         return new RedisCache(jedisPool, longExpiryInterval, longExpiryUnit, circuitBreaker);
     }
 
     @Bean
     @ShortExpiry
-    CacheProvider<String> shortExpiryCache(JedisPool jedisPool, CircuitBreaker circuitBreaker) {
+    CacheProvider<String> shortExpiryCache(JedisPool jedisPool, CircuitBreaker<Optional<String>> circuitBreaker) {
         return new RedisCache(jedisPool, shortExpiryInterval, shortExpiryUnit, circuitBreaker);
     }
 
     @Bean
-    CircuitBreaker circuitBreaker() {
-        return new CircuitBreaker()
+    CircuitBreaker<Optional<String>> circuitBreaker() {
+        return new CircuitBreaker<Optional<String>>()
                 .withFailureThreshold(3, 10)
                 .withSuccessThreshold(5)
-                .withDelay(1, TimeUnit.SECONDS)
-                .withTimeout(5, TimeUnit.SECONDS);
+                .withDelay(Duration.ofSeconds(1))
+                .withTimeout(Duration.ofSeconds(5));
     }
 
     @PostConstruct
