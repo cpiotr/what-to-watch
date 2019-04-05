@@ -6,19 +6,13 @@ ext.moduleName = 'what.to.watch.core'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.12
-targetCompatibility = 1.12
-
-repositories {
-    mavenCentral()
-}
+sourceCompatibility = "$javaVersion"
+targetCompatibility = "$javaVersion"
 
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
-        options.compilerArgs = [
-                '--module-path', classpath.asPath,
-        ]
+        options.compilerArgs = ['--module-path', classpath.asPath]
         classpath = files()
     }
 }
@@ -34,6 +28,9 @@ test {
 integrationTest {
     useJUnitPlatform()
 }
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
 
 dependencies {
     compile "org.jsoup:jsoup:$jsoupVersion"
@@ -51,8 +48,5 @@ dependencies {
 
     integrationTestCompile sourceSets.test.output
 }
-
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
 
 println("[what-to-watch-core] Building version: $version")
