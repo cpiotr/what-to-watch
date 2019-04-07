@@ -33,18 +33,20 @@ check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 
 dependencies {
-    compile "org.jsoup:jsoup:$jsoupVersion"
-    compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
-    compile "org.slf4j:slf4j-api:$slf4jVersion"
-    compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
-    compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    compile "io.micrometer:micrometer-core:$micrometerVersion"
+    compile("org.jsoup:jsoup:$jsoupVersion")
+    compile("com.squareup.okhttp3:okhttp:$okHttpVersion")
+    compile("org.slf4j:slf4j-api:$slf4jVersion")
+    compile("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    compile("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    compile("io.micrometer:micrometer-core:$micrometerVersion")
+    compile("io.projectreactor:reactor-core:3.2.8.RELEASE")
 
-    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
-    testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
-    testCompile "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-    testCompile "org.mockito:mockito-core:$mockitoVersion"
-    testCompile "org.assertj:assertj-core:$assertjVersion"
+    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
+    testCompile("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testCompile("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testCompile("org.mockito:mockito-core:$mockitoVersion")
+    testCompile("org.assertj:assertj-core:$assertjVersion")
+    testCompile("io.projectreactor:reactor-test:3.2.8.RELEASE")
 
     integrationTestCompile sourceSets.test.output
 }

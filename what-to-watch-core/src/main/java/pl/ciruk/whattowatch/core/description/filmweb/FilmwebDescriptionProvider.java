@@ -77,7 +77,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     }
 
     private Stream<Description> filmsForTitle(String title, int year) {
-        var optionalResult = filmwebProxy.searchFor(title, year);
+        var optionalResult = filmwebProxy.searchBy(title, year);
 
         return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT::extractFrom)

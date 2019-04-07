@@ -64,7 +64,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
     }
 
     private Stream<Score> scoresForTitle(Title title) {
-        var optionalResult = filmwebProxy.searchFor(title.asText(), title.getYear());
+        var optionalResult = filmwebProxy.searchBy(title.asText(), title.getYear());
 
         return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)

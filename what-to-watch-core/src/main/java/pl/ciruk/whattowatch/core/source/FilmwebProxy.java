@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.source;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -14,7 +15,7 @@ public class FilmwebProxy {
         this.connection = connection;
     }
 
-    public Optional<Element> searchFor(String title, int year) {
+    public Optional<Element> searchBy(String title, int year) {
         var url = createHttpBuilder()
                 .addPathSegment("search/film")
                 .addQueryParameter("q", title)
@@ -25,10 +26,18 @@ public class FilmwebProxy {
         return connection.connectToAndGet(url);
     }
 
+    public Mono<Element> monoSearchBy(String title, int year) {
+        return Mono.justOrEmpty(searchBy(title, year));
+    }
+
     public Optional<Element> getPageWithFilmDetailsFor(String href) {
         return Optional.ofNullable(href)
                 .map(this::resolveLink)
                 .flatMap(connection::connectToAndGet);
+    }
+
+    public Mono<Element> getMonoPageWithFilmDetailsFor(String href) {
+        return Mono.justOrEmpty(getPageWithFilmDetailsFor(href));
     }
 
     public HttpUrl resolveLink(String href) {
