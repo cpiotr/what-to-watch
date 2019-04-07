@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.Cached;
 import pl.ciruk.whattowatch.boot.cache.NotCached;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
-import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.score.ScoreType;
@@ -79,7 +79,7 @@ public class Beans {
 
     @Bean
     DescriptionProvider filmwebDescriptions(FilmwebProxy filmwebProxy, ExecutorService executorService) {
-        return new FilmwebDescriptions(filmwebProxy, executorService);
+        return new FilmwebDescriptionProvider(filmwebProxy, executorService);
     }
 
     @Bean

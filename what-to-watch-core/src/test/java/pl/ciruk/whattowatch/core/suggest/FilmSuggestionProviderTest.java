@@ -40,7 +40,7 @@ class FilmSuggestionProviderTest {
 
         descriptionProvider = mock(DescriptionProvider.class);
         description = createDescription(title);
-        when(descriptionProvider.findDescriptionOfAsync(title))
+        when(descriptionProvider.findDescriptionByAsync(title))
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(description)));
 
         scoreProvider = mock(ScoresProvider.class);
@@ -74,7 +74,7 @@ class FilmSuggestionProviderTest {
                 .collect(toList());
         assertThat(films).isNotEmpty();
 
-        verify(descriptionProvider).findDescriptionOfAsync(title);
+        verify(descriptionProvider).findDescriptionByAsync(title);
         verify(scoreProvider).findScoresByAsync(description);
     }
 

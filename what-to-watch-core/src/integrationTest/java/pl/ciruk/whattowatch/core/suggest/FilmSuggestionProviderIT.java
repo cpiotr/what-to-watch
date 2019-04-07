@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
-import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
@@ -73,9 +73,9 @@ class FilmSuggestionProviderIT {
         pool.awaitTermination(1, TimeUnit.SECONDS);
     }
 
-    private FilmwebDescriptions sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
+    private FilmwebDescriptionProvider sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
         FilmwebProxy filmwebProxy = new FilmwebProxy(new JsoupConnection(htmlConnection));
-        return new FilmwebDescriptions(filmwebProxy, pool);
+        return new FilmwebDescriptionProvider(filmwebProxy, pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {

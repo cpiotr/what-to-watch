@@ -7,7 +7,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import pl.ciruk.whattowatch.boot.WhatToWatchApplication;
-import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
@@ -112,8 +112,8 @@ public class FilmSuggestionsBenchmark {
         bh.consume(numberOfFilms);
     }
 
-    private FilmwebDescriptions sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
-        return new FilmwebDescriptions(
+    private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
+        return new FilmwebDescriptionProvider(
                 new FilmwebProxy(new JsoupConnection(htmlConnection)),
                 pool);
     }

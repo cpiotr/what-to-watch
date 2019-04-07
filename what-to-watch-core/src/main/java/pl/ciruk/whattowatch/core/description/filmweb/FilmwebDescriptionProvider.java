@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
-public class FilmwebDescriptions implements DescriptionProvider {
+public class FilmwebDescriptionProvider implements DescriptionProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -35,7 +35,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
 
     private final AtomicLong missingDescriptions = new AtomicLong();
 
-    public FilmwebDescriptions(FilmwebProxy filmwebProxy, ExecutorService executorService) {
+    public FilmwebDescriptionProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
         this.executorService = executorService;
 
@@ -48,7 +48,7 @@ public class FilmwebDescriptions implements DescriptionProvider {
     }
 
     @Override
-    public CompletableFuture<Optional<Description>> findDescriptionOfAsync(Title title) {
+    public CompletableFuture<Optional<Description>> findDescriptionByAsync(Title title) {
         return CompletableFuture.supplyAsync(
                 () -> findDescriptionBy(title),
                 executorService

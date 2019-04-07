@@ -12,14 +12,14 @@ import java.util.concurrent.Executors;
 
 import static pl.ciruk.whattowatch.core.description.DescriptionAssert.assertThat;
 
-class FilmwebDescriptionsIT {
+class FilmwebDescriptionProviderIT {
 
-    private FilmwebDescriptions descriptions;
+    private FilmwebDescriptionProvider descriptions;
 
     @BeforeEach
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
-        descriptions = new FilmwebDescriptions(
+        descriptions = new FilmwebDescriptionProvider(
                 new FilmwebProxy(connection),
                 Executors.newSingleThreadExecutor());
     }

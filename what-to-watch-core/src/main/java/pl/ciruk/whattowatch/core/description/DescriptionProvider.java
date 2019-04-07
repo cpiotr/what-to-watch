@@ -8,5 +8,5 @@ import java.util.concurrent.CompletableFuture;
 public interface DescriptionProvider {
     Optional<Description> findDescriptionBy(Title title);
 
-    CompletableFuture<Optional<Description>> findDescriptionOfAsync(Title title);
+    CompletableFuture<Optional<Description>> findDescriptionByAsync(Title title);
 }

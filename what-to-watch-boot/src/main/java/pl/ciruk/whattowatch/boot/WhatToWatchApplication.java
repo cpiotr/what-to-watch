@@ -5,7 +5,7 @@ import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptions;
+import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
@@ -96,8 +96,8 @@ public class WhatToWatchApplication {
                 .build();
     }
 
-    private static FilmwebDescriptions sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
-        return new FilmwebDescriptions(
+    private static FilmwebDescriptionProvider sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
+        return new FilmwebDescriptionProvider(
                 new FilmwebProxy(connection),
                 executorService);
     }
