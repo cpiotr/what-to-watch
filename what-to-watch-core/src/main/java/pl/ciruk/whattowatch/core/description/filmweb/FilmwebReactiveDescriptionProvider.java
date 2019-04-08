@@ -9,7 +9,6 @@ import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
-import pl.ciruk.whattowatch.utils.text.MissingValueException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,11 +17,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -80,9 +77,16 @@ public class FilmwebReactiveDescriptionProvider {
 
     private Flux<Description> extractDescriptionFrom(Element pageWithDetails) {
         Element mainElement = pageWithDetails.selectFirst("div.filmMainHeader");
-        var localTitle = Mono.justOrEmpty(FilmwebSelectors.LOCAL_TITLE.extractFrom(mainElement));
-        var originalTitle = Mono.justOrEmpty(FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement));
-        var extractedYear = Mono.justOrEmpty(extractYearFrom(mainElement));
+        Optional<String> myLocalTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(mainElement);
+        Optional<String> myOriginalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement);
+        Optional<Integer> myYear = extractYearFrom(mainElement);
+        if (myLocalTitle.isEmpty() || myYear.isEmpty()) {
+            return Flux.empty();
+        }
+
+        var localTitle = Mono.justOrEmpty(myLocalTitle);
+        var originalTitle = Mono.justOrEmpty(myOriginalTitle).defaultIfEmpty("");
+        var extractedYear = Mono.justOrEmpty(myYear);
 
         return localTitle.zipWith(originalTitle).zipWith(extractedYear)
                 .map(titlesAndYear ->
