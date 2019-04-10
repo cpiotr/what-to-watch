@@ -19,11 +19,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.sse.OutboundSseEvent;
+import javax.ws.rs.sse.Sse;
+import javax.ws.rs.sse.SseEventSink;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -66,6 +72,32 @@ public class Suggestions {
         }
     }
 
+    @GET
+    @Path("{pageNumber}/stream")
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    @ManagedAsync
+    public void stream(@Context SseEventSink sseEventSink, @Context Sse sse, @PathParam("pageNumber") int pageNumber) {
+        LOGGER.info("Page number: {}", pageNumber);
+
+        responseTimer.record(() -> {
+            suggestionsProvider.suggestFilms(pageNumber)
+                    .map(sendIfWorthWatchingTo(new EventsSink(sse, sseEventSink)))
+                    .forEach(CompletableFuture::join);
+            sseEventSink.close();
+        });
+    }
+
+    Function<CompletableFuture<Film>, CompletableFuture<Void>> sendIfWorthWatchingTo(EventsSink sink) {
+        return futureFilm -> futureFilm.thenAccept(
+                film -> {
+                    if (filmFilter.isWorthWatching(film)) {
+                        FilmResult filmResult = toFilmResult(film);
+                        sink.send(filmResult);
+                    }
+                }
+        );
+    }
+
     private List<FilmResult> findSuggestions(int pageNumber) {
         return CompletableFutures.getAllOf(suggestionsProvider.suggestFilms(pageNumber))
                 .distinct()
@@ -86,5 +118,25 @@ public class Suggestions {
                 .genres(film.getDescription().getGenres())
                 .link(film.getDescription().getFoundFor().getUrl())
                 .build();
+    }
+
+    static class EventsSink {
+        private final Sse sse;
+        private final SseEventSink eventSink;
+
+        EventsSink(Sse sse, SseEventSink eventSink) {
+            this.sse = sse;
+            this.eventSink = eventSink;
+        }
+
+        public void send(FilmResult filmResult) {
+            OutboundSseEvent event = this.sse.newEventBuilder()
+                    .name("film")
+                    .id(String.valueOf(filmResult.hashCode()))
+                    .mediaType(MediaType.APPLICATION_JSON_TYPE)
+                    .data(FilmResult.class, filmResult)
+                    .build();
+            this.eventSink.send(event);
+        }
     }
 }
