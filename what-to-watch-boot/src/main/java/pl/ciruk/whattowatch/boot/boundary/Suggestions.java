@@ -79,15 +79,17 @@ public class Suggestions {
     public void stream(@Context SseEventSink sseEventSink, @Context Sse sse, @PathParam("pageNumber") int pageNumber) {
         LOGGER.info("Page number: {}", pageNumber);
 
-        responseTimer.record(() -> {
-            suggestionsProvider.suggestFilms(pageNumber)
-                    .map(sendIfWorthWatchingTo(new EventsSink(sse, sseEventSink)))
-                    .forEach(CompletableFuture::join);
-            sseEventSink.close();
-        });
+        try (EventsSink sink = new EventsSink(sse, sseEventSink)) {
+            responseTimer.record(() -> suggestionsProvider.suggestFilms(pageNumber)
+                    .map(sendIfWorthWatchingTo(sink))
+                    .forEach(CompletableFuture::join));
+            LOGGER.info("Finished providing suggestions for page {}", pageNumber);
+        } catch (Exception e) {
+            LOGGER.error("Error while getting suggestions", e);
+        }
     }
 
-    Function<CompletableFuture<Film>, CompletableFuture<Void>> sendIfWorthWatchingTo(EventsSink sink) {
+    private Function<CompletableFuture<Film>, CompletableFuture<Void>> sendIfWorthWatchingTo(EventsSink sink) {
         return futureFilm -> futureFilm.thenAccept(
                 film -> {
                     if (filmFilter.isWorthWatching(film)) {
@@ -120,7 +122,7 @@ public class Suggestions {
                 .build();
     }
 
-    static class EventsSink {
+    static class EventsSink implements AutoCloseable {
         private final Sse sse;
         private final SseEventSink eventSink;
 
@@ -129,7 +131,7 @@ public class Suggestions {
             this.eventSink = eventSink;
         }
 
-        public void send(FilmResult filmResult) {
+        void send(FilmResult filmResult) {
             OutboundSseEvent event = this.sse.newEventBuilder()
                     .name("film")
                     .id(String.valueOf(filmResult.hashCode()))
@@ -137,6 +139,13 @@ public class Suggestions {
                     .data(FilmResult.class, filmResult)
                     .build();
             this.eventSink.send(event);
+        }
+
+        @Override
+        public void close() {
+            if (!eventSink.isClosed()) {
+                eventSink.close();
+            }
         }
     }
 }
