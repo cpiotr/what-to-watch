@@ -1,24 +1,17 @@
 package pl.ciruk.whattowatch.core.description.filmweb;
 
-import io.micrometer.core.instrument.Metrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
-import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
-import pl.ciruk.whattowatch.utils.metrics.Names;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -29,22 +22,10 @@ public class FilmwebReactiveDescriptionProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final ExecutorService executorService;
-
     private final FilmwebProxy filmwebProxy;
 
-    private final AtomicLong missingDescriptions = new AtomicLong();
-
-    public FilmwebReactiveDescriptionProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
+    public FilmwebReactiveDescriptionProvider(FilmwebProxy filmwebProxy) {
         this.filmwebProxy = filmwebProxy;
-        this.executorService = executorService;
-
-        Metrics.gauge(
-                Names.createName(DescriptionProvider.class, List.of("filmweb", "missing", "count")),
-                Collections.emptyList(),
-                missingDescriptions,
-                AtomicLong::get
-        );
     }
 
     public Flux<Description> findDescriptionBy(Title title) {
@@ -78,12 +59,12 @@ public class FilmwebReactiveDescriptionProvider {
     private Flux<Description> extractDescriptionFrom(Element pageWithDetails) {
         Element mainElement = pageWithDetails.selectFirst("div.filmMainHeader");
         Optional<String> myLocalTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(mainElement);
-        Optional<String> myOriginalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement);
         Optional<Integer> myYear = extractYearFrom(mainElement);
         if (myLocalTitle.isEmpty() || myYear.isEmpty()) {
             return Flux.empty();
         }
 
+        Optional<String> myOriginalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement);
         var localTitle = Mono.justOrEmpty(myLocalTitle);
         var originalTitle = Mono.justOrEmpty(myOriginalTitle).defaultIfEmpty("");
         var extractedYear = Mono.justOrEmpty(myYear);

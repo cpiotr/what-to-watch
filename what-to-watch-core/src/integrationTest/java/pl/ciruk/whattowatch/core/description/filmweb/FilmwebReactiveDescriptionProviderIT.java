@@ -21,8 +21,7 @@ class FilmwebReactiveDescriptionProviderIT {
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebReactiveDescriptionProvider(
-                new FilmwebProxy(connection),
-                Executors.newSingleThreadExecutor());
+                new FilmwebProxy(connection));
     }
 
     @Test
