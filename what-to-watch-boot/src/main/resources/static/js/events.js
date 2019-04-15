@@ -40,6 +40,9 @@ class FilmApp extends React.Component {
     eventSource.onError = function(event) {
         eventSource.close();
     }
+    eventSource.addEventListener('poisonPill', (e) => {
+        eventSource.close();
+    });
     eventSource.addEventListener('film', (e) => {
         current.films.push(JSON.parse(e.data));
         this.setState({

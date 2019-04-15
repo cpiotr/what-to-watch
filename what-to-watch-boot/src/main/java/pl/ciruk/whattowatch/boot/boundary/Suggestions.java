@@ -27,6 +27,7 @@ import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -144,6 +145,13 @@ public class Suggestions {
         @Override
         public void close() {
             if (!eventSink.isClosed()) {
+                OutboundSseEvent event = this.sse.newEventBuilder()
+                        .name("poisonPill")
+                        .id(UUID.randomUUID().toString())
+                        .mediaType(MediaType.APPLICATION_JSON_TYPE)
+                        .data(String.class, "poisonPill")
+                        .build();
+                this.eventSink.send(event);
                 eventSink.close();
             }
         }
