@@ -20,4 +20,5 @@ module what.to.watch.core {
     requires com.fasterxml.jackson.databind;
     requires reactor.core;
     requires org.reactivestreams;
+    requires java.scripting;
 }
