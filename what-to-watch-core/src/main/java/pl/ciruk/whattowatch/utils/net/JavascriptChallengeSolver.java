@@ -24,6 +24,7 @@ public class JavascriptChallengeSolver {
     private static final String BEGINNING_OF_CHALLENGE = "var s,t,o,p,b,r,e,a,k,i,n,g,f";
     private static final String END_OF_CHALLENGE = ".toFixed(10);";
     private static final Pattern HIDDEN_DIV_ID_PATTERN = Pattern.compile("k = '([^']+)';");
+
     private final ScriptEngine engine;
 
     public JavascriptChallengeSolver(ScriptEngine engine) {
@@ -40,7 +41,9 @@ public class JavascriptChallengeSolver {
                 .stream()
                 .filter(input -> input.hasAttr("value"))
                 .forEach(input -> requestBuilder.addQueryParameter(input.attr("name"), input.attr("value")));
-        requestBuilder.addQueryParameter("jschl-answer", evaluateScript(document, requestedUrl));
+        String value = evaluateScript(document, requestedUrl);
+        LOGGER.debug("Solved challenge: {}", value);
+        requestBuilder.addQueryParameter("jschl_answer", value);
         return requestBuilder.build();
     }
 
