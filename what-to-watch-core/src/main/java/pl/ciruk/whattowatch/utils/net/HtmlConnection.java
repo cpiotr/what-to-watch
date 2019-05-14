@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
+import javax.script.ScriptEngineManager;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.SocketTimeoutException;
@@ -94,11 +95,20 @@ public class HtmlConnection implements HttpConnection<String> {
         try {
             Response response = executeOrWait(request);
             if (response.header("CF-RAY") != null) {
-                // TODO: Handle DDOS protection
+                JavascriptChallengeSolver solver = new JavascriptChallengeSolver(new ScriptEngineManager().getEngineByName("js"));
+                HttpUrl solvedUrl = solver.solve(request.url(), response.body().string());
+                var requestBuilder = request.newBuilder()
+                        .url(solvedUrl)
+                        .removeHeader(Headers.REFERER)
+                        .addHeader(Headers.REFERER, request.url().toString());
+
+                response = executeOrWait(requestBuilder.build());
             }
             return response;
         } catch (RetryableException e) {
             return executeOrWait(request);
+        } catch (IOException e) {
+            throw new HtmlConnectionException(e);
         }
     }
 
@@ -114,6 +124,7 @@ public class HtmlConnection implements HttpConnection<String> {
         return Threads.manageBlocking(() -> {
             try {
                 Response response = okHttpClient.newCall(request).execute();
+                LOGGER.trace("Got response {} from: {}", response.code(), request.url());
                 errors.set(0);
                 return response;
             } catch (SocketTimeoutException e) {
@@ -131,9 +142,10 @@ public class HtmlConnection implements HttpConnection<String> {
                 .orElse(url);
         return new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", UserAgents.next())
+                .addHeader(Headers.USER_AGENT, UserAgents.next())
                 .addHeader("Accept-Language", "en-US")
-                .addHeader("Referer", referer.toString());
+                .addHeader(Headers.REFERER, referer.toString())
+                .addHeader("Host", referer.host());
     }
 
     private static void backOff(int errorsValue) {

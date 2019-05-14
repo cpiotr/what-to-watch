@@ -1,7 +1,15 @@
 package pl.ciruk.whattowatch.utils.net;
 
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class TestConnections {
@@ -10,7 +18,24 @@ public final class TestConnections {
     }
 
     public static HtmlConnection html() {
-        return new HtmlConnection(new OkHttpClient());
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .retryOnConnectionFailure(true)
+                .cookieJar(new CookieJar() {
+                    private final Map<String, List<Cookie>> storedCookies = new ConcurrentHashMap<>();
+
+                    @Override
+                    public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                        List<Cookie> cookieList = storedCookies.computeIfAbsent(url.host(), __ -> new ArrayList<>());
+                        cookieList.addAll(cookies);
+                    }
+
+                    @Override
+                    public List<Cookie> loadForRequest(HttpUrl url) {
+                        return storedCookies.getOrDefault(url.host(), new ArrayList<>());
+                    }
+                })
+                .build();
+        return new HtmlConnection(httpClient);
     }
 
     public static JsoupConnection jsoup() {
