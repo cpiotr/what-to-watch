@@ -95,6 +95,7 @@ public class HtmlConnection implements HttpConnection<String> {
         try {
             Response response = executeOrWait(request);
             if (response.header("CF-RAY") != null) {
+                LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(6));
                 JavascriptChallengeSolver solver = new JavascriptChallengeSolver(new ScriptEngineManager().getEngineByName("js"));
                 HttpUrl solvedUrl = solver.solve(request.url(), response.body().string());
                 var requestBuilder = request.newBuilder()
@@ -145,7 +146,9 @@ public class HtmlConnection implements HttpConnection<String> {
                 .addHeader(Headers.USER_AGENT, UserAgents.next())
                 .addHeader("Accept-Language", "en-US")
                 .addHeader(Headers.REFERER, referer.toString())
-                .addHeader("Host", referer.host());
+                .addHeader("Host", referer.host())
+                .addHeader("Cache-Control", "private")
+                .addHeader("Accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,image/png,*/*;q=0.5");
     }
 
     private static void backOff(int errorsValue) {

@@ -21,20 +21,21 @@ public final class TestConnections {
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .retryOnConnectionFailure(true)
                 .cookieJar(new CookieJar() {
-                    private final Map<String, List<Cookie>> storedCookies = new ConcurrentHashMap<>();
+                    private final Map<String, List<Cookie>> cookiesByHost = new ConcurrentHashMap<>();
 
                     @Override
                     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                        List<Cookie> cookieList = storedCookies.computeIfAbsent(url.host(), __ -> new ArrayList<>());
-                        cookieList.addAll(cookies);
+                        List<Cookie> existingCookies = cookiesByHost.computeIfAbsent(url.host(), __ -> new ArrayList<>());
+                        existingCookies.addAll(cookies);
                     }
 
                     @Override
                     public List<Cookie> loadForRequest(HttpUrl url) {
-                        return storedCookies.getOrDefault(url.host(), new ArrayList<>());
+                        return cookiesByHost.getOrDefault(url.host(), new ArrayList<>());
                     }
                 })
                 .build();
+
         return new HtmlConnection(httpClient);
     }
 
