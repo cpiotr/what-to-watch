@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class InMemoryCookieJar implements CookieJar {
+public class InMemoryCookieJar implements CookieJar {
     private final Map<String, List<Cookie>> cookiesByHost = new ConcurrentHashMap<>();
 
     @Override
     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-        List<Cookie> existingCookies = cookiesByHost.computeIfAbsent(url.host(), __ -> new ArrayList<>());
+        List<Cookie> existingCookies = cookiesByHost.computeIfAbsent(url.host(), ignored -> new ArrayList<>());
         existingCookies.addAll(cookies);
     }
 

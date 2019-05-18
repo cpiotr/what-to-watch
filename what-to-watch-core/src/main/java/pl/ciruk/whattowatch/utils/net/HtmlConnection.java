@@ -8,35 +8,32 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
-import javax.script.ScriptEngineManager;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.SocketTimeoutException;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 
 public class HtmlConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int BACKOFF_THRESHOLD = 2;
 
     private final OkHttpClient okHttpClient;
+    private final List<RequestProcessor> requestProcessors;
+    private final List<ResponseProcessor> responseProcessors;
     private final Timer requestsTimer;
-    private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
-    private final IntConsumer backOffFunction;
 
     public HtmlConnection(OkHttpClient httpClient) {
-        this(httpClient, HtmlConnection::backOff);
+        this(httpClient, List.of(), List.of());
     }
 
-    HtmlConnection(OkHttpClient httpClient, IntConsumer backOffFunction) {
+    public HtmlConnection(
+            OkHttpClient httpClient,
+            List<RequestProcessor> requestProcessors,
+            List<ResponseProcessor> responseProcessors) {
         this.okHttpClient = httpClient;
-        this.backOffFunction = backOffFunction;
+        this.requestProcessors = requestProcessors;
+        this.responseProcessors = responseProcessors;
 
         this.requestsTimer = Metrics.timer(Names.createName(HtmlConnection.class, "request"));
     }
@@ -92,50 +89,44 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Response executeRequest(Request request) {
+        Request processedRequest = processRequest(request);
         try {
-            Response response = executeOrWait(request);
-            if (response.header("CF-RAY") != null) {
-                LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(6));
-                JavascriptChallengeSolver solver = new JavascriptChallengeSolver(new ScriptEngineManager().getEngineByName("js"));
-                HttpUrl solvedUrl = solver.solve(request.url(), response.body().string());
-                var requestBuilder = request.newBuilder()
-                        .url(solvedUrl)
-                        .removeHeader(Headers.REFERER)
-                        .addHeader(Headers.REFERER, request.url().toString());
-
-                response = executeOrWait(requestBuilder.build());
-            }
-            return response;
+            return executeOrWait(processedRequest);
         } catch (RetryableException e) {
-            return executeOrWait(request);
-        } catch (IOException e) {
-            throw new HtmlConnectionException(e);
+            return executeOrWait(processedRequest);
         }
     }
 
     private Response executeOrWait(Request request) {
-        String domain = request.url().topPrivateDomain();
-        AtomicInteger errors = errorsByDomain.computeIfAbsent(domain, key -> new AtomicInteger());
-        int errorsValue = errors.get();
-        if (errorsValue >= BACKOFF_THRESHOLD) {
-            LOGGER.info("Backing off of {}", domain);
-            backOffFunction.accept(errorsValue);
-        }
-
         return Threads.manageBlocking(() -> {
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 LOGGER.trace("Got response {} from: {}", response.code(), request.url());
-                errors.set(0);
+                response = processResponse(response);
                 return response;
             } catch (SocketTimeoutException e) {
-                errors.incrementAndGet();
                 throw new RetryableException(e);
             } catch (Exception e) {
-                errors.incrementAndGet();
                 throw new NonRetryableException(e);
             }
         });
+    }
+
+    private Request processRequest(Request request) {
+        var processedRequest = request.newBuilder().build();
+        for (var requestProcessor : requestProcessors) {
+            processedRequest = requestProcessor.process(processedRequest);
+        }
+        return processedRequest;
+    }
+
+    private Response processResponse(Response response) {
+        Response processedResponse = response.newBuilder().build();
+        for (var responseProcessor : responseProcessors) {
+            processedResponse = responseProcessor.process(processedResponse);
+            LOGGER.trace("Processed response code: {}", processedResponse.code());
+        }
+        return processedResponse;
     }
 
     private Request.Builder buildRequestTo(HttpUrl url) {
@@ -147,15 +138,7 @@ public class HtmlConnection implements HttpConnection<String> {
                 .addHeader("Accept-Language", "en-US")
                 .addHeader(Headers.REFERER, referer.toString())
                 .addHeader("Host", referer.host())
-                .addHeader("Cache-Control", "private")
-                .addHeader("Accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,image/png,*/*;q=0.5");
-    }
-
-    private static void backOff(int errorsValue) {
-        double exponential = Math.pow(2, errorsValue % 6);
-        long waitTimeMillis = (long) (exponential * 100);
-        LOGGER.debug("Waiting {} ms", waitTimeMillis);
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(waitTimeMillis));
+                .addHeader("Cache-Control", "private");
     }
 
     static class HtmlConnectionException extends RuntimeException {

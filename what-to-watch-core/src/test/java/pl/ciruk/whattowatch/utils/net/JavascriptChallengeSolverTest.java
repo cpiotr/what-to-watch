@@ -16,8 +16,8 @@ class JavascriptChallengeSolverTest {
 
     @BeforeEach
     void init() {
-        ScriptEngine js = new ScriptEngineManager().getEngineByName("js");
-        solver = new JavascriptChallengeSolver(js);
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("js");
+        solver = new JavascriptChallengeSolver(engine);
     }
 
     @Test

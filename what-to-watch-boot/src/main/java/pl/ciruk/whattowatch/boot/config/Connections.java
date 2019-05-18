@@ -13,16 +13,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.*;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
-import pl.ciruk.whattowatch.utils.net.CachedConnection;
-import pl.ciruk.whattowatch.utils.net.HtmlConnection;
-import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.net.*;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Qualifier;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -59,6 +65,7 @@ public class Connections {
     }
 
     @Bean
+    @AllCookies
     OkHttpClient httpClient() {
         var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20, TimeUnit.SECONDS);
         var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
@@ -68,37 +75,88 @@ public class Connections {
                 .readTimeout(2_000, TimeUnit.MILLISECONDS)
                 .connectTimeout(500, TimeUnit.MILLISECONDS)
                 .eventListener(metricsEventListener)
+                .addInterceptor(new BackoffInterceptor())
+                .cookieJar(new InMemoryCookieJar())
                 .build();
     }
 
     @Bean
+    @NoCookies
+    OkHttpClient noCookiesHttpClient() {
+        var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20, TimeUnit.SECONDS);
+        var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
+        return new OkHttpClient.Builder()
+                .connectionPool(connectionPool)
+                .retryOnConnectionFailure(true)
+                .readTimeout(2_000, TimeUnit.MILLISECONDS)
+                .connectTimeout(500, TimeUnit.MILLISECONDS)
+                .eventListener(metricsEventListener)
+                .addInterceptor(new BackoffInterceptor())
+                .build();
+    }
+
+    @Bean
+    ScriptEngine engine() {
+        return new ScriptEngineManager().getEngineByName("js");
+    }
+
+    @Bean
+    JavascriptChallengeSolver challengeSolver(ScriptEngine engine) {
+        return new JavascriptChallengeSolver(engine);
+    }
+
+    @Bean
+    ResponseProcessor cloudflareBypass(@AllCookies OkHttpClient httpClient, ScriptEngine engine) {
+        return new CloudflareBypass(httpClient, engine);
+    }
+
+    @Bean
     @NotCached
-    HttpConnection<String> notCachedConnection(OkHttpClient httpClient) {
+    @NoCookies
+    HttpConnection<String> notCachedNoCookiesConnection(@NoCookies OkHttpClient httpClient) {
         return new HtmlConnection(httpClient);
+    }
+
+    @Bean
+    @NotCached
+    @AllCookies
+    HttpConnection<String> notCachedConnection(
+            @AllCookies OkHttpClient httpClient,
+            List<RequestProcessor> requestProcessors,
+            List<ResponseProcessor> responseProcessors) {
+        logConfigurationEntry(LOGGER, "Request processors", requestProcessors);
+        logConfigurationEntry(LOGGER, "Response processors", responseProcessors);
+        return new HtmlConnection(httpClient, requestProcessors, responseProcessors);
     }
 
     @Bean
     @Cached
     @LongExpiry
-    HttpConnection<String> longCachedConnection(@LongExpiry CacheProvider<String> cacheProvider, @NotCached HttpConnection<String> connection) {
+    HttpConnection<String> longCachedConnection(
+            @LongExpiry CacheProvider<String> cacheProvider,
+            @NotCached @NoCookies HttpConnection<String> connection) {
         return new CachedConnection(cacheProvider, connection);
     }
 
     @Bean
     @Cached
     @ShortExpiry
-    HttpConnection<String> shortCachedConnection(@ShortExpiry CacheProvider<String> cacheProvider, @NotCached HttpConnection<String> connection) {
+    HttpConnection<String> shortCachedConnection(
+            @ShortExpiry CacheProvider<String> cacheProvider,
+            @NotCached @AllCookies HttpConnection<String> connection) {
         return new CachedConnection(cacheProvider, connection);
     }
 
     @Bean
     @Cached
+    @LongExpiry
     HttpConnection<Element> jsoupConnection(@Cached @LongExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 
     @Bean
-    @NotCached
+    @Cached
+    @ShortExpiry
     HttpConnection<Element> notCachedJsoupConnection(@Cached @ShortExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
@@ -140,5 +198,17 @@ public class Connections {
         logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);
         logConfigurationEntry(LOGGER, "Cache short expiry", shortExpiryInterval, shortExpiryUnit);
         logConfigurationEntry(LOGGER, "HttpClient pool max idle", httpPoolMaxIdle);
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Qualifier
+    @interface AllCookies {
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Qualifier
+    @interface NoCookies {
     }
 }

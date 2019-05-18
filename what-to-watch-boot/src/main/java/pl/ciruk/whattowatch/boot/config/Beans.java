@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.Cached;
+import pl.ciruk.whattowatch.boot.cache.LongExpiry;
 import pl.ciruk.whattowatch.boot.cache.NotCached;
+import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
@@ -68,12 +70,12 @@ public class Beans {
     }
 
     @Bean
-    TitleProvider ekinoTitles(@NotCached HttpConnection<Element> httpConnection) {
+    TitleProvider ekinoTitles(@Cached @ShortExpiry HttpConnection<Element> httpConnection) {
         return new EkinoTitleProvider(httpConnection, titlePagesPerRequest);
     }
 
     @Bean
-    FilmwebProxy filmwebProxy(@Cached HttpConnection<Element> httpConnection) {
+    FilmwebProxy filmwebProxy(@Cached @LongExpiry HttpConnection<Element> httpConnection) {
         return new FilmwebProxy(httpConnection);
     }
 
@@ -83,7 +85,7 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider imdbScores(@Cached HttpConnection<Element> httpConnection, ExecutorService executorService) {
+    ScoresProvider imdbScores(@Cached @LongExpiry HttpConnection<Element> httpConnection, ExecutorService executorService) {
         return new ImdbScoresProvider(httpConnection, executorService);
     }
 
@@ -93,7 +95,7 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider metacriticScores(@Cached HttpConnection<Element> httpConnection, ExecutorService executorService) {
+    ScoresProvider metacriticScores(@Cached @LongExpiry HttpConnection<Element> httpConnection, ExecutorService executorService) {
         return new MetacriticScoresProvider(httpConnection, executorService);
     }
 
