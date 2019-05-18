@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.utils.net;
 
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -21,7 +20,7 @@ public class CloudflareBypass implements ResponseProcessor {
 
     @Override
     public Response apply(Response response) {
-        if (response.header("CF-RAY") == null) {
+        if (response.header("CF-RAY") == null || response.isSuccessful()) {
             return response;
         }
 
@@ -29,7 +28,7 @@ public class CloudflareBypass implements ResponseProcessor {
 
         Request request = response.request();
         try {
-            HttpUrl solvedUrl = challengeSolver.solve(request.url(), response.body().string());
+            var solvedUrl = challengeSolver.solve(request.url(), response.body().string());
             var requestBuilder = request.newBuilder()
                     .url(solvedUrl)
                     .removeHeader(Headers.REFERER)
