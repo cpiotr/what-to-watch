@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -59,7 +58,6 @@ public class FilmSuggestionProvider {
         return Optional.ofNullable(cache.get(title))
                 .map(CompletableFuture::completedFuture)
                 .orElseGet(() -> findFilmByTitle(title));
-
     }
 
     private CompletableFuture<Film> findFilmByTitle(Title title) {
@@ -79,11 +77,11 @@ public class FilmSuggestionProvider {
 
         var scoresFuture = scoresProviders.stream()
                 .map(toScoresOfAsync)
-                .reduce(completedFuture(Stream.empty()), combineByConcatenation());
+                .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService));
         return scoresFuture
                 .thenApply(stream -> stream.collect(toList()))
                 .thenApply(scores -> createFilm(description, scores))
-                .thenApply(recordFilm());
+                .thenApply(cacheAndCount());
     }
 
     private Film createFilm(Description description, List<Score> scores) {
@@ -93,11 +91,7 @@ public class FilmSuggestionProvider {
                 .build();
     }
 
-    private BinaryOperator<CompletableFuture<Stream<Score>>> combineByConcatenation() {
-        return combineUsing(Stream::concat, executorService);
-    }
-
-    private UnaryOperator<Film> recordFilm() {
+    private UnaryOperator<Film> cacheAndCount() {
         return film -> {
             suggestedFilms.incrementAndGet();
             cache.put(film.getDescription().getFoundFor(), film);
