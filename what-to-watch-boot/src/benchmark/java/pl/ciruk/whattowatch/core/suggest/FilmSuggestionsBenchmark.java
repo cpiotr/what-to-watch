@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -31,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +56,15 @@ public class FilmSuggestionsBenchmark {
     private ExecutorService workStealingPool;
     private ExecutorService fixedPool;
 
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(FilmSuggestionsBenchmark.class.getSimpleName())
+                .shouldDoGC(false)
+                .build();
+
+        new Runner(opt).run();
+    }
+
     @Setup(Level.Trial)
     public void initialize() {
         HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection();
@@ -66,16 +75,16 @@ public class FilmSuggestionsBenchmark {
                 sampleDescriptionProvider(connection, workStealingPool),
                 sampleScoreProviders(connection, workStealingPool),
                 workStealingPool,
-                new ConcurrentHashMap<>()
+                Caffeine.newBuilder().build()
         );
 
         fixedPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-        suggestionsFixedPool= new FilmSuggestionProvider(
+        suggestionsFixedPool = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, fixedPool),
                 sampleScoreProviders(connection, fixedPool),
                 fixedPool,
-                new ConcurrentHashMap<>()
+                Caffeine.newBuilder().build()
         );
     }
 
@@ -166,14 +175,5 @@ public class FilmSuggestionsBenchmark {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(NUMBER_OF_THREADS);
         return new JedisPool(poolConfig, "172.17.0.2");
-    }
-
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-                .include(FilmSuggestionsBenchmark.class.getSimpleName())
-                .shouldDoGC(false)
-                .build();
-
-        new Runner(opt).run();
     }
 }

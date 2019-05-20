@@ -19,4 +19,5 @@ module what.to.watch.core {
     requires okhttp3;
     requires com.fasterxml.jackson.databind;
     requires java.scripting;
+    requires com.github.benmanes.caffeine;
 }

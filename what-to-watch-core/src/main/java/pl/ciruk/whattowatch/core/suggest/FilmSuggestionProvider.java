@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -11,7 +12,6 @@ import pl.ciruk.whattowatch.core.title.TitleProvider;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -32,14 +32,14 @@ public class FilmSuggestionProvider {
     private final List<ScoresProvider> scoresProviders;
     private final ExecutorService executorService;
     private final AtomicLong suggestedFilms = new AtomicLong();
-    private final Map<Title, Film> cache;
+    private final Cache<Title, Film> cache;
 
     public FilmSuggestionProvider(
             TitleProvider titles,
             DescriptionProvider descriptions,
             List<ScoresProvider> scoresProviders,
             ExecutorService executorService,
-            Map<Title, Film> cache) {
+            Cache<Title, Film> cache) {
         this.titles = titles;
         this.descriptions = descriptions;
         this.scoresProviders = scoresProviders;
@@ -55,7 +55,7 @@ public class FilmSuggestionProvider {
     }
 
     private CompletableFuture<Film> getOrFindFilmByTitle(Title title) {
-        return Optional.ofNullable(cache.get(title))
+        return Optional.ofNullable(cache.getIfPresent(title))
                 .map(CompletableFuture::completedFuture)
                 .orElseGet(() -> findFilmByTitle(title));
     }

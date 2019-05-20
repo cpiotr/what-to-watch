@@ -44,6 +44,7 @@ dependencies {
     compile("net.jodah:failsafe:$failsafeVersion")
     compile("javax.activation:activation:$javaxAnnotationsVersion")
     compile("javax.xml.bind:jaxb-api:$jaxbVersion")
+    compile("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
     compile project(":what-to-watch-core")
 
     testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")

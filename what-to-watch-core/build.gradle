@@ -39,6 +39,7 @@ dependencies {
     compile("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     compile("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     compile("io.micrometer:micrometer-core:$micrometerVersion")
+    compile("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
     testCompile("ch.qos.logback:logback-classic:$logbackVersion")
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitVersion")

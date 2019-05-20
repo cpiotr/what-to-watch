@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.boot;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
@@ -57,7 +58,7 @@ public class WhatToWatchApplication {
                 sampleDescriptionProvider(threadPool, connection),
                 sampleScoreProviders(threadPool, connection),
                 threadPool,
-                new ConcurrentHashMap<>());
+                Caffeine.newBuilder().build());
         FilmByScoreFilter scoreFilter = new FilmByScoreFilter(0.65);
 
         long startTime = System.currentTimeMillis();
