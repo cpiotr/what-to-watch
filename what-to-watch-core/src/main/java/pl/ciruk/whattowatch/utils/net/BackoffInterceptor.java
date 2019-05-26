@@ -17,7 +17,7 @@ import java.util.function.IntConsumer;
 
 public class BackoffInterceptor implements Interceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int BACKOFF_THRESHOLD = 2;
+    private static final int BACKOFF_THRESHOLD = 1;
 
     private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
     private final IntConsumer backOffFunction;
@@ -51,9 +51,16 @@ public class BackoffInterceptor implements Interceptor {
     }
 
     private static void backOff(int errorsValue) {
-        double exponential = Math.pow(2, errorsValue % 6);
-        long waitTimeMillis = (long) (exponential * 100);
+        long waitTimeMillis = calculateTimeToWait(errorsValue);
+
         LOGGER.debug("Waiting {} ms", waitTimeMillis);
         LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(waitTimeMillis));
+    }
+
+    private static int calculateTimeToWait(int errorsValue) {
+        int cappedNumberOfErrors = (errorsValue > 5) ? 5 : errorsValue;
+        int exponentialOffset = 8; // 256
+
+        return 1 << (exponentialOffset + cappedNumberOfErrors);
     }
 }

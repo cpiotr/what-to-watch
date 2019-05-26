@@ -51,7 +51,6 @@ class BackoffInterceptorTest {
         when(chain.proceed(any())).thenThrow(new IOException());
 
         interceptIgnoringException(chain);
-        interceptIgnoringException(chain);
 
         verifyZeroInteractions(backOffFunction);
     }
