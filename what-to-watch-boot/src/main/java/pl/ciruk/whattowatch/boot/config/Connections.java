@@ -46,11 +46,14 @@ public class Connections {
     private final TimeUnit longExpiryUnit;
     private final long shortExpiryInterval;
     private final TimeUnit shortExpiryUnit;
+    private final Duration cloudflareDelay;
 
     public Connections(
             @Value("${redis.host}") String redisHost,
             @Value("${redis.pool.maxActive:8}") Integer redisPoolMaxActive,
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
+            @Value("${w2w.cloudflare.wait.interval:8}") Integer cloudflareDelayInterval,
+            @Value("${w2w.cloudflare.wait.unit:SECONDS}") TimeUnit cloudflareDelayUnit,
             @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
             @Value("${w2w.cache.expiry.long.unit:DAYS}") TimeUnit longExpiryUnit,
             @Value("${w2w.cache.expiry.short.interval:20}") long shortExpiryInterval,
@@ -62,6 +65,8 @@ public class Connections {
         this.longExpiryUnit = longExpiryUnit;
         this.shortExpiryInterval = shortExpiryInterval;
         this.shortExpiryUnit = shortExpiryUnit;
+
+        this.cloudflareDelay = Duration.of(cloudflareDelayInterval, cloudflareDelayUnit.toChronoUnit());
     }
 
     @Bean
@@ -107,7 +112,7 @@ public class Connections {
 
     @Bean
     ResponseProcessor cloudflareBypass(@AllCookies OkHttpClient httpClient, ScriptEngine engine) {
-        return new CloudflareBypass(httpClient, engine);
+        return new CloudflareBypass(httpClient, engine, cloudflareDelay);
     }
 
     @Bean
@@ -198,6 +203,7 @@ public class Connections {
         logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);
         logConfigurationEntry(LOGGER, "Cache short expiry", shortExpiryInterval, shortExpiryUnit);
         logConfigurationEntry(LOGGER, "HttpClient pool max idle", httpPoolMaxIdle);
+        logConfigurationEntry(LOGGER, "Cloudflare delay", cloudflareDelay);
     }
 
     @Retention(RetentionPolicy.RUNTIME)

@@ -6,16 +6,18 @@ import okhttp3.Response;
 
 import javax.script.ScriptEngine;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.concurrent.locks.LockSupport;
 
 public class CloudflareBypass implements ResponseProcessor {
     private final OkHttpClient httpClient;
     private final JavascriptChallengeSolver challengeSolver;
+    private final Duration timeout;
 
-    public CloudflareBypass(OkHttpClient httpClient, ScriptEngine engine) {
+    public CloudflareBypass(OkHttpClient httpClient, ScriptEngine engine, Duration timeout) {
         this.httpClient = httpClient;
         challengeSolver = new JavascriptChallengeSolver(engine);
+        this.timeout = timeout;
     }
 
     @Override
@@ -24,7 +26,7 @@ public class CloudflareBypass implements ResponseProcessor {
             return response;
         }
 
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(6));
+        LockSupport.parkNanos(timeout.toNanos());
 
         Request request = response.request();
         try {
