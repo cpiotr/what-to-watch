@@ -6,6 +6,7 @@ import okhttp3.Response;
 
 import javax.script.ScriptEngine;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.concurrent.locks.LockSupport;
 
@@ -37,7 +38,7 @@ public class CloudflareBypass implements ResponseProcessor {
                     .addHeader(Headers.REFERER, request.url().toString());
             return httpClient.newCall(requestBuilder.build()).execute();
         } catch (IOException e) {
-            throw new ResponseProcessingException(e);
+            throw new UncheckedIOException(e);
         }
     }
 }
