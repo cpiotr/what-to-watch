@@ -52,7 +52,7 @@ public class Connections {
             @Value("${redis.host}") String redisHost,
             @Value("${redis.pool.maxActive:8}") Integer redisPoolMaxActive,
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
-            @Value("${w2w.cloudflare.wait.interval:8}") Integer cloudflareDelayInterval,
+            @Value("${w2w.cloudflare.wait.interval:5}") Integer cloudflareDelayInterval,
             @Value("${w2w.cloudflare.wait.unit:SECONDS}") TimeUnit cloudflareDelayUnit,
             @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
             @Value("${w2w.cache.expiry.long.unit:DAYS}") TimeUnit longExpiryUnit,

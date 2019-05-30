@@ -25,7 +25,7 @@ public final class TestConnections {
         return new HtmlConnection(
                 httpClient,
                 List.of(),
-                List.of(new CloudflareBypass(httpClient, engine, Duration.ofSeconds(8))));
+                List.of(new CloudflareBypass(httpClient, engine, Duration.ofSeconds(5))));
     }
 
     public static JsoupConnection jsoup() {
