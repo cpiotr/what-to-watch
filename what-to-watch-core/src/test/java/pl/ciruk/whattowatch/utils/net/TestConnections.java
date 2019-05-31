@@ -31,5 +31,4 @@ public final class TestConnections {
     public static JsoupConnection jsoup() {
         return new JsoupConnection(html());
     }
-
 }

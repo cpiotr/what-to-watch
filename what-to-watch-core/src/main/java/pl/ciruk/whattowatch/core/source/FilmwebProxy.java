@@ -7,7 +7,6 @@ import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import java.util.Optional;
 
 public class FilmwebProxy {
-    private static final String HOST = "www.filmweb.pl";
     private final HttpConnection<Element> connection;
 
     public FilmwebProxy(HttpConnection<Element> connection) {
@@ -16,10 +15,11 @@ public class FilmwebProxy {
 
     public Optional<Element> searchBy(String title, int year) {
         var url = createHttpBuilder()
-                .addPathSegment("search/film")
+                .addPathSegment("search")
+                .addPathSegment("film")
                 .addQueryParameter("q", title)
-                .addQueryParameter("startYear", String.valueOf(previous(year)))
-                .addQueryParameter("endYear", String.valueOf(next(year)))
+                .addQueryParameter("startYear", previous(year))
+                .addQueryParameter("endYear", next(year))
                 .build();
 
         return connection.connectToAndGet(url);
@@ -40,14 +40,14 @@ public class FilmwebProxy {
     private static HttpUrl.Builder createHttpBuilder() {
         return new HttpUrl.Builder()
                 .scheme("https")
-                .host(HOST);
+                .host("www.filmweb.pl");
     }
 
-    private static int next(int year) {
-        return year + 1;
+    private static String next(int year) {
+        return String.valueOf(year + 1);
     }
 
-    private static int previous(int year) {
-        return year - 1;
+    private static String previous(int year) {
+        return String.valueOf(year - 1);
     }
 }
