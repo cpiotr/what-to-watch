@@ -10,6 +10,7 @@ import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
@@ -42,13 +43,15 @@ public class MetacriticScoresProvider implements ScoresProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                Names.createName(ScoresProvider.class, List.of("metacritic", "missing", "count")),
+                Names.getNameForMissingScoreProvider(),
+                List.of(Tags.getScoreProviderTag("Metacritic")),
                 missingMetacriticScores,
                 AtomicLong::get
         );
 
         Metrics.gauge(
-                Names.createName(ScoresProvider.class, List.of("newYorkTimes", "missing", "count")),
+                Names.getNameForMissingScoreProvider(),
+                List.of(Tags.getScoreProviderTag("NewYorkTimes")),
                 missingNewYorkTimesScores,
                 AtomicLong::get
         );

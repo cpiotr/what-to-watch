@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.score.filmweb;
 
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tag;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.lang.invoke.MethodHandles;
@@ -39,8 +41,8 @@ public class FilmwebScoresProvider implements ScoresProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                Names.createName(ScoresProvider.class, List.of("filmweb", "missing", "count")),
-                Collections.emptyList(),
+                Names.getNameForMissingScoreProvider(),
+                List.of(Tags.getScoreProviderTag(FilmwebScoresProvider.class)),
                 missingScores,
                 AtomicLong::get
         );

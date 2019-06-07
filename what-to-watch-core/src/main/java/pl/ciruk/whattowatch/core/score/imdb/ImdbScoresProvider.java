@@ -11,6 +11,7 @@ import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.text.NumberToken;
 import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
@@ -43,7 +44,8 @@ public class ImdbScoresProvider implements ScoresProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                Names.createName(ScoresProvider.class, List.of("imdb", "missing", "count")),
+                Names.getNameForMissingScoreProvider(),
+                List.of(Tags.getScoreProviderTag("IMDB")),
                 missingScores,
                 AtomicLong::get
         );
