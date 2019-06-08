@@ -8,7 +8,7 @@ public final class Tags {
         throw new AssertionError();
     }
 
-    public static Tag getScoreProviderTag(String scoreProviderName) {
-        return Tag.of("provider", scoreProviderName);
+    public static Tag getProviderTag(String providerName) {
+        return Tag.of("provider", providerName);
     }
 }

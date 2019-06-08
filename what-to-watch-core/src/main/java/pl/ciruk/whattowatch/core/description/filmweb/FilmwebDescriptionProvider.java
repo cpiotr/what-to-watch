@@ -9,10 +9,10 @@ import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.text.MissingValueException;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,8 +40,8 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                Names.createName(DescriptionProvider.class, List.of("filmweb", "missing", "count")),
-                Collections.emptyList(),
+                Names.createName(DescriptionProvider.class, List.of("missing", "count")),
+                List.of(Tags.getProviderTag("filmweb")),
                 missingDescriptions,
                 AtomicLong::get
         );

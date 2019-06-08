@@ -44,8 +44,8 @@ public class ImdbScoresProvider implements ScoresProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                Names.getNameForMissingScoreProvider(),
-                List.of(Tags.getScoreProviderTag("IMDB")),
+                Names.getNameForMissingScores(),
+                List.of(Tags.getProviderTag("IMDB")),
                 missingScores,
                 AtomicLong::get
         );

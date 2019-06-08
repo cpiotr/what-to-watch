@@ -43,15 +43,15 @@ public class MetacriticScoresProvider implements ScoresProvider {
         this.executorService = executorService;
 
         Metrics.gauge(
-                Names.getNameForMissingScoreProvider(),
-                List.of(Tags.getScoreProviderTag("Metacritic")),
+                Names.getNameForMissingScores(),
+                List.of(Tags.getProviderTag("Metacritic")),
                 missingMetacriticScores,
                 AtomicLong::get
         );
 
         Metrics.gauge(
-                Names.getNameForMissingScoreProvider(),
-                List.of(Tags.getScoreProviderTag("NewYorkTimes")),
+                Names.getNameForMissingScores(),
+                List.of(Tags.getProviderTag("NewYorkTimes")),
                 missingNewYorkTimesScores,
                 AtomicLong::get
         );

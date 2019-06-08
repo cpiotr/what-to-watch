@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.metrics.Names;
+import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
@@ -37,7 +38,8 @@ public class EkinoTitleProvider implements TitleProvider {
         this.pagesPerRequest = pagesPerRequest;
 
         Metrics.gauge(
-                Names.createName(TitleProvider.class, List.of("ekino", "count")),
+                Names.createName(TitleProvider.class, List.of("count")),
+                List.of(Tags.getProviderTag("ekino")),
                 numberOfTitles,
                 AtomicLong::get);
 
