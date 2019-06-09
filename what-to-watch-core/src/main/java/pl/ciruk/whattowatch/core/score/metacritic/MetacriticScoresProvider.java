@@ -148,8 +148,8 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
     private Optional<Element> findFirstResultMatching(Title title, Element searchResults) {
         return MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(searchResults)
-                .filter(e -> extractTitle(e).matches(title))
-                .findFirst();
+                .filter(resultsPage -> extractTitle(resultsPage).matches(title))
+                .findAny();
     }
 
     private Title extractTitle(Element searchResult) {
