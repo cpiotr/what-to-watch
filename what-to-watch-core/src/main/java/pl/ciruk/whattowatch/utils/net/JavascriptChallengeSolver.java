@@ -63,12 +63,14 @@ public class JavascriptChallengeSolver {
         String missingFunctions = augmentMissingFunctions(
                 List.of(
                         stubFunction("createElement").returning(createTagWithNestedLink(requestedUrl)),
-                        stubFunction("getElementById").returning(createTag(scriptEmbeddedInDiv))));
+                        stubFunction("getElementById").returning(createTag(scriptEmbeddedInDiv))
+                )
+        );
 
         try {
             return String.valueOf(engine.eval(missingFunctions + scriptText));
         } catch (ScriptException e) {
-            LOGGER.warn("Unable to solved JS challenge", e);
+            LOGGER.warn("Unable to solved JS challenge: ```{}```", scriptText, e);
             return "";
         }
     }

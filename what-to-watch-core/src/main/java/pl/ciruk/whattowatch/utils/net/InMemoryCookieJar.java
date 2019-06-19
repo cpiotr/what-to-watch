@@ -20,6 +20,6 @@ public class InMemoryCookieJar implements CookieJar {
 
     @Override
     public List<Cookie> loadForRequest(HttpUrl url) {
-        return cookiesByHost.getOrDefault(url.host(), new ArrayList<>());
+        return cookiesByHost.getOrDefault(url.host(), List.of());
     }
 }
