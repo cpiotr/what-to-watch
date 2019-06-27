@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.utils.net;
+package pl.ciruk.whattowatch.utils.net.html;
 
 import org.jsoup.nodes.Element;
 

@@ -2,13 +2,12 @@ package pl.ciruk.whattowatch.core.score.imdb;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-import pl.ciruk.whattowatch.utils.net.Extractable;
+import pl.ciruk.whattowatch.utils.net.html.Extractable;
 import pl.ciruk.whattowatch.utils.text.Patterns;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
