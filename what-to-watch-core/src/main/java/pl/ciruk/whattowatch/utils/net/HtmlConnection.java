@@ -70,6 +70,9 @@ public class HtmlConnection implements HttpConnection<String> {
     private Optional<String> extractBodyAsString(ResponseBody responseBody, HttpUrl url) {
         try {
             return Optional.of(responseBody.string());
+        } catch (SocketTimeoutException e) {
+            LOGGER.warn("Timeout while getting {}", url);
+            return Optional.empty();
         } catch (IOException e) {
             LOGGER.warn("Could not get {}", url, e);
             return Optional.empty();
