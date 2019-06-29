@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static pl.ciruk.whattowatch.utils.stream.Functions.identity;
+
 public class HtmlConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -56,24 +58,13 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Optional<String> connectToAndGet(Request.Builder requestBuilder, HttpUrl url) {
-        try (var response = execute(requestBuilder)) {
-            return Optional.of(response)
-                    .filter(Response::isSuccessful)
-                    .map(Response::body)
-                    .flatMap(responseBody -> extractBodyAsString(responseBody, url));
-        } catch (RuntimeException e) {
-            LOGGER.warn("Could not get {}", url, e);
-            return Optional.empty();
-        }
-    }
-
-    private Optional<String> extractBodyAsString(ResponseBody responseBody, HttpUrl url) {
-        try {
-            return Optional.of(responseBody.string());
-        } catch (SocketTimeoutException e) {
-            LOGGER.warn("Timeout while getting {}", url);
-            return Optional.empty();
-        } catch (IOException e) {
+        try (var optionalResponse = execute(requestBuilder)) {
+            return Optional.of(optionalResponse)
+                    .flatMap(this::unwrapBody)
+                    .map(identity(this::logBodyIfUnsuccessful))
+                    .filter(ProcessedResponse::isSuccessful)
+                    .map(ProcessedResponse::getBody);
+        } catch (HtmlConnectionException e) {
             LOGGER.warn("Could not get {}", url, e);
             return Optional.empty();
         }
@@ -87,7 +78,30 @@ public class HtmlConnection implements HttpConnection<String> {
         } catch (HtmlConnectionException e) {
             throw e;
         } catch (Exception e) {
-            throw new AssertionError(e);
+            throw new HtmlConnectionException(e);
+        }
+    }
+
+    private void logBodyIfUnsuccessful(ProcessedResponse processedResponse) {
+        if (!processedResponse.isSuccessful()) {
+            LOGGER.trace("Erroneous response: {}", processedResponse.body);
+        }
+    }
+
+    private Optional<ProcessedResponse> unwrapBody(Response response) {
+        return extractBodyAsString(response.body(), response.request().url())
+                .map(body -> new ProcessedResponse(body, response.isSuccessful()));
+    }
+
+    private Optional<String> extractBodyAsString(ResponseBody responseBody, HttpUrl url) {
+        try {
+            return Optional.of(responseBody.string());
+        } catch (SocketTimeoutException e) {
+            LOGGER.warn("Timeout while getting {}", url);
+            return Optional.empty();
+        } catch (IOException e) {
+            LOGGER.warn("Could not get {}", url, e);
+            return Optional.empty();
         }
     }
 
@@ -159,6 +173,24 @@ public class HtmlConnection implements HttpConnection<String> {
     static class NonRetryableException extends HtmlConnectionException {
         NonRetryableException(Throwable cause) {
             super(cause);
+        }
+    }
+
+    static class ProcessedResponse {
+        private final String body;
+        private final boolean successful;
+
+        ProcessedResponse(String body, boolean successful) {
+            this.body = body;
+            this.successful = successful;
+        }
+
+        String getBody() {
+            return body;
+        }
+
+        boolean isSuccessful() {
+            return successful;
         }
     }
 }
