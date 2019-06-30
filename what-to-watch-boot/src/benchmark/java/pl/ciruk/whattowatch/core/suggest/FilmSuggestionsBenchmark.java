@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.suggest;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -139,8 +140,9 @@ public class FilmSuggestionsBenchmark {
     }
 
     private static TitleProvider provideTitlesFromResource() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        try (InputStream inputStream = classLoader.getResourceAsStream("films.csv");
+        String name = "films.csv";
+        InputStream inputStream = getResourceAsStream(name);
+        try (inputStream;
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             List<Title> titles = reader.lines()
                     .limit(NUMBER_OF_TITLES)
@@ -153,9 +155,19 @@ public class FilmSuggestionsBenchmark {
         }
     }
 
+    private static InputStream getResourceAsStream(String name) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(name);
+        if (inputStream == null) {
+            throw new IllegalStateException("Missing resource: " + name);
+        }
+        return inputStream;
+    }
+
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
         return new CacheProvider<>() {
             @Override
+            @SuppressFBWarnings(justification = "jedis")
             public void put(String key, String value) {
                 try (Jedis jedis = pool.getResource()) {
                     jedis.set(key, value);
@@ -163,6 +175,7 @@ public class FilmSuggestionsBenchmark {
             }
 
             @Override
+            @SuppressFBWarnings(justification = "jedis")
             public Optional<String> get(String key) {
                 try (Jedis jedis = pool.getResource()) {
                     return Optional.ofNullable(jedis.get(key));

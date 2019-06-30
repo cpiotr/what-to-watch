@@ -1,12 +1,12 @@
 package pl.ciruk.whattowatch.neural
 
+import org.graalvm.compiler.core.common.SuppressFBWarnings
 import org.neuroph.core.data.DataSet
 import org.neuroph.core.data.DataSetRow
 import org.neuroph.nnet.MultiLayerPerceptron
 import org.neuroph.nnet.learning.BackPropagation
 import pl.ciruk.whattowatch.core.score.Score
 import pl.ciruk.whattowatch.core.score.ScoreType
-
 
 class NeuralScores(private val dataSet: DataSet) {
     private val network = MultiLayerPerceptron(4, 256, 1)
@@ -61,6 +61,7 @@ class NeuralScores(private val dataSet: DataSet) {
                 .build()
     }
 
+    @SuppressFBWarnings(justification = "kotlin")
     private fun findScore(scores: List<Score>, title: String): Double {
         return scores
                 .filter { score -> score.source.equals(title, ignoreCase = true) }

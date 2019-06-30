@@ -76,11 +76,11 @@ public class JavascriptChallengeSolver {
     }
 
     private String augmentMissingFunctions(List<String> missingFunctions) {
-        var italicsFunction = "String.prototype.italics = function() {return \"<i>\" + this + \"</i>\";};\n";
+        var italicsFunction = "String.prototype.italics = function() {return \"<i>\" + this + \"</i>\";};";
         return Stream.concat(
-                Stream.of(italicsFunction, "document = {};\n"),
+                Stream.of(italicsFunction, "document = {};"),
                 missingFunctions.stream()
-        ).collect(joining());
+        ).collect(joining("\n"));
     }
 
     private String extractScriptText(Element element) {
@@ -106,7 +106,7 @@ public class JavascriptChallengeSolver {
     }
 
     private JavascriptFunctionMock stubFunction(String name) {
-        return functionReturnValue -> String.format("document.%s = function(e){ %s };\n", name, functionReturnValue);
+        return functionReturnValue -> String.format("document.%s = function(e){ %s };%n", name, functionReturnValue);
     }
 
     interface JavascriptFunctionMock extends Function<String, String> {

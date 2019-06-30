@@ -47,6 +47,8 @@ dependencies {
     compile("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
     compile project(":what-to-watch-core")
 
+    compile("com.github.spotbugs:spotbugs-annotations:3.1.12")
+
     testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testCompile("org.junit.jupiter:junit-jupiter-engine:$junitVersion")

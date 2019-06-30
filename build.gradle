@@ -18,7 +18,7 @@ allprojects {
     version "${version != 'unspecified' ? version : 'SNAPSHOT'}"
 
     apply plugin: 'pmd'
-    //apply plugin: "com.github.spotbugs"
+    apply plugin: "com.github.spotbugs"
 
     repositories {
         mavenCentral()
