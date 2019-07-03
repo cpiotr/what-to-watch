@@ -18,6 +18,7 @@ import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
+import pl.ciruk.whattowatch.core.title.onetwothree.OneTwoThreeTitleProvider;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
@@ -115,7 +116,7 @@ public class WhatToWatchApplication {
 
     private static TitleProvider sampleTitleProvider() {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new EkinoTitleProvider(keepCookiesConnection, 20);
+        return new OneTwoThreeTitleProvider(keepCookiesConnection, 20);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
@@ -144,7 +145,7 @@ public class WhatToWatchApplication {
 
     private static JedisPool createJedisPool(Properties properties) {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(POOL_SIZE);
+        poolConfig.setMaxTotal(POOL_SIZE * 2);
         return new JedisPool(poolConfig, properties.getProperty("redis.host"));
     }
 
