@@ -17,7 +17,6 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
-import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.core.title.onetwothree.OneTwoThreeTitleProvider;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
@@ -55,7 +54,7 @@ public class WhatToWatchApplication {
         JsoupConnection connection = createJsoupConnection(cache);
 
         FilmSuggestionProvider suggestions = new FilmSuggestionProvider(
-                sampleTitleProvider(),
+                sampleTitleProvider(connection),
                 sampleDescriptionProvider(threadPool, connection),
                 sampleScoreProviders(threadPool, connection),
                 threadPool,
@@ -83,12 +82,12 @@ public class WhatToWatchApplication {
         }
     }
 
-    private static JsoupConnection createJsoupConnection(CacheProvider<String> cache) {
-        return new JsoupConnection(new CachedConnection(cache, createHttpConnection()));
-    }
-
     public static HtmlConnection createHttpConnection() {
         return new HtmlConnection(createHttpClient());
+    }
+
+    private static JsoupConnection createJsoupConnection(CacheProvider<String> cache) {
+        return new JsoupConnection(new CachedConnection(cache, createHttpConnection()));
     }
 
     private static OkHttpClient createHttpClient() {
@@ -114,9 +113,9 @@ public class WhatToWatchApplication {
         );
     }
 
-    private static TitleProvider sampleTitleProvider() {
+    private static TitleProvider sampleTitleProvider(JsoupConnection detailsConnection) {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new OneTwoThreeTitleProvider(keepCookiesConnection, 20);
+        return new OneTwoThreeTitleProvider(keepCookiesConnection, detailsConnection, 20);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

@@ -27,14 +27,18 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
 
     private static final String TITLES_PAGE_PATTERN = BASE_URL + "movies/page/%d/";
 
-    private final HttpConnection<Element> connection;
-
+    private final HttpConnection<Element> listConnection;
+    private final HttpConnection<Element> detailsConnection;
     private final int pagesPerRequest;
 
     private final AtomicLong numberOfTitles = new AtomicLong();
 
-    public OneTwoThreeTitleProvider(HttpConnection<Element> connection, int pagesPerRequest) {
-        this.connection = connection;
+    public OneTwoThreeTitleProvider(
+            HttpConnection<Element> listConnection,
+            HttpConnection<Element> detailsConnection,
+            int pagesPerRequest) {
+        this.listConnection = listConnection;
+        this.detailsConnection = detailsConnection;
         this.pagesPerRequest = pagesPerRequest;
 
         Metrics.gauge(
@@ -52,7 +56,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
 
         return generatePageUrlsForRequest(pageNumber)
                 .peek(url -> LOGGER.debug("Loading films from: {}", url))
-                .map(connection::connectToAndGet)
+                .map(listConnection::connectToAndGet)
                 .flatMap(Optional::stream)
                 .flatMap(OneTwoThreeStreamSelectors.TITLE_LINKS::extractFrom)
                 .parallel()
@@ -84,7 +88,8 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     }
 
     private Optional<Title> visitAndParseToTitle(HttpUrl link) {
-        return connection.connectToAndGet(link)
+        LOGGER.info("Visit: {}", link);
+        return detailsConnection.connectToAndGet(link)
                 .map(pageWithDetails -> parseToTitle(pageWithDetails, link));
     }
 

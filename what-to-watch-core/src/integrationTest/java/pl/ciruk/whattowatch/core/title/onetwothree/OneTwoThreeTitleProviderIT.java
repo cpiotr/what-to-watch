@@ -6,6 +6,7 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
+import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,8 @@ class OneTwoThreeTitleProviderIT {
 
     @BeforeEach
     void setUp() {
-        provider = new OneTwoThreeTitleProvider(TestConnections.jsoup(), 1);
+        JsoupConnection connection = TestConnections.jsoup();
+        provider = new OneTwoThreeTitleProvider(connection, connection,1);
     }
 
     @Test
