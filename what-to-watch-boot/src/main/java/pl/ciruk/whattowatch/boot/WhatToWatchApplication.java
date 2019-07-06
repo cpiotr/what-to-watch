@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("PMD")
@@ -49,26 +50,17 @@ public class WhatToWatchApplication {
         ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
         Threads.setThreadNamePrefix("My", threadPool);
 
-        JedisPool jedisPool = createJedisPool(properties);
-        CacheProvider<String> cache = createJedisCache(jedisPool);
-        JsoupConnection connection = createJsoupConnection(cache);
-
-        FilmSuggestionProvider suggestions = new FilmSuggestionProvider(
-                sampleTitleProvider(connection),
-                sampleDescriptionProvider(threadPool, connection),
-                sampleScoreProviders(threadPool, connection),
-                threadPool,
-                Caffeine.newBuilder().build());
-        FilmByScoreFilter scoreFilter = new FilmByScoreFilter(0.65);
-
-        long startTime = System.currentTimeMillis();
-
-        try {
+        try (var jedisPool = createJedisPool(properties)) {
+            CacheProvider<String> cache = createJedisCache(jedisPool);
+            JsoupConnection connection = createJsoupConnection(cache);
+            FilmSuggestionProvider suggestions = sampleSuggestionProvider(threadPool, connection);
+            FilmByScoreFilter scoreFilter = new FilmByScoreFilter(0.65);
+            long startTime = System.currentTimeMillis();
             CompletableFutures.getAllOf(suggestions.suggestFilms(1))
                     .limit(100)
                     .filter(Film::isNotEmpty)
                     .filter(scoreFilter)
-                    .forEach(System.out::println);
+                    .forEach(film -> System.out.println("Found: " + film));
             long stopTime = System.currentTimeMillis();
 
             threadPool.shutdown();
@@ -77,9 +69,16 @@ public class WhatToWatchApplication {
             System.out.println("Found in " + (stopTime - startTime) + "ms");
         } catch (InterruptedException e) {
             LOGGER.error("Processing error", e);
-        } finally {
-            jedisPool.destroy();
         }
+    }
+
+    private static FilmSuggestionProvider sampleSuggestionProvider(ExecutorService threadPool, JsoupConnection connection) {
+        return new FilmSuggestionProvider(
+                        sampleTitleProvider(connection),
+                        sampleDescriptionProvider(threadPool, connection),
+                        sampleScoreProviders(threadPool, connection),
+                        threadPool,
+                        Caffeine.newBuilder().build());
     }
 
     public static HtmlConnection createHttpConnection() {
@@ -151,7 +150,8 @@ public class WhatToWatchApplication {
     private static Properties loadDevProperties() {
         Properties properties = new Properties();
         try {
-            InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties");
+            InputStream resourceAsStream =
+                    Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties");
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
@@ -160,5 +160,4 @@ public class WhatToWatchApplication {
         }
         return properties;
     }
-
 }
