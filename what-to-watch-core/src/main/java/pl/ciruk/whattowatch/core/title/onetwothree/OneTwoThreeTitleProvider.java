@@ -59,7 +59,6 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
                 .map(listConnection::connectToAndGet)
                 .flatMap(Optional::stream)
                 .flatMap(OneTwoThreeStreamSelectors.TITLE_LINKS::extractFrom)
-                .parallel()
                 .map(this::visitAndParseToTitle)
                 .flatMap(Optional::stream)
                 .peek(ignored -> numberOfTitles.incrementAndGet());
@@ -78,7 +77,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
                 .map(index -> String.format(TITLES_PAGE_PATTERN, index))
                 .map(HttpUrl::get)
                 .collect(toList());
-        return urls.parallelStream();
+        return urls.stream();
     }
 
     private Optional<Title> visitAndParseToTitle(Element linkToTitle) {
@@ -88,7 +87,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     }
 
     private Optional<Title> visitAndParseToTitle(HttpUrl link) {
-        LOGGER.info("Visit: {}", link);
+        LOGGER.debug("Visit: {}", link);
         return detailsConnection.connectToAndGet(link)
                 .map(pageWithDetails -> parseToTitle(pageWithDetails, link));
     }
