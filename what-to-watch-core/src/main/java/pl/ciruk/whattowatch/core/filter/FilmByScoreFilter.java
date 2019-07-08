@@ -22,7 +22,7 @@ public class FilmByScoreFilter implements Predicate<Film> {
         if (Double.compare(score, minimalAcceptedScore) >= 0) {
             return true;
         }
-        if (Double.compare(score / minimalAcceptedScore,  0.9) > 0) {
+        if (Double.compare(score / minimalAcceptedScore, 0.9) > 0) {
             LOGGER.info("Omitting {} with score {}", film.getDescription().titleAsText(), score);
         }
         return false;

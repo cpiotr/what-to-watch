@@ -36,14 +36,14 @@ public final class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
 
     public ScoreAssert hasGradeGreaterThan(double threshold) {
         Assertions.assertThat(actual.getGrade())
-                .as("Grade between %.2f%% and 100%%", threshold*100)
+                .as("Grade between %.2f%% and 100%%", threshold * 100)
                 .isBetween(threshold, 1.0);
         return this;
     }
 
     public ScoreAssert hasGradeLessThan(double threshold) {
         Assertions.assertThat(actual.getGrade())
-                .as("Grade between 0%% and %.0f%%", threshold*100)
+                .as("Grade between 0%% and %.0f%%", threshold * 100)
                 .isBetween(0.0, threshold);
         return this;
     }

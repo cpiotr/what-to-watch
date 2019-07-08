@@ -109,7 +109,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
         var rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
         var quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
         return Score.builder()
-                .grade(rating/10.0)
+                .grade(rating / 10.0)
                 .quantity(quantity)
                 .source("Filmweb")
                 .type(ScoreType.AMATEUR)

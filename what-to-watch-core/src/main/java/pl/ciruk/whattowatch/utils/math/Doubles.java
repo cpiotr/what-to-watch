@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.utils.math;
 
 import java.util.function.Predicate;
+
 @SuppressWarnings("PMD.ClassNamingConventions")
 
 public final class Doubles {

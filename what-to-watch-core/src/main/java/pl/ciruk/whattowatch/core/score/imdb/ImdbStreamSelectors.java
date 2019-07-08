@@ -8,7 +8,8 @@ import java.util.stream.Stream;
 
 public enum ImdbStreamSelectors implements Extractable<Stream<Element>> {
     FILMS_FROM_SEARCH_RESULT(page -> page.select(".lister-list .lister-item")
-            .stream()),;
+            .stream()),
+    ;
     private final Function<Element, Stream<Element>> extractor;
 
     ImdbStreamSelectors(Function<Element, Stream<Element>> extractor) {

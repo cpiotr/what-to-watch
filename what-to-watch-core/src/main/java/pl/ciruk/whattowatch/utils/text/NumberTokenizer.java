@@ -30,7 +30,7 @@ public class NumberTokenizer {
                 || (isPreviousADigit() && isCurrentAValidSeparator() && isNextADigit())
                 || (isPreviousADigit() && isSpaceChar(current()) && isNextADigit())
                 || (isPreviousADigit() && isCurrentAValidSuffix()))
-                ) {
+        ) {
             buffer.append(current());
             index++;
         }

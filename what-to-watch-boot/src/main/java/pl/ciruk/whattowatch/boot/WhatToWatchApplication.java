@@ -36,7 +36,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("PMD")
@@ -72,17 +71,17 @@ public class WhatToWatchApplication {
         }
     }
 
-    private static FilmSuggestionProvider sampleSuggestionProvider(ExecutorService threadPool, JsoupConnection connection) {
-        return new FilmSuggestionProvider(
-                        sampleTitleProvider(connection),
-                        sampleDescriptionProvider(threadPool, connection),
-                        sampleScoreProviders(threadPool, connection),
-                        threadPool,
-                        Caffeine.newBuilder().build());
-    }
-
     public static HtmlConnection createHttpConnection() {
         return new HtmlConnection(createHttpClient());
+    }
+
+    private static FilmSuggestionProvider sampleSuggestionProvider(ExecutorService threadPool, JsoupConnection connection) {
+        return new FilmSuggestionProvider(
+                sampleTitleProvider(connection),
+                sampleDescriptionProvider(threadPool, connection),
+                sampleScoreProviders(threadPool, connection),
+                threadPool,
+                Caffeine.newBuilder().build());
     }
 
     private static JsoupConnection createJsoupConnection(CacheProvider<String> cache) {

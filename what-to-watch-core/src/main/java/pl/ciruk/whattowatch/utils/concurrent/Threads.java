@@ -33,6 +33,7 @@ public final class Threads {
     public static ThreadFactory createThreadFactory(String threadNamePrefix) {
         return new ThreadFactory() {
             private final AtomicLong counter = new AtomicLong();
+
             @Override
             public Thread newThread(Runnable runnable) {
                 Thread thread = Executors.defaultThreadFactory().newThread(runnable);

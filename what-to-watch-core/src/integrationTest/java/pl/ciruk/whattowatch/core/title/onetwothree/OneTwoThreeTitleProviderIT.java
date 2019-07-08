@@ -2,15 +2,11 @@ package pl.ciruk.whattowatch.core.title.onetwothree;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
-import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
-import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +17,7 @@ class OneTwoThreeTitleProviderIT {
     @BeforeEach
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
-        provider = new OneTwoThreeTitleProvider(connection, connection,1);
+        provider = new OneTwoThreeTitleProvider(connection, connection, 1);
     }
 
     @Test

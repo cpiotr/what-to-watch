@@ -12,7 +12,8 @@ public enum FilmwebStreamSelectors implements Extractable<Stream<String>> {
             .map(Element::text)),
     LINKS_FROM_SEARCH_RESULT(page -> page.select("ul.resultsList li div.filmPreview__card div.filmPreview__header a")
             .stream()
-            .map(a -> a.attr("href"))),;
+            .map(a -> a.attr("href"))),
+    ;
     private final Function<Element, Stream<String>> extractor;
 
     FilmwebStreamSelectors(Function<Element, Stream<String>> extractor) {
