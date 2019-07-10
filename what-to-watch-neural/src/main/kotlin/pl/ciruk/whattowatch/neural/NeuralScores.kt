@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.neural
 
-import org.graalvm.compiler.core.common.SuppressFBWarnings
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.neuroph.core.data.DataSet
 import org.neuroph.core.data.DataSetRow
 import org.neuroph.nnet.MultiLayerPerceptron
@@ -11,11 +11,13 @@ import pl.ciruk.whattowatch.core.score.ScoreType
 class NeuralScores(private val dataSet: DataSet) {
     private val network = MultiLayerPerceptron(4, 256, 1)
 
+    @SuppressFBWarnings(justification = "kotlin")
     companion object {
         fun readDataSet(): DataSet {
             val dataSet = DataSet(4, 1)
             val resource = Thread.currentThread().contextClassLoader.getResource("films.csv")
-            resource.readText().split("\n")
+            resource!!.readText()
+                    .split("\n")
                     .drop(1) // Header
                     .map { it.split("\t") }
                     .map { values -> values.map { it.toDouble() } }
