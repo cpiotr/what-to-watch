@@ -68,7 +68,7 @@ public class FilmSuggestionsBenchmark {
 
     @Setup(Level.Trial)
     public void initialize() {
-        HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection();
+        HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection(WhatToWatchApplication.createHttpClient());
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
         suggestionsWorkStealing = new FilmSuggestionProvider(

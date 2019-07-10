@@ -50,16 +50,17 @@ public class WhatToWatchApplication {
         Threads.setThreadNamePrefix("My", threadPool);
 
         try (var jedisPool = createJedisPool(properties)) {
+            long startTime = System.currentTimeMillis();
             CacheProvider<String> cache = createJedisCache(jedisPool);
-            JsoupConnection connection = createJsoupConnection(cache);
+            OkHttpClient httpClient = createHttpClient();
+            JsoupConnection connection = createJsoupConnection(cache, httpClient);
             FilmSuggestionProvider suggestions = sampleSuggestionProvider(threadPool, connection);
             FilmByScoreFilter scoreFilter = new FilmByScoreFilter(0.65);
-            long startTime = System.currentTimeMillis();
             CompletableFutures.getAllOf(suggestions.suggestFilms(1))
-                    .limit(100)
                     .filter(Film::isNotEmpty)
                     .filter(scoreFilter)
                     .forEach(film -> System.out.println("Found: " + film));
+            httpClient.connectionPool().evictAll();
             long stopTime = System.currentTimeMillis();
 
             threadPool.shutdown();
@@ -71,8 +72,8 @@ public class WhatToWatchApplication {
         }
     }
 
-    public static HtmlConnection createHttpConnection() {
-        return new HtmlConnection(createHttpClient());
+    public static HtmlConnection createHttpConnection(OkHttpClient httpClient) {
+        return new HtmlConnection(httpClient);
     }
 
     private static FilmSuggestionProvider sampleSuggestionProvider(ExecutorService threadPool, JsoupConnection connection) {
@@ -84,11 +85,11 @@ public class WhatToWatchApplication {
                 Caffeine.newBuilder().build());
     }
 
-    private static JsoupConnection createJsoupConnection(CacheProvider<String> cache) {
-        return new JsoupConnection(new CachedConnection(cache, createHttpConnection()));
+    private static JsoupConnection createJsoupConnection(CacheProvider<String> cache, OkHttpClient httpClient) {
+        return new JsoupConnection(new CachedConnection(cache, createHttpConnection(httpClient)));
     }
 
-    private static OkHttpClient createHttpClient() {
+    public static OkHttpClient createHttpClient() {
         ConnectionPool connectionPool = new ConnectionPool(32, 12_000, TimeUnit.SECONDS);
         return new OkHttpClient.Builder()
                 .connectionPool(connectionPool)
@@ -117,7 +118,7 @@ public class WhatToWatchApplication {
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {
-        return new JsoupConnection(createHttpConnection());
+        return new JsoupConnection(createHttpConnection(createHttpClient()));
     }
 
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
