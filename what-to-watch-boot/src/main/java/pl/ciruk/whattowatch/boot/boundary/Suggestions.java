@@ -82,7 +82,7 @@ public class Suggestions {
 
         try (EventsSink sink = new EventsSink(sse, sseEventSink)) {
             responseTimer.record(() -> suggestionsProvider.suggestFilms(pageNumber)
-                    .map(sendIfWorthWatchingTo(sink))
+                    .map(sendToSinkIfWorthWatching(sink))
                     .forEach(CompletableFuture::join));
             LOGGER.info("Finished providing suggestions for page {}", pageNumber);
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class Suggestions {
         }
     }
 
-    private Function<CompletableFuture<Film>, CompletableFuture<Void>> sendIfWorthWatchingTo(EventsSink sink) {
+    private Function<CompletableFuture<Film>, CompletableFuture<Void>> sendToSinkIfWorthWatching(EventsSink sink) {
         return futureFilm -> futureFilm.thenAccept(
                 film -> {
                     if (filmFilter.isWorthWatching(film)) {

@@ -26,8 +26,7 @@ public class Descriptions {
     public Response find(
             @QueryParam("title") String title,
             @QueryParam("originalTitle") String originalTitle,
-            @QueryParam("year") int year
-    ) {
+            @QueryParam("year") int year) {
         var titleObject = Title.builder()
                 .title(title)
                 .originalTitle(originalTitle)
