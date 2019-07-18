@@ -49,14 +49,17 @@ public class Beans {
     private final Integer filmPoolSize;
     private final Integer titlePagesPerRequest;
     private final Double filmScoreThreshold;
+    private final Integer filmCacheSize;
 
     public Beans(
             @Value("${w2w.pool.size:16}") Integer filmPoolSize,
             @Value("${w2w.titles.pagesPerRequest:10}") Integer titlePagesPerRequest,
-            @Value("${w2w.suggestions.filter.scoreThreshold:0.6}") Double filmScoreThreshold) {
+            @Value("${w2w.suggestions.filter.scoreThreshold:0.6}") Double filmScoreThreshold,
+            @Value("${w2w.films.cache.size:10000}") Integer filmCacheSize) {
         this.filmPoolSize = filmPoolSize;
         this.titlePagesPerRequest = titlePagesPerRequest;
         this.filmScoreThreshold = filmScoreThreshold;
+        this.filmCacheSize = filmCacheSize;
     }
 
     @Bean
@@ -106,7 +109,7 @@ public class Beans {
     @Bean
     Cache<Title, Film> cache() {
         return Caffeine.newBuilder()
-                .maximumSize(10_000)
+                .maximumSize(filmCacheSize)
                 .recordStats()
                 .build();
     }
@@ -146,5 +149,6 @@ public class Beans {
         logConfigurationEntry(LOGGER, "Thread pool size", filmPoolSize);
         logConfigurationEntry(LOGGER, "Number of title pages crawled per request", titlePagesPerRequest);
         logConfigurationEntry(LOGGER, "Film score threshold", filmScoreThreshold);
+        logConfigurationEntry(LOGGER, "Film cache size", filmCacheSize);
     }
 }
