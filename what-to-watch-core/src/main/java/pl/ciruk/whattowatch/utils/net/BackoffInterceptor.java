@@ -58,8 +58,8 @@ public class BackoffInterceptor implements Interceptor {
     }
 
     private static int calculateTimeToWait(int errorsValue) {
-        int cappedNumberOfErrors = (errorsValue > 5) ? 5 : errorsValue;
-        int exponentialOffset = 8; // 256
+        int cappedNumberOfErrors = Math.min(errorsValue, 5);
+        int exponentialOffset = 9; // Start with 512 ms
 
         return 1 << (exponentialOffset + cappedNumberOfErrors);
     }
