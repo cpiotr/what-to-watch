@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.title.onetwothree;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.title.Title;
@@ -89,15 +90,17 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     private Optional<Title> visitAndParseToTitle(HttpUrl link) {
         LOGGER.debug("Visit: {}", link);
         return detailsConnection.connectToAndGet(link)
-                .map(pageWithDetails -> parseToTitle(pageWithDetails, link));
+                .flatMap(pageWithDetails -> parseToTitle(pageWithDetails, link));
     }
 
-    private Title parseToTitle(Element pageWithDetails, HttpUrl link) {
-        var filmContainer = pageWithDetails.select("#contenedor .sheader").first();
+    private Optional<Title> parseToTitle(Element pageWithDetails, HttpUrl link) {
+        return Optional.of(pageWithDetails.select("#contenedor .sheader"))
+                .map(Elements::first)
+                .map(filmContainer -> buildTitle(link.toString(), filmContainer));
+    }
 
-        var builder = Title.builder();
-        builder.url(link.toString());
-
+    private Title buildTitle(String url, Element filmContainer) {
+        var builder = Title.builder().url(url);
         OneTwoThreeSelectors.TITLE.extractFrom(filmContainer)
                 .ifPresent(builder::title);
         OneTwoThreeSelectors.ORIGINAL_TITLE.extractFrom(filmContainer)
@@ -105,7 +108,6 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
         OneTwoThreeSelectors.YEAR.extractFrom(filmContainer)
                 .map(Integer::parseInt)
                 .ifPresent(builder::year);
-
         return builder.build();
     }
 }
