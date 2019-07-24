@@ -34,7 +34,6 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 COPY ./ /what-to-watch/
 WORKDIR /what-to-watch
 RUN sh -c './gradlew clean build -Pversion=$W2W_VERSION --stacktrace'
-RUN sh -c 'ls -al ./what-to-watch-boot/build/libs/'
 
 EXPOSE 8080
 EXPOSE 9999
