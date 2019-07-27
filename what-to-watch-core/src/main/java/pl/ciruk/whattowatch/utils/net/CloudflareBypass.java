@@ -11,6 +11,8 @@ import java.time.Duration;
 import java.util.concurrent.locks.LockSupport;
 
 public class CloudflareBypass implements ResponseProcessor {
+    private static final int TEMPORARILY_UNAVAILABLE = 503;
+
     private final OkHttpClient httpClient;
     private final JavascriptChallengeSolver challengeSolver;
     private final Duration timeout;
@@ -23,7 +25,7 @@ public class CloudflareBypass implements ResponseProcessor {
 
     @Override
     public Response apply(Response response) {
-        if (response.header("CF-RAY") == null || response.isSuccessful()) {
+        if (qualifiesForChallenge(response)) {
             return response;
         }
 
@@ -40,5 +42,9 @@ public class CloudflareBypass implements ResponseProcessor {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private boolean qualifiesForChallenge(Response response) {
+        return response.header("CF-RAY") == null || response.code() != TEMPORARILY_UNAVAILABLE;
     }
 }
