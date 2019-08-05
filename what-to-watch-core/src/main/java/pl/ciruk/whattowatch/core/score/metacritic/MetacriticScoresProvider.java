@@ -29,11 +29,8 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final HttpConnection<Element> connection;
-
     private final ExecutorService executorService;
-
     private final AtomicLong missingMetacriticScores = new AtomicLong();
-
     private final AtomicLong missingNewYorkTimesScores = new AtomicLong();
 
     public MetacriticScoresProvider(

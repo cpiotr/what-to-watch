@@ -16,7 +16,6 @@ public class Film {
     private static final Film EMPTY = Film.builder().build();
 
     private Description description;
-
     private List<Score> scores;
 
     private Film(Description description, List<Score> scores) {

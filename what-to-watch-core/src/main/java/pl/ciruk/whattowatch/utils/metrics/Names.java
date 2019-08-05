@@ -9,7 +9,6 @@ import java.util.stream.StreamSupport;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class Names {
-
     private static final String MISSING_SCORES = Names.createName(ScoresProvider.class, List.of("missing", "count"));
 
     private Names() {

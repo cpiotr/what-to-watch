@@ -32,9 +32,7 @@ public class ImdbScoresProvider implements ScoresProvider {
     private static final int MAX_IMDB_SCORE = 10;
 
     private final HttpConnection<Element> httpConnection;
-
     private final ExecutorService executorService;
-
     private final AtomicLong missingScores = new AtomicLong();
 
     public ImdbScoresProvider(

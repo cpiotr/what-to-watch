@@ -29,9 +29,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final FilmwebProxy filmwebProxy;
-
     private final ExecutorService executorService;
-
     private final AtomicLong missingScores = new AtomicLong();
 
     public FilmwebScoresProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {

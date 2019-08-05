@@ -14,7 +14,6 @@ public class CachedConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final CacheProvider<String> cache;
-
     private final HttpConnection<String> connection;
 
     public CachedConnection(CacheProvider<String> cache, HttpConnection<String> connection) {

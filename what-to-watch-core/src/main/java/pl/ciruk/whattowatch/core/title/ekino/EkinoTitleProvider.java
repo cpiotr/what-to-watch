@@ -22,15 +22,11 @@ import static java.util.stream.Collectors.toList;
 
 public class EkinoTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private static final String BASE_URL = "https://ekino-tv.pl";
-
     private static final String TITLES_PAGE_PATTERN = BASE_URL + "/movie/cat/strona%%5B%d%%5D+";
 
     private final HttpConnection<Element> connection;
-
     private final int pagesPerRequest;
-
     private final AtomicLong numberOfTitles = new AtomicLong();
 
     public EkinoTitleProvider(HttpConnection<Element> connection, int pagesPerRequest) {

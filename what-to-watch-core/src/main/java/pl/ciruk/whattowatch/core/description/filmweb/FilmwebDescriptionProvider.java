@@ -26,13 +26,10 @@ import static java.util.stream.Collectors.toList;
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public class FilmwebDescriptionProvider implements DescriptionProvider {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ExecutorService executorService;
-
     private final FilmwebProxy filmwebProxy;
-
     private final AtomicLong missingDescriptions = new AtomicLong();
 
     public FilmwebDescriptionProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
