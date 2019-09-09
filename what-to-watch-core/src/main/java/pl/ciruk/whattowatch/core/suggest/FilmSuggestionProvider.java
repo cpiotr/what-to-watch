@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -72,11 +71,8 @@ public class FilmSuggestionProvider {
     }
 
     private CompletableFuture<Film> descriptionToFilm(Description description) {
-        Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-                scoresProvider -> scoresProvider.findScoresByAsync(description);
-
         var scoresFuture = scoresProviders.stream()
-                .map(toScoresOfAsync)
+                .map(scoresProvider -> scoresProvider.findScoresByAsync(description))
                 .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService));
         return scoresFuture
                 .thenApply(stream -> stream.collect(toList()))
