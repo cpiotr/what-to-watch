@@ -15,7 +15,7 @@ final class NewYorkTimesScoreUtil {
 
     static Optional<Score.ScoreBuilder> extractToScoreBuilder(Element htmlWithScores) {
         return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
-                .map(grade -> (Double.valueOf(grade) / 100.0))
+                .map(grade -> (Double.parseDouble(grade) / 100.0))
                 .map(NewYorkTimesScoreUtil::createScore);
     }
 
