@@ -10,8 +10,7 @@ public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
     TITLE(film -> film.select(".data h1")
             .stream()
             .findFirst()
-            .map(Element::text)
-            .map(OneTwoThreeSelectors::stripTags)),
+            .map(Element::text)),
     ORIGINAL_TITLE(film -> film.select(".data h1")
             .stream()
             .findFirst()
@@ -42,14 +41,4 @@ public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
         int endOfFirstPart = wholeDescriptionInTitle.lastIndexOf(' ');
         return wholeDescriptionInTitle.substring(endOfFirstPart).trim();
     }
-
-    private static String stripTags(String title) {
-        int indexOfDash = title.indexOf('-');
-        if (indexOfDash > -1) {
-            return title.substring(0, indexOfDash);
-        }
-
-        return title;
-    }
-
 }
