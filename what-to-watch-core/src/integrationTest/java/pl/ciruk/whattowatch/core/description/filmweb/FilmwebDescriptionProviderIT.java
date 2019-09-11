@@ -26,7 +26,7 @@ class FilmwebDescriptionProviderIT {
 
     @Test
     void shouldResolveRamboTitleToFirstBlood() {
-        Title title = Title.builder().title("Rambo").year(1982).build();
+        Title title = Title.builder().title("Rambo: Pierwsza krew").year(1982).build();
 
         Description description = descriptions.findDescriptionBy(title)
                 .orElseThrow(AssertionError::new);
@@ -62,5 +62,14 @@ class FilmwebDescriptionProviderIT {
                 .orElseThrow(AssertionError::new);
 
         assertThat(description).hasTitle("The Commuter");
+    }
+
+    @Test
+    void shouldNotFindDescriptionForUnknownFilm() {
+        Title title = Title.builder().originalTitle("K-12").year(2019).build();
+
+        var description = descriptions.findDescriptionBy(title);
+
+        assertThat(description).isEmpty();
     }
 }

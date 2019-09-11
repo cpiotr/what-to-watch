@@ -63,6 +63,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .filter(Objects::nonNull)
                 .filter(not(String::isEmpty))
                 .flatMap(t -> filmsForTitle(t, title.getYear()))
+                .filter(description -> description.getTitle().matches(title))
                 .peek(description -> description.foundFor(title))
                 .findAny();
         if (foundDescription.isEmpty()) {
