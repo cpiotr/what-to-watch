@@ -58,8 +58,8 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Optional<String> connectToAndGet(Request.Builder requestBuilder, HttpUrl url) {
-        try (var optionalResponse = execute(requestBuilder)) {
-            return Optional.of(optionalResponse)
+        try (var response = execute(requestBuilder)) {
+            return Optional.of(response)
                     .flatMap(this::unwrapBody)
                     .map(identity(this::logBodyIfUnsuccessful))
                     .filter(ProcessedResponse::isSuccessful)
@@ -154,7 +154,6 @@ public class HtmlConnection implements HttpConnection<String> {
                 .addHeader(Headers.USER_AGENT, UserAgents.next())
                 .addHeader("Accept-Language", "en-US")
                 .addHeader(Headers.REFERER, referer.toString())
-                .addHeader("Host", referer.host())
                 .addHeader("Cache-Control", "private");
     }
 
