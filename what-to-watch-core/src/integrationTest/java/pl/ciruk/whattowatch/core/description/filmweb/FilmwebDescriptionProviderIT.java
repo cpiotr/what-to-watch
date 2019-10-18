@@ -66,7 +66,7 @@ class FilmwebDescriptionProviderIT {
 
     @Test
     void shouldNotFindDescriptionForUnknownFilm() {
-        Title title = Title.builder().originalTitle("K-12").year(2019).build();
+        Title title = Title.builder().originalTitle("NoWaySuchTitleExistsPC").year(2019).build();
 
         var description = descriptions.findDescriptionBy(title);
 
