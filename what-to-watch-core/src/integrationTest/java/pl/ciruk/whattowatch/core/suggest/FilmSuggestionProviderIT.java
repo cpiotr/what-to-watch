@@ -52,6 +52,7 @@ class FilmSuggestionProviderIT {
     void shouldSuggestAllFilmsFromSampleTitleProvider() {
         List<String> expectedTitles = provideTitlesFromResource().streamOfTitles(1)
                 .map(Title::asText)
+                .map(String::toLowerCase)
                 .collect(toList());
 
         Stream<Film> films = CompletableFutures.getAllOf(
@@ -62,6 +63,7 @@ class FilmSuggestionProviderIT {
                 .map(Film::getDescription)
                 .map(Description::getTitle)
                 .map(Title::asText)
+                .map(String::toLowerCase)
                 .collect(toList());
 
         assertThat(titles).containsOnlyElementsOf(expectedTitles);
