@@ -14,7 +14,6 @@ import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -73,7 +72,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Stream<Score> findScores(String linkToDetails, Description description) {
-        var htmlWithScores = getPage(linkToDetails, "critic-reviews")
+        var htmlWithScores = getPage(List.of(linkToDetails, "critic-reviews"))
                 .map(this::extractCriticReviews)
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
@@ -114,14 +113,17 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Optional<Element> getSearchResultsFor(Title title) {
-        return getPage("search", "movie", title.asText(), "results");
+        return getPage(List.of("search", "movie", title.asText(), "results"));
     }
 
-    private Optional<Element> getPage(String firstSegment, String... pathSegments) {
-        var builder = metacriticUrlBuilder()
-                .build()
-                .newBuilder(firstSegment);
-        Arrays.stream(pathSegments).forEach(builder::addPathSegments);
+    private Optional<Element> getPage(String pathSegment) {
+        return getPage(List.of(pathSegment));
+    }
+
+
+    private Optional<Element> getPage(List<String> pathSegments) {
+        var builder = metacriticUrlBuilder();
+        pathSegments.forEach(builder::addPathSegments);
         var url = builder.build();
         return connection.connectToAndGet(url)
                 .map(page -> page.getElementById("main_content"));

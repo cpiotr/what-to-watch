@@ -31,9 +31,10 @@ public class CloudflareBypass implements ResponseProcessor {
 
         LockSupport.parkNanos(timeout.toNanos());
 
-        Request request = response.request();
-        try {
-            var solvedUrl = challengeSolver.solve(request.url(), response.body().string());
+        try (var body = response.body()) {
+            Request request = response.request();
+            var bodyString = body == null ? "" : body.string();
+            var solvedUrl = challengeSolver.solve(request.url(), bodyString);
             var requestBuilder = request.newBuilder()
                     .url(solvedUrl)
                     .removeHeader(Headers.REFERER)

@@ -23,8 +23,8 @@ class EkinoTitleProviderIT {
     @Disabled
     @Test
     void shouldProvideCollectionOfTitles() {
-        Stream<Title> titles = provider.streamOfTitles(1);
-
-        assertThat(titles).isNotEmpty();
+        try (Stream<Title> titles = provider.streamOfTitles(1)) {
+            assertThat(titles).isNotEmpty();
+        }
     }
 }

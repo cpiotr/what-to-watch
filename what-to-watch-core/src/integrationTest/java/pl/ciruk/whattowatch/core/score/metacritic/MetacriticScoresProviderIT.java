@@ -31,9 +31,9 @@ class MetacriticScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -43,9 +43,9 @@ class MetacriticScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -58,9 +58,9 @@ class MetacriticScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -73,9 +73,9 @@ class MetacriticScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test

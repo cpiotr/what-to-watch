@@ -3,9 +3,10 @@ package pl.ciruk.whattowatch.utils.metrics;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class Names {
@@ -20,11 +21,11 @@ public final class Names {
     }
 
     public static String createName(Class<?> clazz, Iterable<?> suffixElements) {
-        Stream<String> stream = Stream.concat(
-                Stream.of(clazz.getSimpleName()),
-                StreamSupport.stream(suffixElements.spliterator(), false).map(Object::toString));
 
-        return stream.collect(Collectors.joining("."));
+        return Stream.concat(
+                Stream.of(clazz.getSimpleName()),
+                StreamSupport.stream(suffixElements.spliterator(), false).map(Object::toString)
+        ).collect(joining("."));
     }
 
     public static String getNameForMissingScores() {

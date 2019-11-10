@@ -32,9 +32,9 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -44,9 +44,9 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -56,9 +56,9 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -71,9 +71,9 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -87,9 +87,9 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     @Test
@@ -102,9 +102,9 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        Stream<Score> scores = this.scores.findScoresBy(description);
-
-        assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
     }
 
     private Title titleOfOldAndRespectfulFilm() {

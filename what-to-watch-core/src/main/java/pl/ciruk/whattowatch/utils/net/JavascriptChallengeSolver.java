@@ -11,6 +11,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +37,8 @@ public class JavascriptChallengeSolver {
 
         Element form = document.getElementById("challenge-form");
         String uri = form.attr("action");
-        var requestBuilder = requestedUrl.newBuilder(uri);
+        var requestBuilder = Optional.ofNullable(requestedUrl.newBuilder(uri))
+                .orElseThrow(() -> new IllegalStateException("Cannot resolve URI: " + uri));
         form.select("input")
                 .stream()
                 .filter(input -> input.hasAttr("value"))

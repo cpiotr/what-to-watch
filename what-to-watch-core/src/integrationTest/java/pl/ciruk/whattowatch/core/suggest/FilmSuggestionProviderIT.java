@@ -55,9 +55,7 @@ class FilmSuggestionProviderIT {
                 .map(String::toLowerCase)
                 .collect(toList());
 
-        Stream<Film> films = CompletableFutures.getAllOf(
-                suggestions.suggestFilms(1));
-        List<String> titles = films
+        List<String> titles = CompletableFutures.getAllOf(suggestions.suggestFilms(1))
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
                 .map(Film::getDescription)

@@ -8,17 +8,22 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${spotbugsPluginVersion}")
     }
 }
 
+plugins {
+    id("com.github.spotbugs") version "2.0.1"
+    id("pmd") apply(true)
+}
+
 apply plugin: 'org.springframework.boot'
+
 
 allprojects {
     version "${version != 'unspecified' ? version : 'SNAPSHOT'}"
 
     apply plugin: 'pmd'
-    apply plugin: "com.github.spotbugs"
+    apply plugin: 'com.github.spotbugs'
 
     repositories {
         mavenCentral()
@@ -34,7 +39,7 @@ allprojects {
 }
 
 wrapper {
-    gradleVersion = '5.6'
+    gradleVersion = '6.0'
 }
 
 println("[what-to-watch] Building version: $version")
