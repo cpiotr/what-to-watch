@@ -36,6 +36,10 @@ allprojects {
         ruleSets = []
         ruleSetFiles = files("$rootProject.projectDir/config/pmd-rules.xml")
     }
+
+    spotbugs {
+        toolVersion = '4.0.0-beta4'
+    }
 }
 
 wrapper {
