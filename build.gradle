@@ -18,7 +18,6 @@ plugins {
 
 apply plugin: 'org.springframework.boot'
 
-
 allprojects {
     version "${version != 'unspecified' ? version : 'SNAPSHOT'}"
 
