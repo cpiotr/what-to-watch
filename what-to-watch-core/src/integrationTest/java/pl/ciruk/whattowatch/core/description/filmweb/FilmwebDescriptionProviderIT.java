@@ -65,6 +65,16 @@ class FilmwebDescriptionProviderIT {
     }
 
     @Test
+    void shouldResolveDescriptionFromOriginalTitleWhichContainsArticle() {
+        Title title = Title.builder().originalTitle("A Shaun the Sheep Movie: Farmageddon").year(2019).build();
+
+        Description description = descriptions.findDescriptionBy(title)
+                .orElseThrow(AssertionError::new);
+
+        assertThat(description).hasTitle("Baranek Shaun Film. Farmageddon");
+    }
+
+    @Test
     void shouldNotFindDescriptionForUnknownFilm() {
         Title title = Title.builder().originalTitle("NoWaySuchTitleExistsPC").year(2019).build();
 
