@@ -25,6 +25,22 @@ public class Title {
         return new TitleBuilder();
     }
 
+    public static String unify(String text) {
+        var lowerCaseText = text.toLowerCase(Locale.getDefault());
+        return stripArticle(lowerCaseText)
+                .replaceAll("\\W", "");
+    }
+
+    public static String stripArticle(String lowerCaseText) {
+        String[] articles = new String[]{"a ", "an ", "the "};
+        for (String article : articles) {
+            if (lowerCaseText.startsWith(article)) {
+                lowerCaseText = lowerCaseText.substring(article.length());
+            }
+        }
+        return lowerCaseText;
+    }
+
     public String asText() {
         return Optional.ofNullable(getOriginalTitle())
                 .filter(not(String::isEmpty))
@@ -48,12 +64,6 @@ public class Title {
         } else {
             return unify(first).equals(unify(second));
         }
-    }
-
-    private String unify(String text) {
-        return text
-                .replaceAll("\\W", "")
-                .toLowerCase(Locale.getDefault());
     }
 
     @Override
