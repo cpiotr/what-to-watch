@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.title;
 
-import java.util.Locale;
+import pl.ciruk.whattowatch.utils.text.Text;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,22 +26,6 @@ public class Title {
         return new TitleBuilder();
     }
 
-    public static String unify(String text) {
-        var lowerCaseText = text.toLowerCase(Locale.getDefault());
-        return stripArticle(lowerCaseText)
-                .replaceAll("\\W", "");
-    }
-
-    public static String stripArticle(String lowerCaseText) {
-        String[] articles = new String[]{"a ", "an ", "the "};
-        for (String article : articles) {
-            if (lowerCaseText.startsWith(article)) {
-                lowerCaseText = lowerCaseText.substring(article.length());
-            }
-        }
-        return lowerCaseText;
-    }
-
     public String asText() {
         return Optional.ofNullable(getOriginalTitle())
                 .filter(not(String::isEmpty))
@@ -49,21 +34,13 @@ public class Title {
     }
 
     public boolean matches(Title otherTitle) {
-        boolean hasMatchingTitle = matchesAlphanumerically(otherTitle.getOriginalTitle(), localTitle)
-                || matchesAlphanumerically(otherTitle.getLocalTitle(), localTitle)
-                || matchesAlphanumerically(otherTitle.getOriginalTitle(), originalTitle)
-                || matchesAlphanumerically(otherTitle.getLocalTitle(), originalTitle);
+        boolean hasMatchingTitle = Text.matchesAlphanumerically(otherTitle.getOriginalTitle(), localTitle)
+                || Text.matchesAlphanumerically(otherTitle.getLocalTitle(), localTitle)
+                || Text.matchesAlphanumerically(otherTitle.getOriginalTitle(), originalTitle)
+                || Text.matchesAlphanumerically(otherTitle.getLocalTitle(), originalTitle);
         boolean hasMatchingYear = Math.abs(otherTitle.year - year) <= 1;
 
         return hasMatchingTitle && hasMatchingYear;
-    }
-
-    private boolean matchesAlphanumerically(String first, String second) {
-        if (first == null || second == null) {
-            return false;
-        } else {
-            return unify(first).equals(unify(second));
-        }
     }
 
     @Override
