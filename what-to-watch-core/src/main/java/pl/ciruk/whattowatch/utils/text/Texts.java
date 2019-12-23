@@ -2,8 +2,13 @@ package pl.ciruk.whattowatch.utils.text;
 
 import java.util.Locale;
 
-public class Text {
+@SuppressWarnings("PMD.ClassNamingConventions")
+public class Texts {
     private static final String[] ARTICLES = new String[]{"a ", "an ", "the "};
+
+    private Texts() {
+        throw new AssertionError();
+    }
 
     public static boolean matchesAlphanumerically(String first, String second) {
         if (first == null || second == null) {

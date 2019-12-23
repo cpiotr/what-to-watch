@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.core.title;
 
-import pl.ciruk.whattowatch.utils.text.Text;
+import pl.ciruk.whattowatch.utils.text.Texts;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -34,10 +34,10 @@ public class Title {
     }
 
     public boolean matches(Title otherTitle) {
-        boolean hasMatchingTitle = Text.matchesAlphanumerically(otherTitle.getOriginalTitle(), localTitle)
-                || Text.matchesAlphanumerically(otherTitle.getLocalTitle(), localTitle)
-                || Text.matchesAlphanumerically(otherTitle.getOriginalTitle(), originalTitle)
-                || Text.matchesAlphanumerically(otherTitle.getLocalTitle(), originalTitle);
+        boolean hasMatchingTitle = Texts.matchesAlphanumerically(otherTitle.getOriginalTitle(), localTitle)
+                || Texts.matchesAlphanumerically(otherTitle.getLocalTitle(), localTitle)
+                || Texts.matchesAlphanumerically(otherTitle.getOriginalTitle(), originalTitle)
+                || Texts.matchesAlphanumerically(otherTitle.getLocalTitle(), originalTitle);
         boolean hasMatchingYear = Math.abs(otherTitle.year - year) <= 1;
 
         return hasMatchingTitle && hasMatchingYear;
