@@ -3,8 +3,8 @@ package pl.ciruk.whattowatch.utils.text;
 import java.util.Locale;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
-public class Texts {
-    private static final String[] ARTICLES = new String[]{"a ", "an ", "the "};
+public final class Texts {
+    private static final String[] ARTICLES = {"a ", "an ", "the "};
 
     private Texts() {
         throw new AssertionError();
@@ -28,7 +28,7 @@ public class Texts {
     private static String stripArticle(String lowerCaseText) {
         for (String article : ARTICLES) {
             if (lowerCaseText.startsWith(article)) {
-               return lowerCaseText.substring(article.length());
+                return lowerCaseText.substring(article.length());
             }
         }
         return lowerCaseText;

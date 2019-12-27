@@ -84,6 +84,7 @@ public class ImdbScoresProvider implements ScoresProvider {
 
     private Optional<Element> findFirstResult(Element searchResults, Description description) {
         return FILMS_FROM_SEARCH_RESULT.extractFrom(searchResults)
+                .limit(3)
                 .filter(searchResult -> matchesTitleFromDescription(searchResult, description))
                 .findAny();
     }
