@@ -21,17 +21,29 @@ public class BackoffInterceptor implements Interceptor {
 
     private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
     private final IntConsumer backOffFunction;
+    private final int httpConnectionFixedDelayInterval;
+    private final TimeUnit httpConnectionFixedDelayUnit;
 
     public BackoffInterceptor() {
-        this(BackoffInterceptor::backOff);
+        this(0, TimeUnit.MILLISECONDS, BackoffInterceptor::backOff);
     }
 
-    BackoffInterceptor(IntConsumer backOffFunction) {
+    public BackoffInterceptor(int httpConnectionFixedDelayInterval, TimeUnit httpConnectionFixedDelayUnit) {
+        this(httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit, BackoffInterceptor::backOff);
+    }
+
+    BackoffInterceptor(int httpConnectionFixedDelayInterval, TimeUnit httpConnectionFixedDelayUnit, IntConsumer backOffFunction) {
+        this.httpConnectionFixedDelayInterval = httpConnectionFixedDelayInterval;
+        this.httpConnectionFixedDelayUnit = httpConnectionFixedDelayUnit;
         this.backOffFunction = backOffFunction;
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
+        if (httpConnectionFixedDelayInterval > 0) {
+            LockSupport.parkNanos(httpConnectionFixedDelayUnit.toNanos(httpConnectionFixedDelayInterval));
+        }
+
         Request request = chain.request();
         String domain = request.url().topPrivateDomain();
         AtomicInteger errors = errorsByDomain.computeIfAbsent(domain, key -> new AtomicInteger());

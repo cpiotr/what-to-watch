@@ -42,6 +42,8 @@ public class Connections {
     private final String redisHost;
     private final Integer redisPoolMaxActive;
     private final Integer httpPoolMaxIdle;
+    private final Integer httpConnectionFixedDelayInterval;
+    private final TimeUnit httpConnectionFixedDelayUnit;
     private final long longExpiryInterval;
     private final TimeUnit longExpiryUnit;
     private final long shortExpiryInterval;
@@ -52,6 +54,8 @@ public class Connections {
             @Value("${redis.host}") String redisHost,
             @Value("${redis.pool.maxActive:8}") Integer redisPoolMaxActive,
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
+            @Value("${http.connection.fixedDelay.interval:0}") Integer httpConnectionFixedDelayInterval,
+            @Value("${http.connection.fixedDelay.unit:MILLISECONDS}") TimeUnit httpConnectionFixedDelayUnit,
             @Value("${w2w.cloudflare.wait.interval:5}") Integer cloudflareDelayInterval,
             @Value("${w2w.cloudflare.wait.unit:SECONDS}") TimeUnit cloudflareDelayUnit,
             @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
@@ -61,6 +65,8 @@ public class Connections {
         this.redisHost = redisHost;
         this.redisPoolMaxActive = redisPoolMaxActive;
         this.httpPoolMaxIdle = httpPoolMaxIdle;
+        this.httpConnectionFixedDelayInterval = httpConnectionFixedDelayInterval;
+        this.httpConnectionFixedDelayUnit = httpConnectionFixedDelayUnit;
         this.longExpiryInterval = longExpiryInterval;
         this.longExpiryUnit = longExpiryUnit;
         this.shortExpiryInterval = shortExpiryInterval;
@@ -70,8 +76,13 @@ public class Connections {
     }
 
     @Bean
+    BackoffInterceptor backoffInterceptor() {
+        return new BackoffInterceptor(httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit);
+    }
+
+    @Bean
     @AllCookies
-    OkHttpClient httpClient() {
+    OkHttpClient httpClient(BackoffInterceptor backoffInterceptor) {
         var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20, TimeUnit.SECONDS);
         var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
         return new OkHttpClient.Builder()
@@ -80,14 +91,14 @@ public class Connections {
                 .readTimeout(2_000, TimeUnit.MILLISECONDS)
                 .connectTimeout(500, TimeUnit.MILLISECONDS)
                 .eventListener(metricsEventListener)
-                .addInterceptor(new BackoffInterceptor())
+                .addInterceptor(backoffInterceptor)
                 .cookieJar(new InMemoryCookieJar())
                 .build();
     }
 
     @Bean
     @NoCookies
-    OkHttpClient noCookiesHttpClient() {
+    OkHttpClient noCookiesHttpClient(BackoffInterceptor backoffInterceptor) {
         var connectionPool = new ConnectionPool(httpPoolMaxIdle, 20, TimeUnit.SECONDS);
         var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
         return new OkHttpClient.Builder()
@@ -96,7 +107,7 @@ public class Connections {
                 .readTimeout(2_000, TimeUnit.MILLISECONDS)
                 .connectTimeout(500, TimeUnit.MILLISECONDS)
                 .eventListener(metricsEventListener)
-                .addInterceptor(new BackoffInterceptor())
+                .addInterceptor(backoffInterceptor)
                 .build();
     }
 
@@ -203,6 +214,7 @@ public class Connections {
         logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);
         logConfigurationEntry(LOGGER, "Cache short expiry", shortExpiryInterval, shortExpiryUnit);
         logConfigurationEntry(LOGGER, "HttpClient pool max idle", httpPoolMaxIdle);
+        logConfigurationEntry(LOGGER, "HttpClient fixed delay", httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit);
         logConfigurationEntry(LOGGER, "Cloudflare delay", cloudflareDelay);
     }
 

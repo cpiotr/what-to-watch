@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.utils.net;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;
-import okhttp3.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntConsumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,7 +24,7 @@ class BackoffInterceptorTest {
     @BeforeEach
     void setUp() {
         backOffFunction = mock(IntConsumer.class);
-        backoffInterceptor = new BackoffInterceptor(backOffFunction);
+        backoffInterceptor = new BackoffInterceptor(0, TimeUnit.MILLISECONDS, backOffFunction);
     }
 
     @Test
@@ -52,7 +52,7 @@ class BackoffInterceptorTest {
 
         interceptIgnoringException(chain);
 
-        verifyZeroInteractions(backOffFunction);
+        verifyNoInteractions(backOffFunction);
     }
 
     @Test
@@ -74,16 +74,15 @@ class BackoffInterceptorTest {
 
         interceptIgnoringException(chain);
 
-        verifyZeroInteractions(backOffFunction);
+        verifyNoInteractions(backOffFunction);
     }
 
-    private Response interceptIgnoringException(Interceptor.Chain chain) {
+    private void interceptIgnoringException(Interceptor.Chain chain) {
         try {
-            return backoffInterceptor.intercept(chain);
+            backoffInterceptor.intercept(chain);
         } catch (IOException e) {
             LOGGER.debug("Ignoring {}", e.toString());
             LOGGER.trace("Caused by {}", e.getMessage(), e);
-            return null;
         }
     }
 }

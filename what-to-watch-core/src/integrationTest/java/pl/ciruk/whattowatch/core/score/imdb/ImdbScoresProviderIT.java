@@ -57,7 +57,7 @@ class ImdbScoresProviderIT {
                 .build();
 
         try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).isEmpty();
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
         }
     }
 
