@@ -6,6 +6,7 @@ VOLUME /tmp
 ARG W2W_VERSION
 ENV W2W_VERSION=${W2W_VERSION}
 
+ENV W2W_HTTP_CLIENT_FIXED_DELAY_MILLIS 100
 ENV W2W_TITLES_PAGES_PER_REQUEST 10
 ENV W2W_THREAD_POOL_SIZE 16
 ENV W22_FILM_SCORE_THRESHOLD 0.55
@@ -43,6 +44,7 @@ CMD sh -c "java \
 		-Dw2w.titles.pagesPerRequest=$W2W_TITLES_PAGES_PER_REQUEST \
 		-Dw2w.pool.size=$W2W_THREAD_POOL_SIZE \
 		-Dw2w.suggestions.filter.scoreThreshold=$W22_FILM_SCORE_THRESHOLD \
+		-Dhttp.connection.fixedDelay.interval=$W2W_HTTP_CLIENT_FIXED_DELAY_MILLIS \
 		-Dredis.host=$REDIS_HOST \
 		-Dlogging.level.root=$LOGGING_LEVEL\
 		-Dlogging.level.pl.ciruk=$W2W_LOGGING_LEVEL\

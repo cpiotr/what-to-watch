@@ -16,6 +16,7 @@ services:
         - W2W_THREAD_POOL_SIZE=32
         - REDIS_HOST=redis
         - W2W_LOGGING_LEVEL=INFO
+        - W2W_HTTP_CLIENT_FIXED_DELAY_MILLIS=123
         - JVM_OPTS=-Xmx2G
           -Xms2G
           -XX:+TieredCompilation
