@@ -3,19 +3,21 @@ class Film extends React.Component {
     return (
         <div className="col-sm p-3 border rounded shadow-sm filmbox">
             <div className="text-center mb-2">
-                <a className="btn btn-outline-primary p-1" href="{this.props.value.link}">
-                    <img className="poster" src="{this.props.value.poster}" alt="{this.props.value.title}"/>
+                <a className="btn btn-outline-primary p-1" href={this.props.value.link}>
+                    <img className="poster" src={this.props.value.poster} alt={this.props.value.title}/>
                 </a>
             </div>
             <div className="caption">
                 <h3>
-                    <a href="{this.props.value.link}">{this.props.value.title} ({this.props.value.year})</a>
+                    <a href={this.props.value.link}>{this.props.value.title} ({this.props.value.year})</a>
                 </h3>
                 <p>{this.props.value.plot}</p>
                 <div>
                     <div className="btn btn-primary" role="button">
                         <span className="oi oi-star" aria-hidden="true"></span>
-                        <span className="badge badge-light">{this.props.value.score}%   </span>
+                        <span className="badge badge-light">
+                            {this.props.value.score.toLocaleString(navigator.language, { minimumFractionDigits: 2 })}%
+                        </span>
                     </div>
                 </div>
             </div>
@@ -28,7 +30,7 @@ class FilmApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      films: [{title: 'Test', poster: 'Test123', score: 0.78, year: 1999}],
+      films: [],
       index: 1
     };
   }
