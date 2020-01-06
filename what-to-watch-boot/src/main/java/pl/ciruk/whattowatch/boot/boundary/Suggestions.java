@@ -27,9 +27,9 @@ import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
@@ -66,7 +66,7 @@ public class Suggestions {
             var films = responseTimer.record(() -> findSuggestions(pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
-            LOGGER.info("Finished providing suggestions for page {}", pageNumber);
+            LOGGER.info("Finished getting suggestions for page {}", pageNumber);
         } catch (Exception e) {
             LOGGER.error("Error while getting suggestions", e);
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
@@ -84,7 +84,7 @@ public class Suggestions {
             responseTimer.record(() -> suggestionsProvider.suggestFilms(pageNumber)
                     .map(sendToSinkIfWorthWatching(sink))
                     .forEach(CompletableFuture::join));
-            LOGGER.info("Finished providing suggestions for page {}", pageNumber);
+            LOGGER.info("Finished streaming suggestions for page {}", pageNumber);
         } catch (Exception e) {
             LOGGER.error("Error while getting suggestions", e);
         }
@@ -124,6 +124,7 @@ public class Suggestions {
     }
 
     static class EventsSink implements AutoCloseable {
+        private static final AtomicLong ID_GENERATOR = new AtomicLong();
         private final Sse sse;
         private final SseEventSink eventSink;
 
@@ -135,7 +136,7 @@ public class Suggestions {
         void send(FilmResult filmResult) {
             OutboundSseEvent event = this.sse.newEventBuilder()
                     .name("film")
-                    .id(String.valueOf(filmResult.hashCode()))
+                    .id(String.valueOf(ID_GENERATOR.incrementAndGet()))
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
                     .data(FilmResult.class, filmResult)
                     .build();
@@ -147,7 +148,7 @@ public class Suggestions {
             if (!eventSink.isClosed()) {
                 OutboundSseEvent event = this.sse.newEventBuilder()
                         .name("poisonPill")
-                        .id(UUID.randomUUID().toString())
+                        .id(String.valueOf(ID_GENERATOR.incrementAndGet()))
                         .mediaType(MediaType.APPLICATION_JSON_TYPE)
                         .data(String.class, "poisonPill")
                         .build();
