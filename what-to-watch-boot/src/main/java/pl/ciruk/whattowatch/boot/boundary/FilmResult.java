@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.boot.boundary;
 import pl.ciruk.whattowatch.core.score.Score;
 
 import java.util.List;
+import java.util.Objects;
 
 class FilmResult {
     private final String title;
@@ -74,6 +75,25 @@ class FilmResult {
 
     public List<String> getGenres() {
         return genres;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FilmResult other = (FilmResult) o;
+        return Objects.equals(title, other.title) &&
+                Objects.equals(year, other.year) &&
+                Objects.equals(link, other.link);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, year, link);
     }
 
     static class FilmResultBuilder {
