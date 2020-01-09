@@ -31,6 +31,7 @@ class FilmApp extends React.Component {
     super(props);
     this.state = {
       films: [],
+      filmIds: {},
       index: 1
     };
   }
@@ -46,10 +47,15 @@ class FilmApp extends React.Component {
         eventSource.close();
     });
     eventSource.addEventListener('film', (e) => {
-        current.films.push(JSON.parse(e.data));
-        this.setState({
-            films: current.films
-        });
+        let film = JSON.parse(e.data)
+        if (!current.filmIds.hasOwnProperty(e.lastEventId)) {
+            current.films.push(film)
+            current.filmIds[e.lastEventId] = true
+            this.setState({
+                films: current.films,
+                filmIds: current.filmIds
+            });
+        }
     });
 
     this.setState({

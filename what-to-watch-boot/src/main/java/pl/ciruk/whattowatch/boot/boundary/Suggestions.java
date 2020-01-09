@@ -27,9 +27,9 @@ import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
@@ -78,7 +78,7 @@ public class Suggestions {
     @Produces(MediaType.SERVER_SENT_EVENTS)
     @ManagedAsync
     public void stream(@Context SseEventSink sseEventSink, @Context Sse sse, @PathParam("pageNumber") int pageNumber) {
-        LOGGER.info("Page number: {}", pageNumber);
+        LOGGER.info("Stream page number: {}", pageNumber);
 
         try (EventsSink sink = new EventsSink(sse, sseEventSink)) {
             responseTimer.record(() -> suggestionsProvider.suggestFilms(pageNumber)
@@ -124,7 +124,6 @@ public class Suggestions {
     }
 
     static class EventsSink implements AutoCloseable {
-        private static final AtomicLong ID_GENERATOR = new AtomicLong();
         private final Sse sse;
         private final SseEventSink eventSink;
 
@@ -136,7 +135,7 @@ public class Suggestions {
         void send(FilmResult filmResult) {
             OutboundSseEvent event = this.sse.newEventBuilder()
                     .name("film")
-                    .id(String.valueOf(ID_GENERATOR.incrementAndGet()))
+                    .id(String.valueOf(filmResult.hashCode()))
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
                     .data(FilmResult.class, filmResult)
                     .build();
@@ -148,7 +147,7 @@ public class Suggestions {
             if (!eventSink.isClosed()) {
                 OutboundSseEvent event = this.sse.newEventBuilder()
                         .name("poisonPill")
-                        .id(String.valueOf(ID_GENERATOR.incrementAndGet()))
+                        .id(UUID.randomUUID().toString())
                         .mediaType(MediaType.APPLICATION_JSON_TYPE)
                         .data(String.class, "poisonPill")
                         .build();
