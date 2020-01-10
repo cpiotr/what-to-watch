@@ -78,14 +78,14 @@ class FilmResult {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object object) {
+        if (this == object) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        FilmResult other = (FilmResult) o;
+        FilmResult other = (FilmResult) object;
         return Objects.equals(title, other.title) &&
                 Objects.equals(year, other.year) &&
                 Objects.equals(link, other.link);
