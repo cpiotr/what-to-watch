@@ -16,7 +16,7 @@ class Film extends React.Component {
                     <div className="btn btn-primary" role="button">
                         <span className="oi oi-star" aria-hidden="true"></span>
                         <span className="badge badge-light">
-                            {this.props.value.score.toLocaleString(navigator.language, { minimumFractionDigits: 2 })}%
+                            {(this.props.value.score * 100).toLocaleString(navigator.language, { minimumFractionDigits: 0 })}%
                         </span>
                     </div>
                 </div>
