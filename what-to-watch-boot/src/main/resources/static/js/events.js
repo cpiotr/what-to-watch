@@ -76,10 +76,10 @@ class FilmApp extends React.Component {
 
     return (
       <div className="filmsmain">
-        <div className="films">
+        <div className="films row">
           {films}
         </div>
-        <div className="game-info">
+        <div className="footer">
           <div>{status}</div>
           <button onClick={() => this.loadPage()}>Next</button>
         </div>
