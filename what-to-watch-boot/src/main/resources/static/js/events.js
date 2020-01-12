@@ -1,23 +1,25 @@
 class Film extends React.Component {
   render() {
     return (
-        <div className="col-sm p-3 border rounded shadow-sm filmbox">
-            <div className="text-center mb-2">
-                <a className="btn btn-outline-primary p-1" href={this.props.value.link}>
-                    <img className="poster" src={this.props.value.poster} alt={this.props.value.title}/>
-                </a>
-            </div>
-            <div className="caption">
-                <h3>
-                    <a href={this.props.value.link}>{this.props.value.title} ({this.props.value.year})</a>
-                </h3>
-                <p>{this.props.value.plot}</p>
-                <div>
-                    <div className="btn btn-primary" role="button">
-                        <span className="oi oi-star" aria-hidden="true"></span>
-                        <span className="badge badge-light">
-                            {(this.props.value.score * 100).toLocaleString(navigator.language, { minimumFractionDigits: 0 })}%
-                        </span>
+        <div class="col-sm-4 mb-4 d-flex ng-scope">
+            <div className="col-sm p-3 border rounded shadow-sm filmbox">
+                <div className="text-center mb-2">
+                    <a className="btn btn-outline-primary p-1" href={this.props.value.link}>
+                        <img className="poster" src={this.props.value.poster} alt={this.props.value.title}/>
+                    </a>
+                </div>
+                <div className="caption">
+                    <h3>
+                        <a href={this.props.value.link}>{this.props.value.title} ({this.props.value.year})</a>
+                    </h3>
+                    <p>{this.props.value.plot}</p>
+                    <div>
+                        <div className="btn btn-primary" role="button">
+                            <span className="oi oi-star" aria-hidden="true"></span>
+                            <span className="badge badge-light">
+                                {(this.props.value.score * 100).toLocaleString(navigator.language, { minimumFractionDigits: 0 })}%
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
