@@ -1,29 +1,53 @@
 class Film extends React.Component {
   render() {
+    let film = this.props.value;
+    let scores = film.scores.map((score, index) => {
+        return (
+            <Score value={score}/>
+        )
+    });
     return (
         <div class="col-sm-4 mb-4 d-flex ng-scope">
             <div className="col-sm p-3 border rounded shadow-sm filmbox">
                 <div className="text-center mb-2">
-                    <a className="btn btn-outline-primary p-1" href={this.props.value.link}>
-                        <img className="poster" src={this.props.value.poster} alt={this.props.value.title}/>
+                    <a className="btn btn-outline-primary p-1" href={film.link}>
+                        <img className="poster" src={film.poster} alt={film.title}/>
                     </a>
                 </div>
                 <div className="caption">
                     <h3>
-                        <a href={this.props.value.link}>{this.props.value.title} ({this.props.value.year})</a>
+                        <a href={film.link}>{film.title} ({film.year})</a>
                     </h3>
-                    <p>{this.props.value.plot}</p>
-                    <div>
-                        <div className="btn btn-primary" role="button">
-                            <span className="oi oi-star" aria-hidden="true"></span>
-                            <span className="badge badge-light">
-                                {(this.props.value.score * 100).toLocaleString(navigator.language, { minimumFractionDigits: 0 })}%
-                            </span>
+                    <p>{film.plot}</p>
+                    <p>
+                        <div>
+                            <div className="btn btn-primary" role="button">
+                                <span className="oi oi-star" aria-hidden="true"></span>
+                                <span className="badge badge-light">
+                                    {(film.score * 100).toLocaleString(navigator.language, { minimumFractionDigits: 0 })}%
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                        <ul class="list-group">
+                            {scores}
+                        </ul>
+                    </p>
                 </div>
             </div>
         </div>
+      );
+  }
+}
+
+class Score extends React.Component {
+  render() {
+    let score = this.props.value;
+    return (
+        <li class="list-group-item" ng-repeat="score in film.scores">
+            <span class="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
+            <span class="border badge badge-light oi oi-star float-right mr-1">{score.grade * 100}%</span>
+            <a href={score.url}>{score.source}</a>
+        </li>
       );
   }
 }
