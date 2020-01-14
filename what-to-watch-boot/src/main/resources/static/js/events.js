@@ -19,22 +19,36 @@ class Film extends React.Component {
                         <a href={film.link}>{film.title} ({film.year})</a>
                     </h3>
                     <p>{film.plot}</p>
-                    <p>
-                        <div>
-                            <div className="btn btn-primary" role="button">
-                                <span className="oi oi-star" aria-hidden="true"></span>
-                                <span className="badge badge-light">
-                                    {(film.score * 100).toLocaleString(navigator.language, { minimumFractionDigits: 0 })}%
-                                </span>
-                            </div>
-                        </div>
-                        <ul class="list-group">
-                            {scores}
-                        </ul>
-                    </p>
+                    <ScorePanel value={film}/>
                 </div>
             </div>
         </div>
+      );
+  }
+}
+
+class ScorePanel extends React.Component {
+  render() {
+    let film = this.props.value;
+    let scores = film.scores.map((score, index) => {
+        return (
+            <Score value={score}/>
+        )
+    });
+    return (
+        <p>
+            <div>
+                <div className="btn btn-primary" role="button">
+                    <span className="oi oi-star" aria-hidden="true"></span>
+                    <span className="badge badge-light">
+                        {(film.score * 100).toFixed(0)}%
+                    </span>
+                </div>
+            </div>
+            <ul class="list-group">
+                {scores}
+            </ul>
+        </p>
       );
   }
 }
@@ -45,7 +59,7 @@ class Score extends React.Component {
     return (
         <li class="list-group-item" ng-repeat="score in film.scores">
             <span class="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
-            <span class="border badge badge-light oi oi-star float-right mr-1">{score.grade * 100}%</span>
+            <span class="border badge badge-light oi oi-star float-right mr-1">{(score.grade * 100).toFixed(0)}%</span>
             <a href={score.url}>{score.source}</a>
         </li>
       );
