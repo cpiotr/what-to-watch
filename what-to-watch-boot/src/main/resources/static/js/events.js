@@ -19,7 +19,7 @@ class Film extends React.Component {
                         <a href={film.link}>{film.title} ({film.year})</a>
                     </h3>
                     <p>{film.plot}</p>
-                    <ScorePanel value={film}/>
+                    <ScorePanel totalScore={film.score} scores={film.scores} />
                 </div>
             </div>
         </div>
@@ -29,8 +29,7 @@ class Film extends React.Component {
 
 class ScorePanel extends React.Component {
   render() {
-    let film = this.props.value;
-    let scores = film.scores.map((score, index) => {
+    let scores = this.props.scores.map((score, index) => {
         return (
             <Score value={score}/>
         )
@@ -41,7 +40,7 @@ class ScorePanel extends React.Component {
                 <div className="btn btn-primary" role="button">
                     <span className="oi oi-star" aria-hidden="true"></span>
                     <span className="badge badge-light">
-                        {(film.score * 100).toFixed(0)}%
+                        {(this.props.totalScore * 100).toFixed(0)}%
                     </span>
                 </div>
             </div>
