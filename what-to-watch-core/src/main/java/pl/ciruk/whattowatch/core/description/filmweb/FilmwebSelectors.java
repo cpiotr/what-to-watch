@@ -9,18 +9,18 @@ import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
     YEAR(details -> {
-        var yearElement = details.selectFirst("div.hdr span.halfSize");
+        var yearElement = details.selectFirst("span.filmCoverSection__year");
         return Optional.ofNullable(yearElement)
                 .map(Element::text)
                 .map(text -> Patterns.nonDigit().matcher(text).replaceAll(""));
     }),
-    LOCAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h1.filmTitle a"))
+    LOCAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h1.filmCoverSection__title a"))
             .map(Element::text)),
-    ORIGINAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h2"))
+    ORIGINAL_TITLE(details -> Optional.ofNullable(details.selectFirst("h2.filmCoverSection__orginalTitle"))
             .map(Element::text)),
-    POSTER(details -> Optional.ofNullable(details.selectFirst("div.filmHeader div.filmPosterBox div.posterLightbox img"))
+    POSTER(details -> Optional.ofNullable(details.selectFirst("div.filmPosterSection__container div.filmPosterSection__poster img"))
             .map(e -> e.attr("src"))),
-    PLOT(details -> Optional.ofNullable(details.selectFirst("div.filmPlot"))
+    PLOT(details -> Optional.ofNullable(details.selectFirst("div.filmPosterSection__container div.filmPosterSection__plot"))
             .map(Element::text)),
     ;
 

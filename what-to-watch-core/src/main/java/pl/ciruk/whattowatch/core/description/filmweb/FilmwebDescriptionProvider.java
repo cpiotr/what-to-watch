@@ -97,7 +97,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     }
 
     private Description extractDescriptionFrom(Element pageWithDetails) {
-        Element mainElement = pageWithDetails.selectFirst("div.filmMainHeader");
+        Element mainElement = pageWithDetails.selectFirst("header.filmCoverSection__info");
         var localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(mainElement)
                 .orElseThrow(MissingValueException::new);
         var originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement)
