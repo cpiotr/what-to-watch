@@ -32,6 +32,16 @@ public final class DescriptionAssert extends AbstractAssert<DescriptionAssert, D
         return this;
     }
 
+    public DescriptionAssert hasGenre(String genre) {
+        var genres = actual.getGenres();
+
+        Assertions.assertThat(genres)
+                .as("Missing genre")
+                .contains(genre);
+
+        return this;
+    }
+
     public DescriptionAssert isEmpty() {
         Assertions.assertThat(actual.isEmpty())
                 .as("Expected description to be empty. Actual: <%s>", actual)

@@ -36,12 +36,15 @@ class FilmwebDescriptionProviderIT {
 
     @Test
     void shouldResolveRecentTitle() {
-        Title title = Title.builder().title("A United Kingdom").year(2016).build();
+        Title title = Title.builder().title("Na noże").year(2019).build();
 
         Description description = descriptions.findDescriptionBy(title)
                 .orElseThrow(AssertionError::new);
 
-        assertThat(description).hasTitle("A United Kingdom");
+        assertThat(description)
+                .hasTitle("Knives out")
+                .hasGenre("Dramat")
+                .hasGenre("Komedia kryminalna");
     }
 
     @Test

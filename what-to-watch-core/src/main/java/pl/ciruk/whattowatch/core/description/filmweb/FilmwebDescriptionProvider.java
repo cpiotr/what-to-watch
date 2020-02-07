@@ -115,7 +115,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .title(retrievedTitle)
                 .poster(FilmwebSelectors.POSTER.extractFrom(pageWithDetails).orElse(""))
                 .plot(FilmwebSelectors.PLOT.extractFrom(mainElement).orElse(""))
-                .genres(FilmwebStreamSelectors.GENRES.extractFrom(mainElement).collect(toList()))
+                .genres(FilmwebStreamSelectors.GENRES.extractFrom(pageWithDetails).collect(toList()))
                 .build();
     }
 
