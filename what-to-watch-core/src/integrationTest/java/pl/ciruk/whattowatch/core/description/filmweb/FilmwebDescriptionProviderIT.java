@@ -43,6 +43,7 @@ class FilmwebDescriptionProviderIT {
 
         assertThat(description)
                 .hasTitle("Knives out")
+                .hasPlot()
                 .hasGenre("Dramat")
                 .hasGenre("Komedia kryminalna");
     }

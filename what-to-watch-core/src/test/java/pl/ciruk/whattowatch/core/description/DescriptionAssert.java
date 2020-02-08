@@ -48,4 +48,11 @@ public final class DescriptionAssert extends AbstractAssert<DescriptionAssert, D
                 .isTrue();
         return this;
     }
+
+    public DescriptionAssert hasPlot() {
+        Assertions.assertThat(actual.getPlot())
+                .as("Plot")
+                .isNotBlank();
+        return this;
+    }
 }
