@@ -20,6 +20,7 @@ class Film extends React.Component {
                     </h3>
                     <p>{film.plot}</p>
                     <ScorePanel totalScore={film.score} scores={film.scores} />
+                    <GenrePanel genres={film.genres} />
                 </div>
             </div>
         </div>
@@ -57,10 +58,37 @@ class Score extends React.Component {
     let score = this.props.value;
     return (
         <li class="list-group-item" ng-repeat="score in film.scores">
-            <span class="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
-            <span class="border badge badge-light oi oi-star float-right mr-1">{(score.grade * 100).toFixed(0)}%</span>
+            <span className="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
+            <span className="border badge badge-light oi oi-star float-right mr-1">{(score.grade * 100).toFixed(0)}%</span>
             <a href={score.url}>{score.source}</a>
         </li>
+      );
+  }
+}
+
+class GenrePanel extends React.Component {
+  render() {
+    let genres = this.props.genres.map((genre, index) => {
+        return (
+            <Genre name={genre}/>
+        )
+    });
+    return (
+        <p className="genres">
+            {genres}
+        </p>
+      );
+  }
+}
+
+
+class Genre extends React.Component {
+  render() {
+    let name = this.props.name;
+    return (
+        <span className="badge badge-pill badge-info" style={{marginRight: '2px'}}>
+            {name}
+        </span>
       );
   }
 }
