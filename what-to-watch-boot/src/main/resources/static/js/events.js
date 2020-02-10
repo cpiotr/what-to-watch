@@ -7,7 +7,7 @@ class Film extends React.Component {
         )
     });
     return (
-        <div class="col-sm-4 mb-4 d-flex ng-scope">
+        <div className="col-sm-4 mb-4 d-flex ng-scope">
             <div className="col-sm p-3 border rounded shadow-sm filmbox">
                 <div className="text-center mb-2">
                     <a className="btn btn-outline-primary p-1" href={film.link}>
@@ -45,7 +45,7 @@ class ScorePanel extends React.Component {
                     </span>
                 </div>
             </div>
-            <ul class="list-group">
+            <ul className="list-group">
                 {scores}
             </ul>
         </p>
@@ -57,7 +57,7 @@ class Score extends React.Component {
   render() {
     let score = this.props.value;
     return (
-        <li class="list-group-item" ng-repeat="score in film.scores">
+        <li className="list-group-item" ng-repeat="score in film.scores">
             <span className="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
             <span className="border badge badge-light oi oi-star float-right mr-1">{(score.grade * 100).toFixed(0)}%</span>
             <a href={score.url}>{score.source}</a>
@@ -147,7 +147,6 @@ class FilmApp extends React.Component {
           {films}
         </div>
         <div className="footer">
-          <div>{status}</div>
           <button onClick={() => this.loadPage()}>Next</button>
         </div>
       </div>
