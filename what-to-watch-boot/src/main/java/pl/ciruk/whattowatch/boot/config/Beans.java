@@ -75,7 +75,7 @@ public class Beans {
     }
 
     @Bean
-    TitleProvider ekinoTitles(
+    TitleProvider titleProvider(
             @Cached @ShortExpiry HttpConnection<Element> httpConnection,
             @Cached @LongExpiry HttpConnection<Element> detailsConnection) {
         return new OneTwoThreeTitleProvider(httpConnection, detailsConnection, titlePagesPerRequest);

@@ -9,6 +9,7 @@ import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
+import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import javax.inject.Inject;
@@ -18,6 +19,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.ConnectionCallback;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -34,6 +36,7 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static pl.ciruk.whattowatch.utils.concurrent.Threads.manageBlocking;
 
 @Named
 @Path("/suggestions")
@@ -62,8 +65,13 @@ public class Suggestions {
         asyncResponse.setTimeout(90, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
 
+        var future = CompletableFuture.supplyAsync(() -> manageBlocking(() -> findSuggestions(pageNumber)));
+        asyncResponse.register((ConnectionCallback) disconnected -> {
+            LOGGER.info("Disconnected");
+            future.cancel(true);
+        });
         try {
-            var films = responseTimer.record(() -> findSuggestions(pageNumber));
+            var films = responseTimer.record(future::join);
 
             asyncResponse.resume(Response.ok(films).build());
             LOGGER.info("Finished getting suggestions for page {}", pageNumber);
