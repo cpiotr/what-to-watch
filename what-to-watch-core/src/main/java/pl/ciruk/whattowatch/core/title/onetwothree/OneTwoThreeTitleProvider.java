@@ -23,8 +23,9 @@ import static java.util.stream.Collectors.toList;
 
 public class OneTwoThreeTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String BASE_URL = "https://w1.123movie.cc/";
-    private static final String TITLES_PAGE_PATTERN = BASE_URL + "movies/page/%d/";
+    private static final String BASE_URL = "https://w1.123movie.cc";
+    private static final String MOVIES_URL = BASE_URL + "/movies";
+    private static final String TITLES_URL_PATTERN = MOVIES_URL + "/page/%d/";
 
     private final HttpConnection<Element> listConnection;
     private final HttpConnection<Element> detailsConnection;
@@ -67,16 +68,21 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
         LOGGER.info("Pages per request: {}", pagesPerRequest);
     }
 
-    private Stream<HttpUrl> generatePageUrlsForRequest(int requestNumber) {
-        int startFromPage = (requestNumber - 1) * pagesPerRequest;
-        LOGGER.debug("Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
+    Stream<HttpUrl> generatePageUrlsForRequest(int requestNumber) {
+        int startFromPage = (requestNumber-1) * pagesPerRequest + 1;
+        LOGGER.debug("Pages: <{}; {})", startFromPage, startFromPage + pagesPerRequest);
 
         List<HttpUrl> urls = IntStream.range(startFromPage, startFromPage + pagesPerRequest)
-                .boxed()
-                .map(index -> String.format(TITLES_PAGE_PATTERN, index))
+                .mapToObj(this::createUrlForPageIndex)
                 .map(HttpUrl::get)
                 .collect(toList());
         return urls.stream();
+    }
+
+    private String createUrlForPageIndex(int index) {
+        return index == 1
+                ? MOVIES_URL
+                : String.format(TITLES_URL_PATTERN, index);
     }
 
     private Optional<Title> visitAndParseToTitle(Element linkToTitle) {
