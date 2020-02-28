@@ -14,6 +14,7 @@ import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -147,8 +148,13 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
     private Optional<Element> findFirstResultMatching(Title title, Element searchResults) {
         return MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(searchResults)
-                .filter(resultsPage -> extractTitle(resultsPage).matches(title))
-                .findAny();
+                .map(resultsPage -> new Object() {
+                    Element results = resultsPage;
+                    Title title = extractTitle(resultsPage);
+                })
+                .filter(resultsPage -> resultsPage.title.matches(title))
+                .min(Comparator.comparing(resultsPage -> Math.abs(resultsPage.title.getYear() - title.getYear())))
+                .map(resultPage -> resultPage.results);
     }
 
     private Title extractTitle(Element searchResult) {
