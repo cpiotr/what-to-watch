@@ -14,7 +14,6 @@ import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -22,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
 import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
 import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
 
@@ -148,13 +148,10 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
     private Optional<Element> findFirstResultMatching(Title title, Element searchResults) {
         return MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(searchResults)
-                .map(resultsPage -> new Object() {
-                    Element results = resultsPage;
-                    Title title = extractTitle(resultsPage);
-                })
-                .filter(resultsPage -> resultsPage.title.matches(title))
-                .min(Comparator.comparing(resultsPage -> Math.abs(resultsPage.title.getYear() - title.getYear())))
-                .map(resultPage -> resultPage.results);
+                .map(searchResult -> new SearchResultWithTitle(searchResult, extractTitle(searchResult)))
+                .filter(searchResult -> searchResult.matches(title))
+                .min(comparing(searchResult -> searchResult.calculateDifferenceInYears(title)))
+                .map(SearchResultWithTitle::getResultElement);
     }
 
     private Title extractTitle(Element searchResult) {
@@ -168,4 +165,31 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .year(year)
                 .build();
     }
+
+    private static class SearchResultWithTitle {
+        private final Element resultElement;
+        private final Title title;
+
+        private SearchResultWithTitle(Element resultElement, Title title) {
+            this.resultElement = resultElement;
+            this.title = title;
+        }
+
+        public int calculateDifferenceInYears(Title otherTitle) {
+            return Math.abs(title.getYear() - otherTitle.getYear());
+        }
+
+        public boolean matches(Title otherTitle) {
+            return title.matches(otherTitle);
+        }
+
+        public Element getResultElement() {
+            return resultElement;
+        }
+
+        public Title getTitle() {
+            return title;
+        }
+    }
+
 }
