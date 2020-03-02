@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 class FilmResult {
+    private final String id;
     private final String title;
     private final Integer year;
     private final String plot;
@@ -17,6 +18,7 @@ class FilmResult {
     private final List<String> genres;
 
     private FilmResult(
+            String id,
             String title,
             Integer year,
             String plot,
@@ -26,6 +28,7 @@ class FilmResult {
             Integer numberOfScores,
             List<Score> scores,
             List<String> genres) {
+        this.id = id;
         this.title = title;
         this.year = year;
         this.plot = plot;
@@ -77,6 +80,10 @@ class FilmResult {
         return genres;
     }
 
+    public String getId() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) {
@@ -97,6 +104,7 @@ class FilmResult {
     }
 
     static class FilmResultBuilder {
+        private String id;
         private String title;
         private Integer year;
         private String plot;
@@ -109,6 +117,11 @@ class FilmResult {
 
         FilmResultBuilder title(String title) {
             this.title = title;
+            return this;
+        }
+
+        FilmResultBuilder id(String id) {
+            this.id = id;
             return this;
         }
 
@@ -153,7 +166,10 @@ class FilmResult {
         }
 
         FilmResult build() {
-            return new FilmResult(title, year, plot, link, poster, score, numberOfScores, scores, genres);
+            var id = this.id == null
+                    ? String.valueOf(Objects.hash(title, year, link))
+                    : this.id;
+            return new FilmResult(id, title, year, plot, link, poster, score, numberOfScores, scores, genres);
         }
     }
 }

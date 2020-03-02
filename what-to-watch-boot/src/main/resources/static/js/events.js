@@ -1,13 +1,8 @@
 class Film extends React.Component {
   render() {
     let film = this.props.value;
-    let scores = film.scores.map((score, index) => {
-        return (
-            <Score value={score}/>
-        )
-    });
     return (
-        <div className="col-sm-4 mb-4 d-flex ng-scope">
+        <div className="col-sm-4 mb-4 d-flex">
             <div className="col-sm p-3 border rounded shadow-sm filmbox">
                 <div className="text-center mb-2">
                     <a className="btn btn-outline-primary p-1" href={film.link}>
@@ -19,8 +14,8 @@ class Film extends React.Component {
                         <a href={film.link}>{film.title} ({film.year})</a>
                     </h3>
                     <p>{film.plot}</p>
-                    <ScorePanel totalScore={film.score} scores={film.scores} />
-                    <GenrePanel genres={film.genres} />
+                    <ScorePanel key={'score-panel'} totalScore={film.score} scores={film.scores} />
+                    <GenrePanel key={'genre-panel'} genres={film.genres} />
                 </div>
             </div>
         </div>
@@ -32,7 +27,7 @@ class ScorePanel extends React.Component {
   render() {
     let scores = this.props.scores.map((score, index) => {
         return (
-            <Score value={score}/>
+            <Score key={'score' + index} value={score}/>
         )
     });
     return (
@@ -57,7 +52,7 @@ class Score extends React.Component {
   render() {
     let score = this.props.value;
     return (
-        <li className="list-group-item" ng-repeat="score in film.scores">
+        <li className="list-group-item">
             <span className="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
             <span className="border badge badge-light oi oi-star float-right mr-1">{(score.grade * 100).toFixed(0)}%</span>
             <a href={score.url}>{score.source}</a>
@@ -70,7 +65,7 @@ class GenrePanel extends React.Component {
   render() {
     let genres = this.props.genres.map((genre, index) => {
         return (
-            <Genre name={genre}/>
+            <Genre key={'genre' + index} name={genre}/>
         )
     });
     return (
@@ -134,10 +129,7 @@ class FilmApp extends React.Component {
     const current = this.state;
     let films = current.films.map((film, index) => {
         return (
-            <Film
-                value={film}
-                onClick={i => alert(i)}
-            />
+            <Film key={film.id} value={film} />
         )
     });
 
