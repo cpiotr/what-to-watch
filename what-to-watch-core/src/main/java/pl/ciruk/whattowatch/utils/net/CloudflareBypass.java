@@ -25,12 +25,16 @@ public class CloudflareBypass implements ResponseProcessor {
 
     @Override
     public Response apply(Response response) {
-        if (qualifiesForChallenge(response)) {
-            return response;
+        Response processedResponse = response;
+        int retryCounter = 0;
+        while (qualifiesForChallenge(processedResponse) && retryCounter++ < 3) {
+            processedResponse = getResponse(processedResponse);
         }
+        return processedResponse;
+    }
 
+    private Response getResponse(Response response) {
         LockSupport.parkNanos(timeout.toNanos());
-
         try (var body = response.body()) {
             Request request = response.request();
             var bodyString = body == null ? "" : body.string();
@@ -46,6 +50,6 @@ public class CloudflareBypass implements ResponseProcessor {
     }
 
     private boolean qualifiesForChallenge(Response response) {
-        return response.header("CF-RAY") == null || response.code() != TEMPORARILY_UNAVAILABLE;
+        return response.header("CF-RAY") != null && response.code() == TEMPORARILY_UNAVAILABLE;
     }
 }
