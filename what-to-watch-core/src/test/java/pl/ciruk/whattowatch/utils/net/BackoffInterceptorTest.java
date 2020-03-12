@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.function.IntConsumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,7 +24,7 @@ class BackoffInterceptorTest {
     @BeforeEach
     void setUp() {
         backOffFunction = mock(IntConsumer.class);
-        backoffInterceptor = new BackoffInterceptor(0, TimeUnit.MILLISECONDS, backOffFunction);
+        backoffInterceptor = new BackoffInterceptor(domain -> Duration.ZERO, backOffFunction);
     }
 
     @Test

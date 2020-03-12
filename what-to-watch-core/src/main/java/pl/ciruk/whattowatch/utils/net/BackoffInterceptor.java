@@ -8,11 +8,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Function;
 import java.util.function.IntConsumer;
 
 public class BackoffInterceptor implements Interceptor {
@@ -20,32 +22,32 @@ public class BackoffInterceptor implements Interceptor {
     private static final int BACKOFF_THRESHOLD = 1;
 
     private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
+    private final Function<String, Duration> backoffByDomain;
     private final IntConsumer backOffFunction;
-    private final int httpConnectionFixedDelayInterval;
-    private final TimeUnit httpConnectionFixedDelayUnit;
 
     public BackoffInterceptor() {
-        this(0, TimeUnit.MILLISECONDS, BackoffInterceptor::backOff);
+        this(domain -> Duration.ofMillis(0L), BackoffInterceptor::backOff);
     }
 
-    public BackoffInterceptor(int httpConnectionFixedDelayInterval, TimeUnit httpConnectionFixedDelayUnit) {
-        this(httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit, BackoffInterceptor::backOff);
+    public BackoffInterceptor(Function<String, Duration> backoffByDomain) {
+        this(backoffByDomain, BackoffInterceptor::backOff);
     }
 
-    BackoffInterceptor(int httpConnectionFixedDelayInterval, TimeUnit httpConnectionFixedDelayUnit, IntConsumer backOffFunction) {
-        this.httpConnectionFixedDelayInterval = httpConnectionFixedDelayInterval;
-        this.httpConnectionFixedDelayUnit = httpConnectionFixedDelayUnit;
+    BackoffInterceptor(Function<String, Duration> backoffByDomain, IntConsumer backOffFunction) {
+        this.backoffByDomain = backoffByDomain;
         this.backOffFunction = backOffFunction;
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        if (httpConnectionFixedDelayInterval > 0) {
-            LockSupport.parkNanos(httpConnectionFixedDelayUnit.toNanos(httpConnectionFixedDelayInterval));
-        }
-
         Request request = chain.request();
         String domain = request.url().topPrivateDomain();
+
+        var duration = backoffByDomain.apply(domain);
+        if (!duration.isZero()) {
+            LockSupport.parkNanos(duration.toNanos());
+        }
+
         AtomicInteger errors = errorsByDomain.computeIfAbsent(domain, key -> new AtomicInteger());
         int errorsValue = errors.get();
         if (errorsValue >= BACKOFF_THRESHOLD) {

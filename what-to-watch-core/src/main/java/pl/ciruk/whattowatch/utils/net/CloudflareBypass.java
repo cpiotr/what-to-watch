@@ -27,8 +27,9 @@ public class CloudflareBypass implements ResponseProcessor {
     public Response apply(Response response) {
         Response processedResponse = response;
         int retryCounter = 0;
-        while (qualifiesForChallenge(processedResponse) && retryCounter++ < 3) {
+        while (qualifiesForChallenge(processedResponse) && retryCounter < 3) {
             processedResponse = getResponse(processedResponse);
+            retryCounter++;
         }
         return processedResponse;
     }

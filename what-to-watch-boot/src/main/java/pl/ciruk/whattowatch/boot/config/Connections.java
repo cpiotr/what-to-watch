@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
@@ -77,7 +78,14 @@ public class Connections {
 
     @Bean
     BackoffInterceptor backoffInterceptor() {
-        return new BackoffInterceptor(httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit);
+        Function<String, Duration> durationByDomain = domain -> {
+            if ("metacritic.com".equals(domain)) {
+                return Duration.ofMillis(500);
+            }
+            return Duration.of(httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit.toChronoUnit());
+        };
+
+        return new BackoffInterceptor(durationByDomain);
     }
 
     @Bean
