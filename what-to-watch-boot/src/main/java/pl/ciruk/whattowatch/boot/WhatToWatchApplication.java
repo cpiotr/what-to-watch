@@ -114,7 +114,7 @@ public class WhatToWatchApplication {
 
     private static TitleProvider sampleTitleProvider(JsoupConnection detailsConnection) {
         HttpConnection<Element> keepCookiesConnection = createDirectConnectionWhichKeepsCookies();
-        return new OneTwoThreeTitleProvider(keepCookiesConnection, detailsConnection, 20);
+        return new OneTwoThreeTitleProvider(keepCookiesConnection, 20);
     }
 
     private static HttpConnection<Element> createDirectConnectionWhichKeepsCookies() {

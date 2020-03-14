@@ -3,7 +3,6 @@ package pl.ciruk.whattowatch.core.title.onetwothree;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.title.Title;
@@ -16,6 +15,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -23,22 +23,17 @@ import static java.util.stream.Collectors.toList;
 
 public class OneTwoThreeTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String BASE_URL = "https://w1.123movie.cc";
+    private static final String BASE_URL = "https://ww2.123movie.cc";
     private static final String MOVIES_URL = BASE_URL + "/movies";
-    private static final String TITLES_URL_PATTERN = MOVIES_URL + "/page/%d/";
+    private static final String TITLES_URL_PATTERN = MOVIES_URL + "//?page=%d";
 
     private final HttpConnection<Element> listConnection;
-    private final HttpConnection<Element> detailsConnection;
     private final int pagesPerRequest;
 
     private final AtomicLong numberOfTitles = new AtomicLong();
 
-    public OneTwoThreeTitleProvider(
-            HttpConnection<Element> listConnection,
-            HttpConnection<Element> detailsConnection,
-            int pagesPerRequest) {
+    public OneTwoThreeTitleProvider(HttpConnection<Element> listConnection, int pagesPerRequest) {
         this.listConnection = listConnection;
-        this.detailsConnection = detailsConnection;
         this.pagesPerRequest = pagesPerRequest;
 
         Metrics.gauge(
@@ -58,8 +53,8 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
                 .peek(url -> LOGGER.debug("Loading films from: {}", url))
                 .map(listConnection::connectToAndGet)
                 .flatMap(Optional::stream)
-                .flatMap(OneTwoThreeStreamSelectors.TITLE_LINKS::extractFrom)
-                .map(this::visitAndParseToTitle)
+                .flatMap(OneTwoThreeStreamSelectors.TITLES::extractFrom)
+                .map(this::createTitle)
                 .flatMap(Optional::stream)
                 .peek(ignored -> numberOfTitles.incrementAndGet());
     }
@@ -69,7 +64,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     }
 
     Stream<HttpUrl> generatePageUrlsForRequest(int requestNumber) {
-        int startFromPage = (requestNumber-1) * pagesPerRequest + 1;
+        int startFromPage = (requestNumber - 1) * pagesPerRequest + 1;
         LOGGER.debug("Pages: <{}; {})", startFromPage, startFromPage + pagesPerRequest);
 
         List<HttpUrl> urls = IntStream.range(startFromPage, startFromPage + pagesPerRequest)
@@ -85,33 +80,29 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
                 : String.format(TITLES_URL_PATTERN, index);
     }
 
-    private Optional<Title> visitAndParseToTitle(Element linkToTitle) {
-        return OneTwoThreeSelectors.HREF.extractFrom(linkToTitle)
-                .map(HttpUrl::get)
-                .flatMap(this::visitAndParseToTitle);
-    }
+    private Optional<Title> createTitle(Element titleElement) {
+        var optionalTitle = OneTwoThreeSelectors.TITLE.extractFrom(titleElement);
+        if (optionalTitle.isEmpty()) {
+            return Optional.empty();
+        }
+        var builder = Title.builder();
+        optionalTitle.ifPresent(builder::title);
 
-    private Optional<Title> visitAndParseToTitle(HttpUrl link) {
-        LOGGER.debug("Visit: {}", link);
-        return detailsConnection.connectToAndGet(link)
-                .flatMap(pageWithDetails -> parseToTitle(pageWithDetails, link));
-    }
+        var optionalYear = OneTwoThreeSelectors.YEAR.extractFrom(titleElement)
+                .filter(Predicate.not(String::isBlank))
+                .map(Integer::parseInt);
+        if (optionalYear.isEmpty()) {
+            return Optional.empty();
+        }
+        optionalYear.ifPresent(builder::year);
 
-    private Optional<Title> parseToTitle(Element pageWithDetails, HttpUrl link) {
-        return Optional.of(pageWithDetails.select("#contenedor .sheader"))
-                .map(Elements::first)
-                .map(filmContainer -> buildTitle(link.toString(), filmContainer));
-    }
-
-    private Title buildTitle(String url, Element filmContainer) {
-        var builder = Title.builder().url(url);
-        OneTwoThreeSelectors.TITLE.extractFrom(filmContainer)
-                .ifPresent(builder::title);
-        OneTwoThreeSelectors.ORIGINAL_TITLE.extractFrom(filmContainer)
+        OneTwoThreeSelectors.HREF.extractFrom(titleElement)
+                .map(link -> HttpUrl.get(BASE_URL).resolve(link))
+                .map(HttpUrl::toString)
+                .ifPresent(builder::url);
+        OneTwoThreeSelectors.ORIGINAL_TITLE.extractFrom(titleElement)
                 .ifPresent(builder::originalTitle);
-        OneTwoThreeSelectors.YEAR.extractFrom(filmContainer)
-                .map(Integer::parseInt)
-                .ifPresent(builder::year);
-        return builder.build();
+
+        return Optional.of(builder.build());
     }
 }

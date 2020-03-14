@@ -5,25 +5,26 @@ import pl.ciruk.whattowatch.utils.net.html.Extractable;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
-    TITLE(film -> film.select(".data h1")
+    TITLE(film -> film.select(".mli-info h2")
             .stream()
             .findFirst()
             .map(Element::text)),
-    ORIGINAL_TITLE(film -> film.select(".data h1")
+    ORIGINAL_TITLE(film -> film.select(".mli-info h2")
             .stream()
             .findFirst()
             .map(Element::text)),
-    HREF(film -> film.select(".titlecover")
+    HREF(film -> film.select(".ml-mask")
             .stream()
             .findFirst()
             .map(e -> e.attr("href"))),
-    YEAR(film -> film.select(".data .custom_fields .date")
+    YEAR(film -> film.select(".ml-mask")
             .stream()
             .findFirst()
-            .map(Element::text)
-            .map(OneTwoThreeSelectors::trimToYear)),
+            .map(element -> element.attr("data-url"))
+            .flatMap(OneTwoThreeSelectors::trimToYear)),
     ;
 
     private final Function<Element, Optional<String>> extractor;
@@ -37,8 +38,12 @@ public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
         return extractor.apply(element);
     }
 
-    private static String trimToYear(String wholeDescriptionInTitle) {
-        int endOfFirstPart = wholeDescriptionInTitle.lastIndexOf(' ');
-        return wholeDescriptionInTitle.substring(endOfFirstPart).trim();
+    private static Optional<String> trimToYear(String dataUrl) {
+        var urlElements = dataUrl.split("[?&]");
+        var prefix = "y=";
+        return Stream.of(urlElements)
+                .filter(element -> element.startsWith(prefix))
+                .map(element -> element.substring(prefix.length()))
+                .findFirst();
     }
 }

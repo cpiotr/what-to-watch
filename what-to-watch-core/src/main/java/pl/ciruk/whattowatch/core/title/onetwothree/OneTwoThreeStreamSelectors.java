@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public enum OneTwoThreeStreamSelectors implements Extractable<Stream<Element>> {
-    TITLE_LINKS(description -> description.select("#archive-content .movies .hobcontainer").stream());
+    TITLES(description -> description.select("div.movies-list .ml-item").stream());
 
     private final Function<Element, Stream<Element>> extractor;
 

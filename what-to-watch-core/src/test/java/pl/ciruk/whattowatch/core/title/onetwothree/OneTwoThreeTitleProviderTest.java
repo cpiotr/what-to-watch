@@ -11,12 +11,11 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OneTwoThreeTitleProviderTest {
-
     private OneTwoThreeTitleProvider titleProvider;
 
     @BeforeEach
     void setUp() {
-        titleProvider = new OneTwoThreeTitleProvider(TestConnections.jsoup(), TestConnections.jsoup(), 3);
+        titleProvider = new OneTwoThreeTitleProvider(TestConnections.jsoup(), 3);
     }
 
     @Test

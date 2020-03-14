@@ -27,7 +27,6 @@ import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
-import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.core.title.onetwothree.OneTwoThreeTitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
@@ -75,10 +74,8 @@ public class Beans {
     }
 
     @Bean
-    TitleProvider titleProvider(
-            @Cached @ShortExpiry HttpConnection<Element> httpConnection,
-            @Cached @LongExpiry HttpConnection<Element> detailsConnection) {
-        return new OneTwoThreeTitleProvider(httpConnection, detailsConnection, titlePagesPerRequest);
+    TitleProvider titleProvider(@Cached @ShortExpiry HttpConnection<Element> httpConnection) {
+        return new OneTwoThreeTitleProvider(httpConnection, titlePagesPerRequest);
     }
 
     @Bean
