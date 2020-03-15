@@ -29,6 +29,7 @@ import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -43,8 +44,9 @@ public class Connections {
     private final String redisHost;
     private final Integer redisPoolMaxActive;
     private final Integer httpPoolMaxIdle;
-    private final Integer httpConnectionFixedDelayInterval;
-    private final TimeUnit httpConnectionFixedDelayUnit;
+    private final Long httpConnectionDefaultDelay;
+    private final Map<String, Long> httpConnectionDelayByDomain;
+    private final TimeUnit httpConnectionDelayByDomainUnit;
     private final long longExpiryInterval;
     private final TimeUnit longExpiryUnit;
     private final long shortExpiryInterval;
@@ -55,8 +57,9 @@ public class Connections {
             @Value("${redis.host}") String redisHost,
             @Value("${redis.pool.maxActive:8}") Integer redisPoolMaxActive,
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
-            @Value("${http.connection.fixedDelay.interval:0}") Integer httpConnectionFixedDelayInterval,
-            @Value("${http.connection.fixedDelay.unit:MILLISECONDS}") TimeUnit httpConnectionFixedDelayUnit,
+            @Value("${http.connection.delayByDomain.default:0}") Long httpConnectionDefaultDelay,
+            @Value("#{${http.connection.delayByDomain.map:{}}}") Map<String, Long> httpConnectionDelayByDomain,
+            @Value("${http.connection.delayByDomain.unit:MILLISECONDS}") TimeUnit httpConnectionDelayByDomainUnit,
             @Value("${w2w.cloudflare.wait.interval:5}") Integer cloudflareDelayInterval,
             @Value("${w2w.cloudflare.wait.unit:SECONDS}") TimeUnit cloudflareDelayUnit,
             @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
@@ -66,8 +69,9 @@ public class Connections {
         this.redisHost = redisHost;
         this.redisPoolMaxActive = redisPoolMaxActive;
         this.httpPoolMaxIdle = httpPoolMaxIdle;
-        this.httpConnectionFixedDelayInterval = httpConnectionFixedDelayInterval;
-        this.httpConnectionFixedDelayUnit = httpConnectionFixedDelayUnit;
+        this.httpConnectionDefaultDelay = httpConnectionDefaultDelay;
+        this.httpConnectionDelayByDomain = httpConnectionDelayByDomain;
+        this.httpConnectionDelayByDomainUnit = httpConnectionDelayByDomainUnit;
         this.longExpiryInterval = longExpiryInterval;
         this.longExpiryUnit = longExpiryUnit;
         this.shortExpiryInterval = shortExpiryInterval;
@@ -79,10 +83,8 @@ public class Connections {
     @Bean
     BackoffInterceptor backoffInterceptor() {
         Function<String, Duration> durationByDomain = domain -> {
-            if ("metacritic.com".equals(domain)) {
-                return Duration.ofMillis(500);
-            }
-            return Duration.of(httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit.toChronoUnit());
+            var delay = httpConnectionDelayByDomain.getOrDefault(domain, httpConnectionDefaultDelay);
+            return Duration.of(delay, httpConnectionDelayByDomainUnit.toChronoUnit());
         };
 
         return new BackoffInterceptor(durationByDomain);
@@ -222,7 +224,9 @@ public class Connections {
         logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);
         logConfigurationEntry(LOGGER, "Cache short expiry", shortExpiryInterval, shortExpiryUnit);
         logConfigurationEntry(LOGGER, "HttpClient pool max idle", httpPoolMaxIdle);
-        logConfigurationEntry(LOGGER, "HttpClient fixed delay", httpConnectionFixedDelayInterval, httpConnectionFixedDelayUnit);
+        logConfigurationEntry(LOGGER, "HttpClient default delay", httpConnectionDefaultDelay);
+        logConfigurationEntry(LOGGER, "HttpClient delay by domain", httpConnectionDelayByDomain);
+        logConfigurationEntry(LOGGER, "HttpClient delay unit", httpConnectionDelayByDomainUnit);
         logConfigurationEntry(LOGGER, "Cloudflare delay", cloudflareDelay);
     }
 
