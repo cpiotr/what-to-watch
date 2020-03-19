@@ -23,8 +23,8 @@ class OneTwoThreeTitleProviderTest {
         var urls = titleProvider.generatePageUrlsForRequest(1).collect(Collectors.toList());
 
         assertThat(urls)
-                .extracting(HttpUrl::encodedPath)
-                .containsExactly(firstPagePath(), pathForIndex(2), pathForIndex(3));
+                .extracting(HttpUrl::encodedQuery)
+                .containsExactly(firstPageQuery(), queryForIndex(2), queryForIndex(3));
     }
 
     @Test
@@ -32,17 +32,16 @@ class OneTwoThreeTitleProviderTest {
         var urls = titleProvider.generatePageUrlsForRequest(2).collect(Collectors.toList());
 
         assertThat(urls)
-                .extracting(HttpUrl::encodedPath)
-                .containsExactly(pathForIndex(4), pathForIndex(5), pathForIndex(6));
+                .extracting(HttpUrl::encodedQuery)
+                .containsExactly(queryForIndex(4), queryForIndex(5), queryForIndex(6));
+    }
+
+    private String firstPageQuery() {
+        return null;
     }
 
     @NotNull
-    private String firstPagePath() {
-        return "/movies";
-    }
-
-    @NotNull
-    private String pathForIndex(int index) {
-        return String.format("/movies/page/%d/", index);
+    private String queryForIndex(int index) {
+        return String.format("page=%d", index);
     }
 }
