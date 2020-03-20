@@ -51,7 +51,6 @@ public class Connections {
     private final TimeUnit longExpiryUnit;
     private final long shortExpiryInterval;
     private final TimeUnit shortExpiryUnit;
-    private final Duration cloudflareDelay;
 
     public Connections(
             @Value("${redis.host}") String redisHost,
@@ -60,8 +59,6 @@ public class Connections {
             @Value("${http.connection.delayByDomain.default:0}") Long httpConnectionDefaultDelay,
             @Value("#{${http.connection.delayByDomain.map:{}}}") Map<String, Long> httpConnectionDelayByDomain,
             @Value("${http.connection.delayByDomain.unit:MILLISECONDS}") TimeUnit httpConnectionDelayByDomainUnit,
-            @Value("${w2w.cloudflare.wait.interval:5}") Integer cloudflareDelayInterval,
-            @Value("${w2w.cloudflare.wait.unit:SECONDS}") TimeUnit cloudflareDelayUnit,
             @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
             @Value("${w2w.cache.expiry.long.unit:DAYS}") TimeUnit longExpiryUnit,
             @Value("${w2w.cache.expiry.short.interval:20}") long shortExpiryInterval,
@@ -76,8 +73,6 @@ public class Connections {
         this.longExpiryUnit = longExpiryUnit;
         this.shortExpiryInterval = shortExpiryInterval;
         this.shortExpiryUnit = shortExpiryUnit;
-
-        this.cloudflareDelay = Duration.of(cloudflareDelayInterval, cloudflareDelayUnit.toChronoUnit());
     }
 
     @Bean
@@ -129,11 +124,6 @@ public class Connections {
     @Bean
     JavascriptChallengeSolver challengeSolver(ScriptEngine engine) {
         return new JavascriptChallengeSolver(engine);
-    }
-
-    @Bean
-    ResponseProcessor cloudflareBypass(@AllCookies OkHttpClient httpClient, ScriptEngine engine) {
-        return new CloudflareBypass(httpClient, engine, cloudflareDelay);
     }
 
     @Bean
@@ -227,7 +217,6 @@ public class Connections {
         logConfigurationEntry(LOGGER, "HttpClient default delay", httpConnectionDefaultDelay);
         logConfigurationEntry(LOGGER, "HttpClient delay by domain", httpConnectionDelayByDomain);
         logConfigurationEntry(LOGGER, "HttpClient delay unit", httpConnectionDelayByDomainUnit);
-        logConfigurationEntry(LOGGER, "Cloudflare delay", cloudflareDelay);
     }
 
     @Retention(RetentionPolicy.RUNTIME)
