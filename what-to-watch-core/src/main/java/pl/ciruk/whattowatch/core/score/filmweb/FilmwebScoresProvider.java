@@ -67,6 +67,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
         return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
                 .filter(result -> extractTitle(result).matches(title))
+                .limit(3)
                 .map(this::getDetailsAndFindScore)
                 .peek(logIfMissing(title))
                 .flatMap(Optional::stream);
