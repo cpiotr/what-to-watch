@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk13:jdk-13.0.2_8-alpine-slim
+FROM openjdk:14-alpine3.10
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
