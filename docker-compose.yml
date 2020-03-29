@@ -16,8 +16,8 @@ services:
         - W2W_THREAD_POOL_SIZE=32
         - REDIS_HOST=redis
         - W2W_LOGGING_LEVEL=INFO
-        - W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS=99
-        - W2W_HTTP_CLIENT_DELAY_BY_DOMAIN_MILLIS={'"metacritic.com"':500,'"filmweb.pl"':101}
+        - W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS=0
+        - W2W_HTTP_CLIENT_DELAY_BY_DOMAIN_MILLIS={'"metacritic.com"':500,'"filmweb.pl"':100}
         - JVM_OPTS=-Xmx2G
           -Xms2G
           -XX:+TieredCompilation

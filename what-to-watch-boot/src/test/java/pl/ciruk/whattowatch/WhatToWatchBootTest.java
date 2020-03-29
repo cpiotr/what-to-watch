@@ -35,7 +35,6 @@ public class WhatToWatchBootTest {
 
     @ComponentScan("pl.ciruk.whattowatch")
     @Configuration
-    @Import(Beans.class)
     static class TestConfig {
         private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
