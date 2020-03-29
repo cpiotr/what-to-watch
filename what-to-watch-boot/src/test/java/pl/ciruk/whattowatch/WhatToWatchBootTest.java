@@ -6,12 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ciruk.whattowatch.boot.WhatToWatchBoot;
-import pl.ciruk.whattowatch.boot.config.Beans;
 import pl.ciruk.whattowatch.boot.config.Bootstrap;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 
