@@ -62,12 +62,18 @@ public class FilmSuggestionProvider {
     private CompletableFuture<Film> findFilmByTitle(Title title) {
         return descriptions.findDescriptionByAsync(title)
                 .thenComposeAsync(
-                        description -> description.map(this::descriptionToFilm).orElse(completedFuture(Film.empty())),
+                        description -> description.map(this::descriptionToFilm).orElseGet(() -> getEmptyFilm(title)),
                         executorService)
                 .exceptionally(t -> {
                     LOGGER.error("Cannot get film for title {}", title, t);
                     return Film.empty();
                 });
+    }
+
+    private CompletableFuture<Film> getEmptyFilm(Title title) {
+        var emptyFilm = Film.empty();
+        cache.put(title, emptyFilm);
+        return completedFuture(emptyFilm);
     }
 
     private CompletableFuture<Film> descriptionToFilm(Description description) {
