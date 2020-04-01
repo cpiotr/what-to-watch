@@ -64,8 +64,8 @@ class FilmSuggestionProviderTest {
                 .collect(toList());
         assertThat(films).isNotEmpty();
 
-        verifyZeroInteractions(descriptionProvider);
-        verifyZeroInteractions(scoreProvider);
+        verifyNoMoreInteractions(descriptionProvider);
+        verifyNoMoreInteractions(scoreProvider);
     }
 
     @Test
@@ -76,6 +76,18 @@ class FilmSuggestionProviderTest {
 
         verify(descriptionProvider).findDescriptionByAsync(title);
         verify(scoreProvider).findScoresByAsync(description);
+    }
+
+    @Test
+    void shouldCacheEmptyFilmIfDescriptionIsMissing() {
+        when(descriptionProvider.findDescriptionByAsync(title))
+                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
+                .collect(toList());
+        assertThat(films).containsExactly(Film.empty());
+
+        assertThat(cache.asMap()).containsEntry(title, Film.empty());
     }
 
     private Description createDescription(Title title) {
