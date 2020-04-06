@@ -45,7 +45,8 @@ class FilmwebDescriptionProviderIT {
                 .hasTitle("Knives out")
                 .hasPlot()
                 .hasGenre("Dramat")
-                .hasGenre("Komedia kryminalna");
+                .hasGenre("Komedia")
+                .hasGenre("Kryminał");
     }
 
     @Test
