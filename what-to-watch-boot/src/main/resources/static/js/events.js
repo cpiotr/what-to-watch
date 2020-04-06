@@ -126,6 +126,10 @@ class FilmApp extends React.Component {
   }
 
   render() {
+    if (this.state.index == 1) {
+        this.loadPage();
+    }
+
     const current = this.state;
     let films = current.films.map((film, index) => {
         return (
