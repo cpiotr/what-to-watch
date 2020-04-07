@@ -88,13 +88,26 @@ class Genre extends React.Component {
   }
 }
 
+function Loader(props) {
+    return (
+        <div class="mx-auto loader"></div>
+    );
+}
+
+function NextPage(props) {
+    return (
+        <button onClick={props.onClick}>Next</button>
+    );
+}
+
 class FilmApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       films: [],
       filmIds: {},
-      index: 1
+      index: 1,
+      loading: false
     };
   }
 
@@ -107,6 +120,9 @@ class FilmApp extends React.Component {
     }
     eventSource.addEventListener('poisonPill', (e) => {
         eventSource.close();
+        this.setState({
+            loading: false
+        });
     });
     eventSource.addEventListener('film', (e) => {
         let film = JSON.parse(e.data)
@@ -121,7 +137,8 @@ class FilmApp extends React.Component {
     });
 
     this.setState({
-      index: currentIndex + 1
+      index: currentIndex + 1,
+      loading: true
     });
   }
 
@@ -137,13 +154,20 @@ class FilmApp extends React.Component {
         )
     });
 
+    let button;
+    if (current.loading) {
+        button = <Loader />
+    } else {
+        button = <NextPage onClick={() => this.loadPage()} />
+    }
+
     return (
       <div className="filmsmain">
         <div className="films row">
           {films}
         </div>
         <div className="footer">
-          <button onClick={() => this.loadPage()}>Next</button>
+          {button}
         </div>
       </div>
     );
