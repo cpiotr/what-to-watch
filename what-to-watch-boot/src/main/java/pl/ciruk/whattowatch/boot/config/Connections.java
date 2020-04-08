@@ -69,15 +69,7 @@ public class Connections {
     @Bean
     @AllCookies
     OkHttpClient httpClient(BackoffInterceptor backoffInterceptor) {
-        var connectionPool = new ConnectionPool(httpPoolMaxIdle, 30, TimeUnit.SECONDS);
-        var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
-        return new OkHttpClient.Builder()
-                .connectionPool(connectionPool)
-                .retryOnConnectionFailure(true)
-                .readTimeout(2_000, TimeUnit.MILLISECONDS)
-                .connectTimeout(500, TimeUnit.MILLISECONDS)
-                .eventListener(metricsEventListener)
-                .addInterceptor(backoffInterceptor)
+        return createHttpClientBuilder("HttpClient", backoffInterceptor)
                 .cookieJar(new InMemoryCookieJar())
                 .build();
     }
@@ -85,17 +77,22 @@ public class Connections {
     @Bean
     @NoCookies
     OkHttpClient noCookiesHttpClient(BackoffInterceptor backoffInterceptor) {
+        return createHttpClientBuilder("HttpClient-NoCookies", backoffInterceptor)
+                .build();
+    }
+
+    private OkHttpClient.Builder createHttpClientBuilder(String name, BackoffInterceptor backoffInterceptor) {
         var connectionPool = new ConnectionPool(httpPoolMaxIdle, 30, TimeUnit.SECONDS);
-        var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, "HttpClient").build();
+        var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, name).build();
         return new OkHttpClient.Builder()
                 .connectionPool(connectionPool)
                 .retryOnConnectionFailure(true)
                 .readTimeout(2_000, TimeUnit.MILLISECONDS)
                 .connectTimeout(500, TimeUnit.MILLISECONDS)
                 .eventListener(metricsEventListener)
-                .addInterceptor(backoffInterceptor)
-                .build();
+                .addInterceptor(backoffInterceptor);
     }
+
 
     @Bean
     ScriptEngine engine() {
