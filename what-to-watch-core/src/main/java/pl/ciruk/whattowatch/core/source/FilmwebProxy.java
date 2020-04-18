@@ -4,9 +4,12 @@ import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 public class FilmwebProxy {
+    private static final int CURRENT_YEAR = LocalDate.now().getYear();
+    private static final String MIN_VOTES = String.valueOf(500);
     private final HttpConnection<Element> connection;
 
     public FilmwebProxy(HttpConnection<Element> connection) {
@@ -20,6 +23,7 @@ public class FilmwebProxy {
                 .addQueryParameter("q", title)
                 .addQueryParameter("startYear", previous(year))
                 .addQueryParameter("endYear", next(year))
+                .addQueryParameter("startCount", MIN_VOTES)
                 .build();
 
         return connection.connectToAndGet(url);
@@ -44,7 +48,7 @@ public class FilmwebProxy {
     }
 
     private static String next(int year) {
-        return String.valueOf(year + 1);
+        return String.valueOf(Math.min(year + 1, CURRENT_YEAR));
     }
 
     private static String previous(int year) {
