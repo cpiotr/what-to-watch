@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public class FilmwebProxy {
     private static final int CURRENT_YEAR = LocalDate.now().getYear();
-    private static final String MIN_VOTES = String.valueOf(500);
     private final HttpConnection<Element> connection;
 
     public FilmwebProxy(HttpConnection<Element> connection) {
@@ -23,7 +22,6 @@ public class FilmwebProxy {
                 .addQueryParameter("q", title)
                 .addQueryParameter("startYear", previous(year))
                 .addQueryParameter("endYear", next(year))
-                .addQueryParameter("startCount", MIN_VOTES)
                 .build();
 
         return connection.connectToAndGet(url);
