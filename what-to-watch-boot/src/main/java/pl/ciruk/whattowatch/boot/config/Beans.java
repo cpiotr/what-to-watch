@@ -63,13 +63,12 @@ public class Beans {
 
     @Bean
     ExecutorService executorService() {
-        String threadPrefix = "WhatToWatch";
+        var threadPrefix = "WhatToWatch";
         ExecutorService threadPoolExecutor = new ForkJoinPool(
                 filmPoolSize,
-                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                Threads.createForkJoinThreadFactory(threadPrefix),
                 Threads.createUncaughtExceptionHandler(),
                 true);
-        Threads.setThreadNamePrefix(threadPrefix, threadPoolExecutor);
         return ExecutorServiceMetrics.monitor(Metrics.globalRegistry, threadPoolExecutor, threadPrefix);
     }
 

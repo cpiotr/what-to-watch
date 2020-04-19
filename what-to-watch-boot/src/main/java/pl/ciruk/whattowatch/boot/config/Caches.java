@@ -74,8 +74,7 @@ public class Caches {
         return new CircuitBreaker<Optional<String>>()
                 .withFailureThreshold(3, 10)
                 .withSuccessThreshold(5)
-                .withDelay(Duration.ofSeconds(1))
-                .withTimeout(Duration.ofSeconds(5));
+                .withDelay(Duration.ofSeconds(1));
     }
 
     @PostConstruct

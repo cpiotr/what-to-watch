@@ -20,7 +20,6 @@ import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.onetwothree.OneTwoThreeTitleProvider;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
-import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.CachedConnection;
 import pl.ciruk.whattowatch.utils.net.HtmlConnection;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
@@ -47,7 +46,6 @@ public class WhatToWatchApplication {
     public static void main(String[] args) {
         Properties properties = loadDevProperties();
         ExecutorService threadPool = Executors.newWorkStealingPool(POOL_SIZE);
-        Threads.setThreadNamePrefix("My", threadPool);
 
         try (var jedisPool = createJedisPool(properties)) {
             long startTime = System.currentTimeMillis();
@@ -76,6 +74,13 @@ public class WhatToWatchApplication {
         return new HtmlConnection(httpClient);
     }
 
+    public static OkHttpClient createHttpClient() {
+        ConnectionPool connectionPool = new ConnectionPool(32, 12_000, TimeUnit.SECONDS);
+        return new OkHttpClient.Builder()
+                .connectionPool(connectionPool)
+                .build();
+    }
+
     private static FilmSuggestionProvider sampleSuggestionProvider(ExecutorService threadPool, JsoupConnection connection) {
         return new FilmSuggestionProvider(
                 sampleTitleProvider(connection),
@@ -87,13 +92,6 @@ public class WhatToWatchApplication {
 
     private static JsoupConnection createJsoupConnection(CacheProvider<String> cache, OkHttpClient httpClient) {
         return new JsoupConnection(new CachedConnection(cache, createHttpConnection(httpClient)));
-    }
-
-    public static OkHttpClient createHttpClient() {
-        ConnectionPool connectionPool = new ConnectionPool(32, 12_000, TimeUnit.SECONDS);
-        return new OkHttpClient.Builder()
-                .connectionPool(connectionPool)
-                .build();
     }
 
     private static FilmwebDescriptionProvider sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
