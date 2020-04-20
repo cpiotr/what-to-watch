@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.suggest.Film;
 
 import java.lang.invoke.MethodHandles;
+import java.text.NumberFormat;
 import java.util.function.Predicate;
 
 public class FilmByScoreFilter implements Predicate<Film> {
@@ -23,7 +24,7 @@ public class FilmByScoreFilter implements Predicate<Film> {
             return true;
         }
         if (Double.compare(score / minimalAcceptedScore, 0.9) > 0) {
-            LOGGER.info("Omitting {} with score {}", film.getDescription().titleAsText(), score);
+            LOGGER.info("Omitting {} with score {}", film.getDescription().titleAsText(), NumberFormat.getNumberInstance().format(score));
         }
         return false;
     }
