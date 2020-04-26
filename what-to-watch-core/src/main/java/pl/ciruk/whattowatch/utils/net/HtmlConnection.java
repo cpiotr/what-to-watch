@@ -64,10 +64,12 @@ public class HtmlConnection implements HttpConnection<String> {
                     .map(identity(this::logBodyIfUnsuccessful))
                     .filter(ProcessedResponse::isSuccessful)
                     .map(ProcessedResponse::getBody);
+        } catch (RetryableException e) {
+            LOGGER.warn("Could not get {} due to: {}", url, e.getMessage());
         } catch (HtmlConnectionException e) {
             LOGGER.warn("Could not get {}", url, e);
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     @SuppressWarnings("PMD.AvoidRethrowingException")
