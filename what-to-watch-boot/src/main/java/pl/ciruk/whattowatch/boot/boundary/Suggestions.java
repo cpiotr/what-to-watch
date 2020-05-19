@@ -30,8 +30,7 @@ import javax.ws.rs.sse.SseEventSink;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
@@ -46,6 +45,11 @@ public class Suggestions {
     private final FilmSuggestionProvider suggestionsProvider;
     private final FilmFilter filmFilter;
     private final Timer responseTimer;
+    private final ExecutorService threadPool = new ForkJoinPool(
+            Runtime.getRuntime().availableProcessors(),
+            Threads.createForkJoinThreadFactory("Suggestions"),
+            Threads.createUncaughtExceptionHandler(),
+            true);
 
     @Inject
     public Suggestions(FilmSuggestionProvider suggestionsProvider, FilmFilter filmFilter) {
@@ -65,7 +69,9 @@ public class Suggestions {
         asyncResponse.setTimeout(90, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
 
-        var future = CompletableFuture.supplyAsync(() -> manageBlocking(() -> findSuggestions(pageNumber)));
+        var future = CompletableFuture.supplyAsync(
+                () -> manageBlocking(() -> findSuggestions(pageNumber)),
+                threadPool);
         asyncResponse.register((ConnectionCallback) disconnected -> {
             LOGGER.info("Disconnected");
             future.cancel(true);
