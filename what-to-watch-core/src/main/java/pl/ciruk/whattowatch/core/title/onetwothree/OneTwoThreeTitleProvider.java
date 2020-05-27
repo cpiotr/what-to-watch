@@ -12,6 +12,7 @@ import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -67,11 +68,9 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
         int startFromPage = (requestNumber - 1) * pagesPerRequest + 1;
         LOGGER.debug("Pages: <{}; {})", startFromPage, startFromPage + pagesPerRequest);
 
-        List<HttpUrl> urls = IntStream.range(startFromPage, startFromPage + pagesPerRequest)
+        return IntStream.iterate(startFromPage + pagesPerRequest - 1, i -> i >= startFromPage, i -> i - 1)
                 .mapToObj(this::createUrlForPageIndex)
-                .map(HttpUrl::get)
-                .collect(toList());
-        return urls.stream();
+                .map(HttpUrl::get);
     }
 
     private String createUrlForPageIndex(int index) {

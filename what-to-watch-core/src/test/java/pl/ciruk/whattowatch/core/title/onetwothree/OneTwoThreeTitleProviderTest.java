@@ -24,7 +24,7 @@ class OneTwoThreeTitleProviderTest {
 
         assertThat(urls)
                 .extracting(HttpUrl::encodedQuery)
-                .containsExactly(firstPageQuery(), queryForIndex(2), queryForIndex(3));
+                .containsExactly(queryForIndex(3), queryForIndex(2), firstPageQuery());
     }
 
     @Test
@@ -33,7 +33,7 @@ class OneTwoThreeTitleProviderTest {
 
         assertThat(urls)
                 .extracting(HttpUrl::encodedQuery)
-                .containsExactly(queryForIndex(4), queryForIndex(5), queryForIndex(6));
+                .containsExactly(queryForIndex(6), queryForIndex(5), queryForIndex(4));
     }
 
     private String firstPageQuery() {
