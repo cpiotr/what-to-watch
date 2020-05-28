@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.boot.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 
 import javax.annotation.PostConstruct;
@@ -12,9 +13,11 @@ public class Bootstrap {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final FilmSuggestionProvider filmSuggestions;
+    private final FilmFilter filmFilter;
 
-    protected Bootstrap(FilmSuggestionProvider filmSuggestions) {
+    protected Bootstrap(FilmSuggestionProvider filmSuggestions, FilmFilter filmFilter) {
         this.filmSuggestions = filmSuggestions;
+        this.filmFilter = filmFilter;
     }
 
     @PostConstruct
@@ -23,7 +26,8 @@ public class Bootstrap {
 
         long numberOfFilms = filmSuggestions.suggestFilms(1)
                 .map(CompletableFuture::join)
+                .filter(filmFilter::isWorthWatching)
                 .count();
-        LOGGER.info("Preloaded {} film suggestions", numberOfFilms);
+        LOGGER.info("Processed {} film suggestions", numberOfFilms);
     }
 }

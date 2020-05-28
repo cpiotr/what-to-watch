@@ -121,8 +121,8 @@ public class Beans {
     }
 
     @Bean
-    Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider) {
-        return new Bootstrap(filmSuggestionProvider);
+    Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider, FilmFilter filmFilter) {
+        return new Bootstrap(filmSuggestionProvider, filmFilter);
     }
 
     @Bean

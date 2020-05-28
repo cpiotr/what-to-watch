@@ -15,6 +15,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ciruk.whattowatch.boot.WhatToWatchBoot;
 import pl.ciruk.whattowatch.boot.config.Bootstrap;
+import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 
 import java.lang.invoke.MethodHandles;
@@ -42,8 +43,8 @@ public class WhatToWatchBootTest {
 
         @Bean
         @Primary
-        Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider) {
-            return new Bootstrap(filmSuggestionProvider) {
+        Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider, FilmFilter filmFilter) {
+            return new Bootstrap(filmSuggestionProvider, filmFilter) {
                 @Override
                 protected void onStartup() {
                     LOGGER.info("Do nothing");
