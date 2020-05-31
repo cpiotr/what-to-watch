@@ -176,7 +176,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
         }
 
         public int calculateDifferenceInYears(Title otherTitle) {
-            return Math.abs(title.getYear() - otherTitle.getYear());
+            return Math.abs(title.year() - otherTitle.year());
         }
 
         public boolean matches(Title otherTitle) {

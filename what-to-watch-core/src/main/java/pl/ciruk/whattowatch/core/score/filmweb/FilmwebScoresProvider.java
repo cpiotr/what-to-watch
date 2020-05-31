@@ -62,7 +62,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
     }
 
     private Stream<Score> scoresForTitle(Title title) {
-        var optionalResult = filmwebProxy.searchBy(title.asText(), title.getYear());
+        var optionalResult = filmwebProxy.searchBy(title.asText(), title.year());
 
         return optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
@@ -100,7 +100,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
     }
 
     private boolean isPositive(Score score) {
-        return score.getGrade() > 0 && score.getQuantity() > 0;
+        return score.grade() > 0 && score.quantity() > 0;
     }
 
     private Score createScore(String scoreText, String link) {

@@ -59,10 +59,10 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     public Optional<Description> findDescriptionBy(Title title) {
         LOGGER.debug("Title: {}", title);
 
-        var foundDescription = Stream.of(title.getOriginalTitle(), title.getLocalTitle())
+        var foundDescription = Stream.of(title.originalTitle(), title.localTitle())
                 .filter(Objects::nonNull)
                 .filter(not(String::isEmpty))
-                .flatMap(t -> filmsForTitle(t, title.getYear()))
+                .flatMap(t -> filmsForTitle(t, title.year()))
                 .filter(description -> description.getTitle().matches(title))
                 .peek(description -> description.foundFor(title))
                 .findAny();

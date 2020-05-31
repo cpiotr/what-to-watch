@@ -96,7 +96,7 @@ public class FilmSuggestionProvider {
     private UnaryOperator<Film> cacheAndCount() {
         return film -> {
             suggestedFilms.incrementAndGet();
-            cache.put(film.getDescription().getFoundFor(), film);
+            cache.put(film.description().getFoundFor(), film);
             return film;
         };
     }

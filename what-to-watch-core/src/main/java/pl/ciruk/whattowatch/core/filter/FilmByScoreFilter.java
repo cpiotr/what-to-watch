@@ -24,7 +24,7 @@ public class FilmByScoreFilter implements Predicate<Film> {
             return true;
         }
         if (Double.compare(score / minimalAcceptedScore, 0.9) > 0) {
-            LOGGER.info("Omitting {} with score {}", film.getDescription().titleAsText(), NumberFormat.getNumberInstance().format(score));
+            LOGGER.info("Omitting {} with score {}", film.description().titleAsText(), NumberFormat.getNumberInstance().format(score));
         }
         return false;
     }

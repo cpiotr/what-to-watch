@@ -9,10 +9,22 @@ apply plugin: 'java'
 sourceCompatibility = "$javaVersion"
 targetCompatibility = "$javaVersion"
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += '--enable-preview'
+}
+
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
-        options.compilerArgs = ['--module-path', classpath.asPath]
+        options.compilerArgs += ['--module-path', classpath.asPath]
         classpath = files()
     }
 }

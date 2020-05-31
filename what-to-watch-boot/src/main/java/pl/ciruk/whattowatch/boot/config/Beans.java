@@ -132,7 +132,7 @@ public class Beans {
 
     @Bean
     Predicate<Film> atLeastOneCriticScore() {
-        return film -> film.getScores().stream().anyMatch(score -> score.getType().equals(ScoreType.CRITIC));
+        return film -> film.scores().stream().anyMatch(score -> score.type().equals(ScoreType.CRITIC));
     }
 
     @Bean

@@ -5,102 +5,19 @@ import pl.ciruk.whattowatch.core.score.Score;
 import java.util.List;
 import java.util.Objects;
 
-class FilmResult {
-    private final String id;
-    private final String title;
-    private final Integer year;
-    private final String plot;
-    private final String link;
-    private final String poster;
-    private final Double score;
-    private final Integer numberOfScores;
-    private final List<Score> scores;
-    private final List<String> genres;
-
-    private FilmResult(
-            String id,
-            String title,
-            Integer year,
-            String plot,
-            String link,
-            String poster,
-            Double score,
-            Integer numberOfScores,
-            List<Score> scores,
-            List<String> genres) {
-        this.id = id;
-        this.title = title;
-        this.year = year;
-        this.plot = plot;
-        this.link = link;
-        this.poster = poster;
-        this.score = score;
-        this.numberOfScores = numberOfScores;
-        this.scores = scores;
-        this.genres = genres;
-    }
-
+public record FilmResult(
+        String id,
+        String title,
+        Integer year,
+        String plot,
+        String link,
+        String poster,
+        Double score,
+        Integer numberOfScores,
+        List<Score>scores,
+        List<String>genres) {
     static FilmResultBuilder builder() {
         return new FilmResultBuilder();
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Integer getYear() {
-        return year;
-    }
-
-    public String getPlot() {
-        return plot;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public String getPoster() {
-        return poster;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public Integer getNumberOfScores() {
-        return numberOfScores;
-    }
-
-    public List<Score> getScores() {
-        return scores;
-    }
-
-    public List<String> getGenres() {
-        return genres;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-        FilmResult other = (FilmResult) object;
-        return Objects.equals(title, other.title) &&
-                Objects.equals(year, other.year) &&
-                Objects.equals(link, other.link);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(title, year, link);
     }
 
     static class FilmResultBuilder {

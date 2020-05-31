@@ -31,7 +31,7 @@ public class Description {
     }
 
     public int getYear() {
-        return title.getYear();
+        return title.year();
     }
 
     public void foundFor(Title title) {
@@ -76,15 +76,10 @@ public class Description {
         if (object == this) {
             return true;
         }
-        if (!(object instanceof Description)) {
+        if (!(object instanceof Description other)) {
             return false;
         }
-        final Description other = (Description) object;
-        if (!other.canEqual(this)) {
-            return false;
-        }
-        final Object otherTitle = other.getTitle();
-        return Objects.equals(title, otherTitle);
+        return Objects.equals(title, other.getTitle());
     }
 
     @Override
@@ -94,19 +89,12 @@ public class Description {
         return result;
     }
 
-    private boolean canEqual(Object other) {
-        return other instanceof Description;
-    }
-
     public static class DescriptionBuilder {
         private Title title;
         private Title foundFor;
         private String poster;
         private String plot;
         private List<String> genres;
-
-        DescriptionBuilder() {
-        }
 
         public Description.DescriptionBuilder title(Title title) {
             this.title = title;

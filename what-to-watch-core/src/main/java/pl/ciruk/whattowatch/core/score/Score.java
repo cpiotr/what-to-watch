@@ -1,19 +1,11 @@
 package pl.ciruk.whattowatch.core.score;
 
-public class Score {
-    private final double grade;
-    private final long quantity;
-    private final String source;
-    private final ScoreType type;
-    private final String url;
-
-    private Score(double grade, long quantity, String source, ScoreType type, String url) {
-        this.grade = grade;
-        this.quantity = quantity;
-        this.source = source;
-        this.type = type;
-        this.url = url;
-    }
+public record Score(
+        double grade,
+        long quantity,
+        String source,
+        ScoreType type,
+        String url) {
 
     public static Score amateur(double grade) {
         return amateur(grade, ScoreType.AMATEUR.getWeight());
@@ -47,46 +39,12 @@ public class Score {
         return quantity >= type.getSignificantQuantityThreshold();
     }
 
-    public double getGrade() {
-        return this.grade;
-    }
-
-    public long getQuantity() {
-        return this.quantity;
-    }
-
-    public String getSource() {
-        return this.source;
-    }
-
-    public ScoreType getType() {
-        return this.type;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    @Override
-    public String toString() {
-        return "Score(" +
-                "grade=" + this.getGrade() + ", " +
-                "quantity=" + this.getQuantity() + ", " +
-                "source=" + this.getSource() + ", " +
-                "type=" + this.getType() + ", " +
-                "url=" + this.getUrl() +
-                ")";
-    }
-
     public static class ScoreBuilder {
         private double grade;
         private long quantity;
         private String source;
         private ScoreType type;
         private String url;
-
-        ScoreBuilder() {
-        }
 
         public Score.ScoreBuilder grade(double grade) {
             this.grade = grade;

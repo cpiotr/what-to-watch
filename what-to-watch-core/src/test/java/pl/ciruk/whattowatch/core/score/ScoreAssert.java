@@ -13,14 +13,14 @@ public final class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
     }
 
     public static boolean isMeaningful(Score item) {
-        var validGrade = item.getGrade() >= 0.1 && item.getGrade() <= 1.0;
+        var validGrade = item.grade() >= 0.1 && item.grade() <= 1.0;
         var significant = item.isSignificant();
 
         return validGrade && significant;
     }
 
     public ScoreAssert isMeaningful() {
-        Assertions.assertThat(actual.getGrade())
+        Assertions.assertThat(actual.grade())
                 .as("Grade between 10% and 100%")
                 .isBetween(0.1, 1.0);
 
@@ -32,14 +32,14 @@ public final class ScoreAssert extends AbstractAssert<ScoreAssert, Score> {
     }
 
     public ScoreAssert hasGradeGreaterThan(double threshold) {
-        Assertions.assertThat(actual.getGrade())
+        Assertions.assertThat(actual.grade())
                 .as("Grade between %.2f%% and 100%%", threshold * 100)
                 .isBetween(threshold, 1.0);
         return this;
     }
 
     public ScoreAssert hasGradeLessThan(double threshold) {
-        Assertions.assertThat(actual.getGrade())
+        Assertions.assertThat(actual.grade())
                 .as("Grade between 0%% and %.0f%%", threshold * 100)
                 .isBetween(0.0, threshold);
         return this;

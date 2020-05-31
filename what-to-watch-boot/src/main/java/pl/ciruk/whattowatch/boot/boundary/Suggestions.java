@@ -125,15 +125,15 @@ public class Suggestions {
 
     private FilmResult toFilmResult(Film film) {
         return FilmResult.builder()
-                .title(film.getDescription().titleAsText())
-                .year(film.getDescription().getYear())
-                .plot(film.getDescription().getPlot())
-                .poster(film.getDescription().getPoster())
+                .title(film.description().titleAsText())
+                .year(film.description().getYear())
+                .plot(film.description().getPlot())
+                .poster(film.description().getPoster())
                 .score(film.normalizedScore())
-                .numberOfScores(film.getScores().size())
-                .scores(film.getScores())
-                .genres(film.getDescription().getGenres())
-                .link(film.getDescription().getFoundFor().getUrl())
+                .numberOfScores(film.scores().size())
+                .scores(film.scores())
+                .genres(film.description().getGenres())
+                .link(film.description().getFoundFor().url())
                 .build();
     }
 

@@ -151,8 +151,8 @@ public class ImdbScoresProvider implements ScoresProvider {
                 .url(extractLink(searchResult))
                 .build();
         return Optional.of(imdbScore)
-                .filter(score -> score.getGrade() > 0.0)
-                .filter(score -> score.getQuantity() > 0);
+                .filter(score -> score.grade() > 0.0)
+                .filter(score -> score.quantity() > 0);
     }
 
     private String extractLink(Element searchResult) {

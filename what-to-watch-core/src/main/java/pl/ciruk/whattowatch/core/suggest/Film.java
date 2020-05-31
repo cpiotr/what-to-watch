@@ -6,22 +6,15 @@ import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.utils.math.Doubles;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class Film {
+public record Film(
+        Description description,
+        List<Score>scores) {
     private static final Film EMPTY = Film.builder().build();
-
-    private Description description;
-    private List<Score> scores;
-
-    private Film(Description description, List<Score> scores) {
-        this.description = description;
-        this.scores = scores;
-    }
 
     public static Film empty() {
         return EMPTY;
@@ -49,33 +42,21 @@ public class Film {
 
     private long countQuantity(ScoreType type) {
         long totalQuantity = significantScores()
-                .filter(score -> score.getType().equals(type))
-                .mapToLong(Score::getQuantity)
+                .filter(score -> score.type().equals(type))
+                .mapToLong(Score::quantity)
                 .sum();
         return totalQuantity * type.getScale();
     }
 
     private List<Score> scoresOfType(ScoreType type) {
         return significantScores()
-                .filter(score -> score.getType().equals(type))
+                .filter(score -> score.type().equals(type))
                 .collect(Collectors.toList());
     }
 
     private Stream<Score> significantScores() {
         return scores.stream()
                 .filter(Score::isSignificant);
-    }
-
-    private static Optional<Double> calculateWeightedAverage(List<Score> listOfScores) {
-        var totalQuantity = listOfScores.stream()
-                .mapToLong(Score::getQuantity)
-                .sum();
-
-        var weightedScore = listOfScores.stream()
-                .mapToDouble(score -> score.getGrade() * score.getQuantity())
-                .sum();
-        return Optional.of(weightedScore / totalQuantity)
-                .filter(Doubles.greaterThan(0.0));
     }
 
     public boolean isNotEmpty() {
@@ -86,55 +67,21 @@ public class Film {
         return this == EMPTY;
     }
 
-    public Description getDescription() {
-        return this.description;
-    }
+    private static Optional<Double> calculateWeightedAverage(List<Score> listOfScores) {
+        var totalQuantity = listOfScores.stream()
+                .mapToLong(Score::quantity)
+                .sum();
 
-    public List<Score> getScores() {
-        return this.scores;
-    }
-
-    public void setDescription(Description description) {
-        this.description = description;
-    }
-
-    public void setScores(List<Score> scores) {
-        this.scores = scores;
-    }
-
-    @Override
-    public String toString() {
-        return "Film(description=" + this.getDescription() + ", scores=" + this.getScores() + ")";
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (!(object instanceof Film)) {
-            return false;
-        }
-        Film other = (Film) object;
-        final Object thisDescription = this.getDescription();
-        final Object otherDescription = other.getDescription();
-        return Objects.equals(thisDescription, otherDescription);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = 1;
-        var description = this.getDescription();
-        result = result * 59 + (description == null ? 43 : description.hashCode());
-        return result;
+        var weightedScore = listOfScores.stream()
+                .mapToDouble(score -> score.grade() * score.grade())
+                .sum();
+        return Optional.of(weightedScore / totalQuantity)
+                .filter(Doubles.greaterThan(0.0));
     }
 
     public static class FilmBuilder {
         private Description description;
         private List<Score> scores;
-
-        FilmBuilder() {
-        }
 
         public Film.FilmBuilder description(Description description) {
             this.description = description;
