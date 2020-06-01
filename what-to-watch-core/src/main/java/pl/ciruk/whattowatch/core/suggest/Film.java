@@ -73,7 +73,7 @@ public record Film(
                 .sum();
 
         var weightedScore = listOfScores.stream()
-                .mapToDouble(score -> score.grade() * score.grade())
+                .mapToDouble(score -> score.grade() * score.quantity())
                 .sum();
         return Optional.of(weightedScore / totalQuantity)
                 .filter(Doubles.greaterThan(0.0));

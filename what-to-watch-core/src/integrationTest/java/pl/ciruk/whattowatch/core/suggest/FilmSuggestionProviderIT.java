@@ -58,7 +58,7 @@ class FilmSuggestionProviderIT {
         List<String> titles = CompletableFutures.getAllOf(suggestions.suggestFilms(1))
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
-                .map(Film::getDescription)
+                .map(Film::description)
                 .map(Description::getTitle)
                 .map(Title::asText)
                 .map(String::toLowerCase)
