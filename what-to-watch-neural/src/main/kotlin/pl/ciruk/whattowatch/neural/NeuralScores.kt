@@ -66,8 +66,8 @@ class NeuralScores(private val dataSet: DataSet) {
     @SuppressFBWarnings(justification = "kotlin")
     private fun findScore(scores: List<Score>, title: String): Double {
         return scores
-                .filter { score -> score.source.equals(title, ignoreCase = true) }
-                .map { it.grade }
+                .filter { score -> score.source().equals(title, ignoreCase = true) }
+                .map { it.grade() }
                 .first()
     }
 }
