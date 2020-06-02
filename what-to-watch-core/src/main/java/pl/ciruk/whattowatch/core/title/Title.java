@@ -25,7 +25,7 @@ public record Title(
     }
 
     public boolean matches(Title otherTitle) {
-        boolean hasMatchingTitle = Texts.matchesAlphanumerically(otherTitle.localTitle(), localTitle)
+        boolean hasMatchingTitle = Texts.matchesAlphanumerically(otherTitle.originalTitle(), localTitle)
                 || Texts.matchesAlphanumerically(otherTitle.localTitle(), localTitle)
                 || Texts.matchesAlphanumerically(otherTitle.originalTitle(), originalTitle)
                 || Texts.matchesAlphanumerically(otherTitle.localTitle(), originalTitle);
