@@ -13,7 +13,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class FilmFilterTest {
-
     private FilmFilter filmFilter;
     private Predicate<Film> firstFilter;
     private Predicate<Film> secondFilter;

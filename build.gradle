@@ -8,12 +8,8 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.2.4")
     }
-}
-
-plugins {
-    id("com.github.spotbugs") version "2.0.1"
-    id("pmd") apply(true)
 }
 
 apply plugin: 'org.springframework.boot'
@@ -37,7 +33,9 @@ allprojects {
     }
 
     spotbugs {
-        toolVersion = "$spotbugsVersion"
+        dependencies {
+            spotbugs "com.github.spotbugs:spotbugs:$spotbugsVersion"
+        }
     }
 }
 
