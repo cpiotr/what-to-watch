@@ -30,6 +30,7 @@ services:
           -XX:+UseNUMA
           -XX:+UseStringDeduplication
           -Xlog:gc:stdout:time
+          --enable-preview
       ports:
         - "8080:8080"
         - "9999:9999"
