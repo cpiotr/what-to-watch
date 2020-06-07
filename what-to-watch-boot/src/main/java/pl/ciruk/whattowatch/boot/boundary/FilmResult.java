@@ -1,21 +1,22 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.ciruk.whattowatch.core.score.Score;
 
 import java.util.List;
 import java.util.Objects;
 
 public record FilmResult(
-        String id,
-        String title,
-        Integer year,
-        String plot,
-        String link,
-        String poster,
-        Double score,
-        Integer numberOfScores,
-        List<Score>scores,
-        List<String>genres) {
+        @JsonProperty String id,
+        @JsonProperty String title,
+        @JsonProperty Integer year,
+        @JsonProperty String plot,
+        @JsonProperty String link,
+        @JsonProperty String poster,
+        @JsonProperty Double score,
+        @JsonProperty Integer numberOfScores,
+        @JsonProperty List<Score>scores,
+        @JsonProperty List<String>genres) {
     static FilmResultBuilder builder() {
         return new FilmResultBuilder();
     }

@@ -1,11 +1,13 @@
 package pl.ciruk.whattowatch.core.score;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record Score(
-        double grade,
-        long quantity,
-        String source,
-        ScoreType type,
-        String url) {
+        @JsonProperty double grade,
+        @JsonProperty long quantity,
+        @JsonProperty String source,
+        @JsonProperty ScoreType type,
+        @JsonProperty String url) {
 
     public static Score amateur(double grade) {
         return amateur(grade, ScoreType.AMATEUR.getWeight());

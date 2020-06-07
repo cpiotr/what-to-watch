@@ -34,6 +34,11 @@ public record Title(
         return hasMatchingTitle && hasMatchingYear;
     }
 
+    @Override
+    public String toString() {
+        return asText() + " (" + year + ')';
+    }
+
     public static class TitleBuilder {
         private String originalTitle;
         private String title;
