@@ -30,6 +30,7 @@ import static pl.ciruk.whattowatch.core.score.imdb.ImdbStreamSelectors.FILMS_FRO
 public class ImdbScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
+    private static final String IMDB = "IMDb";
 
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
@@ -43,7 +44,7 @@ public class ImdbScoresProvider implements ScoresProvider {
 
         Metrics.gauge(
                 Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag("IMDB")),
+                List.of(Tags.getProviderTag(IMDB)),
                 missingScores,
                 AtomicLong::get
         );
@@ -146,7 +147,7 @@ public class ImdbScoresProvider implements ScoresProvider {
         var imdbScore = Score.builder()
                 .grade(asPercentage(grade))
                 .quantity(quantity)
-                .source("IMDb")
+                .source(IMDB)
                 .type(ScoreType.AMATEUR)
                 .url(extractLink(searchResult))
                 .build();

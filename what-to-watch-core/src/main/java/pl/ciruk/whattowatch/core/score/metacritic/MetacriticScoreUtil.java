@@ -10,6 +10,8 @@ import java.util.Optional;
 import static pl.ciruk.whattowatch.utils.stream.Optionals.mergeUsing;
 
 final class MetacriticScoreUtil {
+    static final String METACRITIC = "Metacritic";
+
     private MetacriticScoreUtil() {
         throw new AssertionError();
     }
@@ -46,7 +48,7 @@ final class MetacriticScoreUtil {
         return Score.builder()
                 .grade(rating)
                 .quantity(count.intValue())
-                .source("Metacritic")
+                .source(METACRITIC)
                 .type(ScoreType.CRITIC);
     }
 }

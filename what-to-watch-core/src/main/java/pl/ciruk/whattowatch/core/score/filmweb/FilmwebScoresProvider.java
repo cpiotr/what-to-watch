@@ -27,6 +27,7 @@ import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public class FilmwebScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final String FILMWEB = "Filmweb";
 
     private final FilmwebProxy filmwebProxy;
     private final ExecutorService executorService;
@@ -38,7 +39,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
 
         Metrics.gauge(
                 Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag("Filmweb")),
+                List.of(Tags.getProviderTag(FILMWEB)),
                 missingScores,
                 AtomicLong::get
         );
@@ -110,7 +111,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
         return Score.builder()
                 .grade(rating / 10.0)
                 .quantity(quantity)
-                .source("Filmweb")
+                .source(FILMWEB)
                 .type(ScoreType.AMATEUR)
                 .url(filmwebProxy.resolveLink(link).toString())
                 .build();

@@ -41,14 +41,14 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
         Metrics.gauge(
                 Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag("Metacritic")),
+                List.of(Tags.getProviderTag(MetacriticScoreUtil.METACRITIC)),
                 missingMetacriticScores,
                 AtomicLong::get
         );
 
         Metrics.gauge(
                 Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag("NewYorkTimes")),
+                List.of(Tags.getProviderTag(NewYorkTimesScoreUtil.NEW_YORK_TIMES)),
                 missingNewYorkTimesScores,
                 AtomicLong::get
         );
@@ -191,5 +191,4 @@ public class MetacriticScoresProvider implements ScoresProvider {
             return title;
         }
     }
-
 }
