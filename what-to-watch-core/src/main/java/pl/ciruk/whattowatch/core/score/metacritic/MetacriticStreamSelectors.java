@@ -20,7 +20,6 @@ public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
         this.extractor = extractor;
     }
 
-
     @Override
     public Stream<Element> extractFrom(Element element) {
         return extractor.apply(element);

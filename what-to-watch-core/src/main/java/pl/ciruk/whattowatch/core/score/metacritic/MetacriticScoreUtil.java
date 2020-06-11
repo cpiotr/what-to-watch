@@ -19,10 +19,7 @@ final class MetacriticScoreUtil {
     static Optional<Score.ScoreBuilder> extractToScoreBuilder(Element htmlWithScores) {
         var averageGrade = averageGradeFrom(htmlWithScores);
         var numberOfReviews = numberOfReviewsFrom(htmlWithScores);
-        return mergeUsing(
-                averageGrade,
-                numberOfReviews,
-                MetacriticScoreUtil::createScore);
+        return mergeUsing(averageGrade, numberOfReviews, MetacriticScoreUtil::createScore);
     }
 
     private static Optional<Double> averageGradeFrom(Element htmlWithScores) {

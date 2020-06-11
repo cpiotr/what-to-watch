@@ -7,8 +7,8 @@ import pl.ciruk.whattowatch.core.score.ScoreType;
 import java.util.Optional;
 
 final class NewYorkTimesScoreUtil {
-    private static final int NYT_SCORE_WEIGHT = 10;
     static final String NEW_YORK_TIMES = "NewYorkTimes";
+    private static final int NYT_SCORE_WEIGHT = 10;
 
     private NewYorkTimesScoreUtil() {
         throw new AssertionError();
@@ -24,7 +24,7 @@ final class NewYorkTimesScoreUtil {
         return Score.builder()
                 .grade(percentage)
                 .quantity(NYT_SCORE_WEIGHT)
-                .source("New York Times")
+                .source(NEW_YORK_TIMES)
                 .type(ScoreType.CRITIC);
     }
 }

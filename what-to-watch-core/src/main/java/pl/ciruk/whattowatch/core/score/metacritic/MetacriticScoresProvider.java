@@ -166,15 +166,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .build();
     }
 
-    private static class SearchResultWithTitle {
-        private final Element resultElement;
-        private final Title title;
-
-        private SearchResultWithTitle(Element resultElement, Title title) {
-            this.resultElement = resultElement;
-            this.title = title;
-        }
-
+    private record SearchResultWithTitle(Element resultElement, Title title) {
         public int calculateDifferenceInYears(Title otherTitle) {
             return Math.abs(title.year() - otherTitle.year());
         }
