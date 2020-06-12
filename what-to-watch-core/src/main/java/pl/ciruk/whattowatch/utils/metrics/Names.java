@@ -4,7 +4,6 @@ import pl.ciruk.whattowatch.core.score.ScoresProvider;
 
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.joining;
 
@@ -20,11 +19,10 @@ public final class Names {
         return createName(clazz, List.of(suffix));
     }
 
-    public static String createName(Class<?> clazz, Iterable<?> suffixElements) {
-
+    public static String createName(Class<?> clazz, List<?> suffixElements) {
         return Stream.concat(
                 Stream.of(clazz.getSimpleName()),
-                StreamSupport.stream(suffixElements.spliterator(), false).map(Object::toString)
+                suffixElements.stream().map(Object::toString)
         ).collect(joining("."));
     }
 
