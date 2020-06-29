@@ -28,10 +28,10 @@ import static pl.ciruk.whattowatch.core.score.imdb.ImdbSelectors.*;
 import static pl.ciruk.whattowatch.core.score.imdb.ImdbStreamSelectors.FILMS_FROM_SEARCH_RESULT;
 
 public class ImdbScoresProvider implements ScoresProvider {
+    static final int NUMBER_OF_VOTES_LOWER_BOUND = 100;
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
     private static final String IMDB = "IMDb";
-
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
     private final AtomicLong missingScores = new AtomicLong();
@@ -62,11 +62,13 @@ public class ImdbScoresProvider implements ScoresProvider {
     public Stream<Score> findScoresBy(Description description) {
         LOGGER.debug("Description: {}", description);
 
+        var year = description.getYear();
         var url = createUrlBuilder()
                 .addPathSegment("search")
                 .addPathSegment("title")
                 .addQueryParameter("title", description.titleAsText())
-                .addQueryParameter("release_date", String.valueOf(description.getYear()))
+                .addQueryParameter("release_date", String.format("%d,%d", year - 1, year + 1))
+                .addQueryParameter("num_votes", String.format("%d,", NUMBER_OF_VOTES_LOWER_BOUND))
                 .addQueryParameter("title_type", "feature,tv_movie,documentary")
                 .build();
 

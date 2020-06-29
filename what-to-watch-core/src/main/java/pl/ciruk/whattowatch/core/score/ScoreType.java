@@ -1,7 +1,7 @@
 package pl.ciruk.whattowatch.core.score;
 
 public enum ScoreType {
-    AMATEUR(7, 1000, 1),
+    AMATEUR(7, 200, 1),
     CRITIC(3, 10, 100),
     ;
 

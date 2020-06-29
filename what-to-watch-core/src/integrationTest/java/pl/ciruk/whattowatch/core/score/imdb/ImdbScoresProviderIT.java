@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.score.imdb;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
@@ -13,6 +14,7 @@ import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ImdbScoresProviderIT {
@@ -50,6 +52,7 @@ class ImdbScoresProviderIT {
     }
 
     @Test
+    @Disabled("bug in imdb")
     void shouldCheckOnlyFirstTitleFromSearchResults() {
         Title title = Title.builder().originalTitle("Hidden").year(2015).build();
         Description description = Description.builder()
@@ -59,6 +62,18 @@ class ImdbScoresProviderIT {
         try (Stream<Score> scores = this.scores.findScoresBy(description)) {
             assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
         }
+    }
+
+    @Test
+    void shouldFindFilmWhenTwoTitlesMatchButOneIsInsignificant() {
+        Title title = Title.builder().originalTitle("Working man").year(2019).build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        var foundScores = this.scores.findScoresBy(description).collect(toList());
+        assertThat(foundScores)
+                .anyMatch(ScoreAssert::isMeaningful);
     }
 
     @Test
