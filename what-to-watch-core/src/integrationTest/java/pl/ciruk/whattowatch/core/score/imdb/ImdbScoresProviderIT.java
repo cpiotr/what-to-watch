@@ -122,6 +122,21 @@ class ImdbScoresProviderIT {
         }
     }
 
+    @Test
+    void shouldRetrieveMeaningfulScoreOfAnimatedVideo() {
+        Title title = Title.builder()
+                .originalTitle("Justice League Dark: Apokolips War")
+                .year(2020)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
+    }
+
     private Title titleOfOldAndRespectfulFilm() {
         return Title.builder()
                 .title("Rambo")

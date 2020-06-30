@@ -69,7 +69,7 @@ public class ImdbScoresProvider implements ScoresProvider {
                 .addQueryParameter("title", description.titleAsText())
                 .addQueryParameter("release_date", String.format("%d,%d", year - 1, year + 1))
                 .addQueryParameter("num_votes", String.format("%d,", NUMBER_OF_VOTES_LOWER_BOUND))
-                .addQueryParameter("title_type", "feature,tv_movie,documentary")
+                .addQueryParameter("title_type", "feature,tv_movie,documentary,video")
                 .build();
 
         var firstResult = httpConnection.connectToAndGet(url)
