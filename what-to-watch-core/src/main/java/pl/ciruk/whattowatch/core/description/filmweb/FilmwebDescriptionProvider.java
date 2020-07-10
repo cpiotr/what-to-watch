@@ -31,6 +31,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     private final ExecutorService executorService;
     private final FilmwebProxy filmwebProxy;
     private final AtomicLong missingDescriptions = new AtomicLong();
+    private final FilmwebSelectors selector = new FilmwebSelectors();
 
     public FilmwebDescriptionProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
@@ -78,10 +79,11 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
         var optionalResult = filmwebProxy.searchBy(title, year);
 
         return optionalResult.stream()
-                .flatMap(FilmwebStreamSelectors.LINKS_FROM_SEARCH_RESULT::extractFrom)
+                .flatMap(selector::findLinksFromSearchResult)
                 .map(filmwebProxy::getPageWithFilmDetailsFor)
                 .flatMap(Optional::stream)
                 .map(extractDescriptionOrElse(() -> LOGGER.warn("Could not get description for {} ({})", title, year)))
+                .limit(3)
                 .filter(not(Description::isEmpty));
     }
 
@@ -98,11 +100,11 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
 
     private Description extractDescriptionFrom(Element pageWithDetails) {
         Element mainElement = pageWithDetails.selectFirst("header.filmCoverSection__info");
-        var localTitle = FilmwebSelectors.LOCAL_TITLE.extractFrom(mainElement)
+        var localTitle = selector.findLocalTitle(mainElement)
                 .orElseThrow(MissingValueException::new);
-        var originalTitle = FilmwebSelectors.ORIGINAL_TITLE.extractFrom(mainElement)
+        var originalTitle = selector.findOriginalTitle(mainElement)
                 .orElse("");
-        var extractedYear = extractYearFrom(mainElement)
+        var extractedYear = selector.findYear(mainElement)
                 .orElseThrow(MissingValueException::new);
 
         var retrievedTitle = Title.builder()
@@ -113,19 +115,11 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
 
         return Description.builder()
                 .title(retrievedTitle)
-                .poster(FilmwebSelectors.POSTER.extractFrom(pageWithDetails).orElse(""))
-                .plot(FilmwebSelectors.PLOT.extractFrom(pageWithDetails).orElse(""))
-                .genres(FilmwebStreamSelectors.GENRES.extractFrom(pageWithDetails).collect(toList()))
+                .poster(selector.findPoster(pageWithDetails).orElse(""))
+                .plot(selector.findPlot(pageWithDetails).orElse(""))
+                .genres(selector.findGenres(pageWithDetails).collect(toList()))
                 .build();
     }
 
-    private Optional<Integer> extractYearFrom(Element details) {
-        return FilmwebSelectors.YEAR.extractFrom(details)
-                .map(this::parseYear);
-    }
-
-    private Integer parseYear(String extractFrom) {
-        return Integer.valueOf(extractFrom);
-    }
 }
 
