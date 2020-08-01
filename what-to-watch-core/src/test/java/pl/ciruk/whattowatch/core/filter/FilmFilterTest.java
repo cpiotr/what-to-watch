@@ -54,7 +54,6 @@ class FilmFilterTest {
         assertThat(worthWatching).isFalse();
     }
 
-
     @SuppressWarnings("unchecked")
     private Predicate<Film> mockPredicate() {
         return mock(Predicate.class);

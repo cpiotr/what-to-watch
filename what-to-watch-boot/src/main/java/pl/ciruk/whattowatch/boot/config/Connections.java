@@ -28,6 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -48,11 +49,13 @@ public class Connections {
     public Connections(
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
             @Value("${http.connection.delayByDomain.default:0}") Long httpConnectionDefaultDelay,
-            @Value("#{${http.connection.delayByDomain.map:{}}}") Map<String, Long> httpConnectionDelayByDomain,
+            @Value("#{${http.connection.delayByDomain.map}}") Map<String, Long> httpConnectionDelayByDomain,
             @Value("${http.connection.delayByDomain.unit:MILLISECONDS}") TimeUnit httpConnectionDelayByDomainUnit) {
         this.httpPoolMaxIdle = httpPoolMaxIdle;
         this.httpConnectionDefaultDelay = httpConnectionDefaultDelay;
-        this.httpConnectionDelayByDomain = httpConnectionDelayByDomain;
+        this.httpConnectionDelayByDomain = httpConnectionDelayByDomain == null
+                ? new HashMap<>()
+                : httpConnectionDelayByDomain;
         this.httpConnectionDelayByDomainUnit = httpConnectionDelayByDomainUnit;
     }
 
