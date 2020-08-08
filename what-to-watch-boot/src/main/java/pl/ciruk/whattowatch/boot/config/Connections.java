@@ -49,7 +49,7 @@ public class Connections {
     public Connections(
             @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
             @Value("${http.connection.delayByDomain.default:0}") Long httpConnectionDefaultDelay,
-            @Value("#{${http.connection.delayByDomain.map}}") Map<String, Long> httpConnectionDelayByDomain,
+            @Value("#{${http.connection.delayByDomain.map:null}}") Map<String, Long> httpConnectionDelayByDomain,
             @Value("${http.connection.delayByDomain.unit:MILLISECONDS}") TimeUnit httpConnectionDelayByDomainUnit) {
         this.httpPoolMaxIdle = httpPoolMaxIdle;
         this.httpConnectionDefaultDelay = httpConnectionDefaultDelay;
