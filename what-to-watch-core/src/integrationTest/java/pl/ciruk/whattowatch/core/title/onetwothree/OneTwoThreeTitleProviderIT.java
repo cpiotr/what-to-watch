@@ -20,8 +20,15 @@ class OneTwoThreeTitleProviderIT {
     }
 
     @Test
-    void shouldProvideCollectionOfTitles() {
+    void shouldFetchTitlesFromFirstPage() {
         var titles = provider.streamOfTitles(1).collect(Collectors.toList());
+
+        assertThat(titles).isNotEmpty();
+    }
+
+    @Test
+    void shouldFetchTitlesFromSecondPage() {
+        var titles = provider.streamOfTitles(2).collect(Collectors.toList());
 
         assertThat(titles).isNotEmpty();
     }
