@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 
 public class OneTwoThreeTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String BASE_URL = "https://watch.123movie.cc";
+    private static final String BASE_URL = "https://w5.123movie.cc";
     private static final String MOVIES_URL = BASE_URL + "/movies";
     private static final String TITLES_URL_PATTERN = MOVIES_URL + "//?page=%d";
 
