@@ -3,9 +3,6 @@ package pl.ciruk.whattowatch.utils.net;
 import okhttp3.OkHttpClient;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import java.time.Duration;
 import java.util.List;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
@@ -21,11 +18,11 @@ public final class TestConnections {
                 .addInterceptor(new BackoffInterceptor())
                 .build();
 
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("js");
         return new HtmlConnection(
                 httpClient,
                 List.of(),
-                List.of(new CloudflareBypass(httpClient, engine, Duration.ofSeconds(5))));
+                List.of()
+        );
     }
 
     public static JsoupConnection jsoup() {

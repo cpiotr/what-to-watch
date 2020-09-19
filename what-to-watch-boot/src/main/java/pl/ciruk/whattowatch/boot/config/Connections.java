@@ -103,11 +103,6 @@ public class Connections {
     }
 
     @Bean
-    JavascriptChallengeSolver challengeSolver(ScriptEngine engine) {
-        return new JavascriptChallengeSolver(engine);
-    }
-
-    @Bean
     @NotCached
     @NoCookies
     HttpConnection<String> notCachedNoCookiesConnection(@NoCookies OkHttpClient httpClient) {

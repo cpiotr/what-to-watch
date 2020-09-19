@@ -12,15 +12,12 @@ import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 public class OneTwoThreeTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
