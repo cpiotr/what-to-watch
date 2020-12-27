@@ -62,8 +62,8 @@ public class HtmlConnection implements HttpConnection<String> {
             return Optional.of(response)
                     .flatMap(this::unwrapBody)
                     .map(identity(this::logBodyIfUnsuccessful))
-                    .filter(ProcessedResponse::isSuccessful)
-                    .map(ProcessedResponse::getBody);
+                    .filter(ProcessedResponse::successful)
+                    .map(ProcessedResponse::body);
         } catch (RetryableException e) {
             LOGGER.warn("Could not get {} due to: {}", url, e.getMessage());
         } catch (HtmlConnectionException e) {
@@ -85,7 +85,7 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private void logBodyIfUnsuccessful(ProcessedResponse processedResponse) {
-        if (!processedResponse.isSuccessful()) {
+        if (!processedResponse.successful()) {
             LOGGER.trace("Erroneous response: {}", processedResponse.body);
         }
     }
@@ -177,21 +177,5 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    static class ProcessedResponse {
-        private final String body;
-        private final boolean successful;
-
-        ProcessedResponse(String body, boolean successful) {
-            this.body = body;
-            this.successful = successful;
-        }
-
-        String getBody() {
-            return body;
-        }
-
-        boolean isSuccessful() {
-            return successful;
-        }
-    }
+    static record ProcessedResponse(String body, boolean successful) { }
 }
