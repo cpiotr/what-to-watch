@@ -22,4 +22,8 @@ public final class Functions {
             return value;
         };
     }
+
+    public static <T> Consumer<T> consumeNothing() {
+        return __ -> {};
+    }
 }

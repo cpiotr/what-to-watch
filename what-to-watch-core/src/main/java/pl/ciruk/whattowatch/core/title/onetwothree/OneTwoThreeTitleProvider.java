@@ -19,16 +19,17 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static pl.ciruk.whattowatch.utils.stream.Functions.consumeNothing;
+
 public class OneTwoThreeTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String BASE_URL = "https://w6.123movie.cc";
-    private static final String MOVIES_URL = BASE_URL + "/movies";
-    private static final String TITLES_URL_PATTERN = MOVIES_URL + "//?page=%d";
+    private static final String BASE_URL = "https://www.123movie.cc";
+    private static final String TITLES_URL_PATTERN = "?page=%d";
 
     private final HttpConnection<Element> listConnection;
     private final int pagesPerRequest;
-
     private final AtomicLong numberOfTitles = new AtomicLong();
+    private HttpUrl moviesUrl;
 
     public OneTwoThreeTitleProvider(HttpConnection<Element> listConnection, int pagesPerRequest) {
         this.listConnection = listConnection;
@@ -39,6 +40,11 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
                 List.of(Tags.getProviderTag("123movies")),
                 numberOfTitles,
                 AtomicLong::get);
+
+        listConnection.connectToAndConsume(
+                HttpUrl.get(BASE_URL + "/movies"),
+                consumeNothing(),
+                response -> moviesUrl = response.request().url());
 
         logConfiguration();
     }
@@ -58,6 +64,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     }
 
     private void logConfiguration() {
+        LOGGER.info("URL: {}", moviesUrl);
         LOGGER.info("Pages per request: {}", pagesPerRequest);
     }
 
@@ -66,14 +73,13 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
         LOGGER.debug("Pages: <{}; {})", startFromPage, startFromPage + pagesPerRequest);
 
         return IntStream.iterate(startFromPage + pagesPerRequest - 1, i -> i >= startFromPage, i -> i - 1)
-                .mapToObj(this::createUrlForPageIndex)
-                .map(HttpUrl::get);
+                .mapToObj(this::createUrlForPageIndex);
     }
 
-    private String createUrlForPageIndex(int index) {
+    private HttpUrl createUrlForPageIndex(int index) {
         return index == 1
-                ? MOVIES_URL
-                : String.format(TITLES_URL_PATTERN, index);
+                ? moviesUrl
+                : moviesUrl.resolve(String.format(TITLES_URL_PATTERN, index));
     }
 
     private Optional<Title> createTitle(Element titleElement) {

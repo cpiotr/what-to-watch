@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static pl.ciruk.whattowatch.utils.stream.Functions.consumeNothing;
 import static pl.ciruk.whattowatch.utils.stream.Functions.identity;
 
 public class HtmlConnection implements HttpConnection<String> {
@@ -45,7 +46,7 @@ public class HtmlConnection implements HttpConnection<String> {
         LOGGER.trace("Url: {}", url);
 
         var requestBuilder = buildRequestTo(url);
-        return connectToAndGet(requestBuilder, url);
+        return connectToAndGet(requestBuilder, url, consumeNothing());
     }
 
     @Override
@@ -54,11 +55,21 @@ public class HtmlConnection implements HttpConnection<String> {
         var builder = buildRequestTo(url);
 
         action.accept(builder);
-        return connectToAndGet(builder, url);
+        return connectToAndGet(builder, url, consumeNothing());
     }
 
-    private Optional<String> connectToAndGet(Request.Builder requestBuilder, HttpUrl url) {
+    @Override
+    public Optional<String> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action, Consumer<Response> responseConsumer) {
+        LOGGER.trace("Url: {}", url);
+        var builder = buildRequestTo(url);
+
+        action.accept(builder);
+        return connectToAndGet(builder, url, responseConsumer);
+    }
+
+    private Optional<String> connectToAndGet(Request.Builder requestBuilder, HttpUrl url, Consumer<Response> responseConsumer) {
         try (var response = execute(requestBuilder)) {
+            responseConsumer.accept(response);
             return Optional.of(response)
                     .flatMap(this::unwrapBody)
                     .map(identity(this::logBodyIfUnsuccessful))

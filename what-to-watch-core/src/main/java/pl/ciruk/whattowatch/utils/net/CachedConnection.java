@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.utils.net;
 
 import okhttp3.HttpUrl;
 import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
@@ -40,5 +41,13 @@ public class CachedConnection implements HttpConnection<String> {
         LOGGER.trace("Method currently does not rely on cache");
 
         return connection.connectToAndConsume(url, action);
+    }
+
+    @Override
+    public Optional<String> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action, Consumer<Response> responseConsumer) {
+        LOGGER.trace("Url: {}", url);
+        LOGGER.trace("Method currently does not rely on cache");
+
+        return connection.connectToAndConsume(url, action, responseConsumer);
     }
 }
