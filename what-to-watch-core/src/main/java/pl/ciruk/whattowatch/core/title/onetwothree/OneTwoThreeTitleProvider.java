@@ -24,7 +24,7 @@ import static pl.ciruk.whattowatch.utils.stream.Functions.consumeNothing;
 public class OneTwoThreeTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String BASE_URL = "https://www.123movie.cc";
-    private static final String TITLES_URL_PATTERN = "?page=%d";
+    private static final String TITLES_URL_PATTERN = "//?page=%d";
 
     private final HttpConnection<Element> listConnection;
     private final int pagesPerRequest;
@@ -79,7 +79,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     private HttpUrl createUrlForPageIndex(int index) {
         return index == 1
                 ? moviesUrl
-                : moviesUrl.resolve(String.format(TITLES_URL_PATTERN, index));
+                : HttpUrl.get(moviesUrl.toString() + String.format(TITLES_URL_PATTERN, index));
     }
 
     private Optional<Title> createTitle(Element titleElement) {
