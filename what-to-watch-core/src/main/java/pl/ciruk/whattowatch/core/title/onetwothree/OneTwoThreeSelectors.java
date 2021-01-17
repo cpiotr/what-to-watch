@@ -5,26 +5,27 @@ import pl.ciruk.whattowatch.utils.net.html.Extractable;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
-    TITLE(film -> film.select(".mli-info h2")
+    TITLE(film -> film.select("h3 a")
             .stream()
             .findFirst()
-            .map(Element::text)),
-    ORIGINAL_TITLE(film -> film.select(".mli-info h2")
+            .map(Element::text)
+            .map(OneTwoThreeSelectors::removeYear)),
+    ORIGINAL_TITLE(film -> film.select("h3 a")
             .stream()
             .findFirst()
-            .map(Element::text)),
-    HREF(film -> film.select(".ml-mask")
+            .map(Element::text)
+            .map(OneTwoThreeSelectors::removeYear)),
+    HREF(film -> film.select("a")
             .stream()
             .findFirst()
             .map(e -> e.attr("href"))),
-    YEAR(film -> film.select(".ml-mask")
+    YEAR(film -> film.select(".meta")
             .stream()
             .findFirst()
-            .map(element -> element.attr("data-url"))
-            .flatMap(OneTwoThreeSelectors::trimToYear)),
+            .map(Element::text)
+            .flatMap(OneTwoThreeSelectors::extractYear)),
     ;
 
     private final Function<Element, Optional<String>> extractor;
@@ -38,12 +39,22 @@ public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
         return extractor.apply(element);
     }
 
-    private static Optional<String> trimToYear(String dataUrl) {
-        var urlElements = dataUrl.split("[?&]");
-        var prefix = "y=";
-        return Stream.of(urlElements)
-                .filter(element -> element.startsWith(prefix))
-                .map(element -> element.substring(prefix.length()))
-                .findFirst();
+    private static Optional<String> extractYear(String meta) {
+        boolean isYear = true;
+        for (int i = 0; i < 4; i++) {
+            if (i >= meta.length() || !Character.isDigit(meta.charAt(i))) {
+                isYear = false;
+            }
+        }
+        return isYear
+                ? Optional.of(meta.substring(0, 4))
+                : Optional.empty();
+    }
+
+    private static String removeYear(String title) {
+        var titleWithoutYear = title.length() >= 4
+                ? title.substring(0, title.length() - 4)
+                : title;
+        return titleWithoutYear.trim();
     }
 }
