@@ -34,7 +34,7 @@ class FilmTest {
                 Score.amateur(0.7, (long) (totalQuantity * 0.55)),
                 Score.amateur(0.0, (long) (totalQuantity * 0.025)),
                 Score.amateur(0.0, (long) (totalQuantity * 0.025)),
-                Score.critic(0.7, 9L)
+                Score.critic(0.7, 3L)
         );
 
         var film = Film.builder()
@@ -43,5 +43,21 @@ class FilmTest {
 
         assertThat(film.normalizedScore())
                 .isLessThan(0.65);
+    }
+
+    @Test
+    void shouldNotBeWorthWatchingIfReceivedFewPositiveScores2() {
+        var scores = List.of(
+                Score.amateur(0.63, 1111563),
+                Score.amateur(0.65, 186365),
+                Score.critic(0.74, 6L)
+        );
+
+        var film = Film.builder()
+                .scores(scores)
+                .build();
+
+        assertThat(film.normalizedScore())
+                .isGreaterThan(0.65);
     }
 }
