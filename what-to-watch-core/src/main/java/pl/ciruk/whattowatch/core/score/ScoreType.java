@@ -2,7 +2,7 @@ package pl.ciruk.whattowatch.core.score;
 
 public enum ScoreType {
     AMATEUR(7, 200, 1),
-    CRITIC(3, 4, 100),
+    CRITIC(3, 4, 500),
     ;
 
     private final long weight;

@@ -46,7 +46,7 @@ class FilmTest {
     }
 
     @Test
-    void shouldNotBeWorthWatchingIfReceivedFewPositiveScores2() {
+    void shouldIncreaseUserScoreIfCriticScoreIsMeaningful() {
         var scores = List.of(
                 Score.amateur(0.63, 1111563),
                 Score.amateur(0.65, 186365),
@@ -59,5 +59,20 @@ class FilmTest {
 
         assertThat(film.normalizedScore())
                 .isGreaterThan(0.65);
+    }
+
+    @Test
+    void shouldDecreaseUserScoreWhenLowQuantity() {
+        var scores = List.of(
+                Score.amateur(0.64, 677),
+                Score.critic(0.6, 7L)
+        );
+
+        var film = Film.builder()
+                .scores(scores)
+                .build();
+
+        assertThat(film.normalizedScore())
+                .isGreaterThan(0.6);
     }
 }
