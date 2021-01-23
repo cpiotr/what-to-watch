@@ -71,7 +71,7 @@ class FilmwebDescriptionProviderIT {
 
     @Test
     void shouldResolveDescriptionFromOriginalTitleWhichContainsArticle() {
-        Title title = Title.builder().originalTitle("A Shaun the Sheep Movie: Farmageddon").year(2019).build();
+        Title title = Title.builder().originalTitle("Shaun the Sheep Movie: Farmageddon").year(2019).build();
 
         Description description = descriptions.findDescriptionBy(title)
                 .orElseThrow(AssertionError::new);
