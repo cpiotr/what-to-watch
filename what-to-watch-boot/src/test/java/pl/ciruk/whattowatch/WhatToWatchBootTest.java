@@ -11,7 +11,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import pl.ciruk.whattowatch.boot.WhatToWatchBoot;
 import pl.ciruk.whattowatch.boot.config.Bootstrap;
@@ -25,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = WhatToWatchBoot.class)
 @ContextConfiguration(classes = WhatToWatchBootTest.TestConfig.class)
-@TestPropertySource(locations = "classpath:application-dev.properties")
 public class WhatToWatchBootTest {
 
     @Autowired

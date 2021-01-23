@@ -149,7 +149,7 @@ public class WhatToWatchApplication {
         Properties properties = new Properties();
         try {
             InputStream resourceAsStream =
-                    Thread.currentThread().getContextClassLoader().getResourceAsStream("application-dev.properties");
+                    Thread.currentThread().getContextClassLoader().getResourceAsStream("application-docker.properties");
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
