@@ -48,8 +48,8 @@ class FilmTest {
     @Test
     void shouldIncreaseUserScoreIfCriticScoreIsMeaningful() {
         var scores = List.of(
-                Score.amateur(0.63, 1111563),
-                Score.amateur(0.65, 186365),
+                Score.amateur(0.63, 1_111_563),
+                Score.amateur(0.65, 186_365),
                 Score.critic(0.74, 6L)
         );
 

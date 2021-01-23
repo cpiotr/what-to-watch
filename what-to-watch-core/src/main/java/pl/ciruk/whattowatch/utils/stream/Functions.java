@@ -24,6 +24,6 @@ public final class Functions {
     }
 
     public static <T> Consumer<T> consumeNothing() {
-        return __ -> {};
+        return ignored -> {};
     }
 }

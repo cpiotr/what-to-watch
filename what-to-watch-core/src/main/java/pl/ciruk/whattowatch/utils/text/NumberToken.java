@@ -14,14 +14,14 @@ public class NumberToken {
         }
 
         if (isPercentage()) {
-            return Double.valueOf(value.substring(0, value.length() - 1)) / 100.0;
+            return Double.parseDouble(value.substring(0, value.length() - 1)) / 100.0;
         } else if (isFraction()) {
             String[] fractionParts = value.split("/");
-            return Double.valueOf(fractionParts[0]) / Double.valueOf(fractionParts[1]);
+            return Double.parseDouble(fractionParts[0]) / Double.parseDouble(fractionParts[1]);
         }
 
         try {
-            return Double.valueOf(value);
+            return Double.parseDouble(value);
         } catch (NumberFormatException e) {
             return 0.0;
         }

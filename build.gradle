@@ -27,12 +27,14 @@ allprojects {
 
     pmd {
         rulePriority = 3
+        toolVersion = "6.21.0"
 
         ruleSets = []
         ruleSetFiles = files("$rootProject.projectDir/config/pmd-rules.xml")
     }
 
     spotbugs {
+        excludeFilter = file("$rootProject.projectDir/config/spotbugs-exclude.xml")
         dependencies {
             spotbugs "com.github.spotbugs:spotbugs:$spotbugsVersion"
         }

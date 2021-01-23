@@ -97,7 +97,7 @@ public class HtmlConnection implements HttpConnection<String> {
 
     private void logBodyIfUnsuccessful(ProcessedResponse processedResponse) {
         if (!processedResponse.successful()) {
-            LOGGER.trace("Erroneous response: {}", processedResponse.body);
+            LOGGER.trace("Erroneous response: {}", processedResponse.body());
         }
     }
 
@@ -188,5 +188,4 @@ public class HtmlConnection implements HttpConnection<String> {
         }
     }
 
-    static record ProcessedResponse(String body, boolean successful) { }
 }
