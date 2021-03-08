@@ -44,7 +44,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
         listConnection.connectToAndConsume(
                 HttpUrl.get(BASE_URL + "/movies"),
                 consumeNothing(),
-                response -> moviesUrl = response.request().url());
+                response -> moviesUrl = response.request().url().resolve("/movies"));
 
         logConfiguration();
     }

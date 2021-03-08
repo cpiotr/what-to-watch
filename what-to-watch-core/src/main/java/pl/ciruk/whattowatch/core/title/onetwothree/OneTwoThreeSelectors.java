@@ -10,13 +10,11 @@ public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
     TITLE(film -> film.select("h3 a")
             .stream()
             .findFirst()
-            .map(Element::text)
-            .map(OneTwoThreeSelectors::removeYear)),
+            .map(Element::text)),
     ORIGINAL_TITLE(film -> film.select("h3 a")
             .stream()
             .findFirst()
-            .map(Element::text)
-            .map(OneTwoThreeSelectors::removeYear)),
+            .map(Element::text)),
     HREF(film -> film.select("a")
             .stream()
             .findFirst()
@@ -49,12 +47,5 @@ public enum OneTwoThreeSelectors implements Extractable<Optional<String>> {
         return isYear
                 ? Optional.of(meta.substring(0, 4))
                 : Optional.empty();
-    }
-
-    private static String removeYear(String title) {
-        var titleWithoutYear = title.length() >= 4
-                ? title.substring(0, title.length() - 4)
-                : title;
-        return titleWithoutYear.trim();
     }
 }
