@@ -26,9 +26,7 @@ services:
           -XX:-UseBiasedLocking
           -XX:+PreserveFramePointer
           -XX:+UnlockExperimentalVMOptions
-          -XX:+UseG1GC
-          -XX:+EnableJVMCI
-          -XX:+UseJVMCICompiler
+          -XX:+UseZGC
           -XX:+UseNUMA
           -XX:+UseStringDeduplication
           -Xlog:gc:stdout:time
