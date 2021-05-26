@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
-import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreAssert;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
@@ -12,7 +11,6 @@ import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,9 +32,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     @Test
@@ -46,9 +42,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     @Test
@@ -59,9 +53,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     @Test
@@ -86,9 +78,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     @Test
@@ -102,9 +92,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     @Test
@@ -117,9 +105,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     @Test
@@ -132,9 +118,7 @@ class ImdbScoresProviderIT {
                 .title(title)
                 .build();
 
-        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
-            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
-        }
+        assertScoresForDescriptionAreMeaningful(description);
     }
 
     private Title titleOfOldAndRespectfulFilm() {
@@ -151,5 +135,11 @@ class ImdbScoresProviderIT {
                 .originalTitle("Moana")
                 .year(2016)
                 .build();
+    }
+
+    private void assertScoresForDescriptionAreMeaningful(Description description) {
+        var scores = this.scores.findScoresBy(description).toList();
+        assertThat(scores)
+                .anyMatch(ScoreAssert::isMeaningful);
     }
 }
