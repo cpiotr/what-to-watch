@@ -1,4 +1,4 @@
-FROM openjdk:15-alpine3.12
+FROM openjdk:16-alpine3.13
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp

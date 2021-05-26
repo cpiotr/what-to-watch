@@ -1,5 +1,5 @@
 plugins {
-    id "org.unbroken-dome.test-sets" version "2.1.1"
+    id "org.unbroken-dome.test-sets" version "4.0.0"
 }
 
 ext.moduleName = 'what.to.watch.core'
@@ -45,21 +45,21 @@ check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 
 dependencies {
-    compile("org.jsoup:jsoup:$jsoupVersion")
-    compile("com.squareup.okhttp3:okhttp:$okHttpVersion")
-    compile("org.slf4j:slf4j-api:$slf4jVersion")
-    compile("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    compile("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    compile("io.micrometer:micrometer-core:$micrometerVersion")
-    compile("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
+    implementation("org.jsoup:jsoup:$jsoupVersion")
+    implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("io.micrometer:micrometer-core:$micrometerVersion")
+    implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
-    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
-    testCompile("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testCompile("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testCompile("org.mockito:mockito-core:$mockitoVersion")
-    testCompile("org.assertj:assertj-core:$assertjVersion")
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("org.assertj:assertj-core:$assertjVersion")
 
-    integrationTestCompile sourceSets.test.output
+    integrationTestImplementation sourceSets.test.output
 }
 
 println("[what-to-watch-core] Building version: $version")
