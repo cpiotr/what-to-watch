@@ -1,5 +1,7 @@
 package pl.ciruk.whattowatch.core.score.imdb;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
@@ -18,6 +20,8 @@ import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +36,7 @@ public class ImdbScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
     private static final String IMDB = "IMDb";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
     private final AtomicLong missingScores = new AtomicLong();
@@ -119,7 +124,17 @@ public class ImdbScoresProvider implements ScoresProvider {
     private Optional<String> getOriginalTitle(Element searchResult) {
         return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(searchResult)
                 .flatMap(this::getDetails)
-                .flatMap(ImdbSelectors.ORIGINAL_TITLE::extractFrom);
+                .flatMap(x -> x.select("script").stream().filter(e -> "application/ld+json".equals(e.attr("type"))).map(y -> {
+                    try {
+                        return (String) OBJECT_MAPPER.readValue(y.html(), Map.class).get("name");
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .or(() -> ORIGINAL_TITLE.extractFrom(x)));
     }
 
     private Optional<Element> getDetails(String linkToDetails) {
