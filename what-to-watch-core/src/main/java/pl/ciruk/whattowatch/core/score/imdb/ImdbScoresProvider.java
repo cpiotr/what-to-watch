@@ -124,17 +124,30 @@ public class ImdbScoresProvider implements ScoresProvider {
     private Optional<String> getOriginalTitle(Element searchResult) {
         return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(searchResult)
                 .flatMap(this::getDetails)
-                .flatMap(x -> x.select("script").stream().filter(e -> "application/ld+json".equals(e.attr("type"))).map(y -> {
-                    try {
-                        return (String) OBJECT_MAPPER.readValue(y.html(), Map.class).get("name");
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                })
-                        .filter(Objects::nonNull)
-                        .findFirst()
-                        .or(() -> ORIGINAL_TITLE.extractFrom(x)));
+                .flatMap(this::extractTitle);
+    }
+
+    private Optional<String> extractTitle(Element pageWithDetails) {
+        return extractTitleFromLdJsonScript(pageWithDetails)
+                .or(() -> ORIGINAL_TITLE.extractFrom(pageWithDetails));
+    }
+
+    private Optional<String> extractTitleFromLdJsonScript(Element pageWithDetails) {
+        return pageWithDetails.select("script")
+                .stream()
+                .filter(e -> "application/ld+json".equals(e.attr("type")))
+                .map(this::extractNameFromJson)
+                .filter(Objects::nonNull)
+                .findFirst();
+    }
+
+    private String extractNameFromJson(Element jsonElement) {
+        try {
+            return (String) OBJECT_MAPPER.readValue(jsonElement.html(), Map.class).get("name");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private Optional<Element> getDetails(String linkToDetails) {
