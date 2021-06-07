@@ -142,10 +142,11 @@ public class ImdbScoresProvider implements ScoresProvider {
     }
 
     private String extractNameFromJson(Element jsonElement) {
+        var json = jsonElement.html();
         try {
-            return (String) OBJECT_MAPPER.readValue(jsonElement.html(), Map.class).get("name");
+            return (String) OBJECT_MAPPER.readValue(json, Map.class).get("name");
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOGGER.warn("Could not parse JSON: {}", json.substring(0, Math.min(20, json.length())));
             return null;
         }
     }
