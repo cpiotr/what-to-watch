@@ -8,6 +8,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.text.MissingValueException;
@@ -78,12 +79,15 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     private Stream<Description> filmsForTitle(String title, int year) {
         var optionalResult = filmwebProxy.searchBy(title, year);
 
-        return optionalResult.stream()
+        var futures = optionalResult.stream()
                 .flatMap(selector::findLinksFromSearchResult)
-                .map(filmwebProxy::getPageWithFilmDetailsFor)
+                .map(link -> CompletableFuture.supplyAsync(() -> filmwebProxy.getPageWithFilmDetailsFor(link), executorService))
+                .limit(3)
+                .toList();
+        return CompletableFutures.allOf(futures)
+                .join()
                 .flatMap(Optional::stream)
                 .map(extractDescriptionOrElse(() -> LOGGER.warn("Could not get description for {} ({})", title, year)))
-                .limit(3)
                 .filter(not(Description::isEmpty));
     }
 

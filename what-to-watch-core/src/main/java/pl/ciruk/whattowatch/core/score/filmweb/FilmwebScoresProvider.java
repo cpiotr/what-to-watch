@@ -10,6 +10,7 @@ import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
@@ -65,11 +66,15 @@ public class FilmwebScoresProvider implements ScoresProvider {
     private Stream<Score> scoresForTitle(Title title) {
         var optionalResult = filmwebProxy.searchBy(title.asText(), title.year());
 
-        return optionalResult.stream()
+        var futures = optionalResult.stream()
                 .flatMap(FilmwebStreamSelectors.FILMS_FROM_SEARCH_RESULT::extractFrom)
                 .filter(result -> extractTitle(result).matches(title))
                 .limit(3)
-                .map(this::getDetailsAndFindScore)
+                .map(result -> CompletableFuture.supplyAsync(() -> getDetailsAndFindScore(result), executorService))
+                .toList();
+
+        return CompletableFutures.allOf(futures)
+                .join()
                 .peek(logIfMissing(title))
                 .flatMap(Optional::stream);
     }
