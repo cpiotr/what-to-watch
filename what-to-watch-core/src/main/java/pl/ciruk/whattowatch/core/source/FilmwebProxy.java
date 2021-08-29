@@ -24,7 +24,7 @@ public class FilmwebProxy {
                 .addQueryParameter("endYear", next(year))
                 .build();
 
-        return connection.connectToAndGet(url);
+        return connection.connectToAndGet(url, "<section id=\"searchResult", "</section>");
     }
 
     public Optional<Element> getPageWithFilmDetailsFor(String href) {

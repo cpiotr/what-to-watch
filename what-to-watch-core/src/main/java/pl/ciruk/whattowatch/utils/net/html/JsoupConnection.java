@@ -24,6 +24,20 @@ public class JsoupConnection implements HttpConnection<Element> {
     }
 
     @Override
+    public Optional<Element> connectToAndGet(HttpUrl url, String from, String to) {
+        return connection.connectToAndGet(url)
+                .map(contents -> getSubstring(contents, from, to))
+                .map(Jsoup::parse);
+    }
+
+    private String getSubstring(String contents, String from, String to) {
+        var beginIndex = contents.indexOf(from);
+        if (beginIndex < 0) return contents;
+        var endIndex = contents.indexOf(to, beginIndex);
+        return (endIndex >= 0) ? contents.substring(beginIndex, endIndex+to.length()) : contents.substring(beginIndex);
+    }
+
+    @Override
     public Optional<Element> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
         return connection.connectToAndConsume(url, action)
                 .map(Jsoup::parse);
