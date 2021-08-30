@@ -77,7 +77,7 @@ public class ImdbScoresProvider implements ScoresProvider {
                 .addQueryParameter("title_type", "feature,tv_movie,documentary,video")
                 .build();
 
-        var firstResult = httpConnection.connectToAndGet(url)
+        var firstResult = httpConnection.connectToAndGet(url, "<div class=\"article\"", "<div id=\"sidebar")
                 .flatMap(searchResults -> findFirstResult(searchResults, description))
                 .flatMap(this::extractScore);
         if (firstResult.isEmpty()) {
@@ -154,7 +154,7 @@ public class ImdbScoresProvider implements ScoresProvider {
     private Optional<Element> getDetails(String linkToDetails) {
         var url = createUrlBuilder().build().resolve(linkToDetails);
 
-        return httpConnection.connectToAndGet(url);
+        return httpConnection.connectToAndGet(url, "<script", "<div class=\"SubNav");
     }
 
     private Optional<Integer> extractYearFrom(Element searchResult) {

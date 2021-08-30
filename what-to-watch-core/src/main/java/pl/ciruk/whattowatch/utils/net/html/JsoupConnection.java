@@ -32,9 +32,13 @@ public class JsoupConnection implements HttpConnection<Element> {
 
     private String getSubstring(String contents, String from, String to) {
         var beginIndex = contents.indexOf(from);
-        if (beginIndex < 0) return contents;
+        if (beginIndex < 0) {
+            return contents;
+        }
         var endIndex = contents.indexOf(to, beginIndex);
-        return (endIndex >= 0) ? contents.substring(beginIndex, endIndex+to.length()) : contents.substring(beginIndex);
+        return (endIndex >= 0)
+                ? contents.substring(beginIndex, endIndex + to.length())
+                : contents.substring(beginIndex);
     }
 
     @Override
