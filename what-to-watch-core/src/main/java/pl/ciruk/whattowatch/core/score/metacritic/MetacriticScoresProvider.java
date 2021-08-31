@@ -73,7 +73,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Stream<Score> findScores(String linkToDetails, Description description) {
-        var htmlWithScores = getPage(List.of(linkToDetails, "critic-reviews"))
+        var htmlWithScores = getPageWithCriticReviews(List.of(linkToDetails, "critic-reviews"))
                 .map(this::extractCriticReviews)
                 .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
 
@@ -98,12 +98,12 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private Optional<Element> followDetailsLinkAndFindPageWithScores(String linkToDetails) {
         return getPage(linkToDetails)
                 .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
-                .flatMap(this::getPage)
+                .flatMap(link -> getPageWithCriticReviews(List.of(link)))
                 .map(this::extractCriticReviews);
     }
 
     private Element extractCriticReviews(Element page) {
-        return page.selectFirst("div#main_content .critic_reviews");
+        return page.selectFirst("div.critic_reviews");
     }
 
     private String resolve(String link) {
@@ -114,20 +114,28 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Optional<Element> getSearchResultsFor(Title title) {
-        return getPage(List.of("search", "movie", title.asText(), "results"));
+        var url = buildUrl(List.of("search", "movie", title.asText(), "results"));
+        return connection.connectToAndGet(url, "<ul class=\"search_results", "</ul>");
     }
 
     private Optional<Element> getPage(String pathSegment) {
         return getPage(List.of(pathSegment));
     }
 
+    private Optional<Element> getPageWithCriticReviews(List<String> pathSegments) {
+        var url = buildUrl(pathSegments);
+        return connection.connectToAndGet(url, "<div class=\"critic_reviews", "<div class=\"side_col\"");
+    }
 
     private Optional<Element> getPage(List<String> pathSegments) {
+        HttpUrl url = buildUrl(pathSegments);
+        return connection.connectToAndGet(url, "<div class=\"content_under_header", "<div class=\"content_after_header");
+    }
+
+    private HttpUrl buildUrl(List<String> pathSegments) {
         var builder = metacriticUrlBuilder();
         pathSegments.forEach(builder::addPathSegments);
-        var url = builder.build();
-        return connection.connectToAndGet(url)
-                .map(page -> page.getElementById("main_content"));
+        return builder.build();
     }
 
     private HttpUrl.Builder metacriticUrlBuilder() {
