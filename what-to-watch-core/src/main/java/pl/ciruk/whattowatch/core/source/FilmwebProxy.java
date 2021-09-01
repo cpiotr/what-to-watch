@@ -30,7 +30,7 @@ public class FilmwebProxy {
     public Optional<Element> getPageWithFilmDetailsFor(String href) {
         return Optional.ofNullable(href)
                 .map(this::resolveLink)
-                .flatMap(connection::connectToAndGet);
+                .flatMap(url -> connection.connectToAndGet(url, "<div class=\"page__group\" data-group=\"g1\">", "<div class=\"page__group\" data-group=\"g3\">"));
     }
 
     public HttpUrl resolveLink(String href) {
