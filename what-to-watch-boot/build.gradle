@@ -65,6 +65,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testImplementation "org.testcontainers:testcontainers:1.16.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.16.0"
 
     benchmarkImplementation("org.openjdk.jmh:jmh-core:$jmhVersion")
     benchmarkImplementation("org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion")
