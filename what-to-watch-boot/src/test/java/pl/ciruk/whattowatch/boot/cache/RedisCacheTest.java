@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.boot.cache;
 
 import net.jodah.failsafe.CircuitBreaker;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -18,6 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class RedisCacheTest {
+    static final String TEST_VALUE = "TestValue";
+    static final String TEST_KEY = "TestKey";
     @Container
     public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine"))
             .withExposedPorts(6379)
@@ -36,15 +37,15 @@ class RedisCacheTest {
 
     @Test
     void shouldRetrieveElementFromCache() {
-        redisCache.put("TestKey", "TestValue");
+        redisCache.put(TEST_KEY, TEST_VALUE);
 
-        assertThat(redisCache.get("TestKey")).hasValue("TestValue");
+        assertThat(redisCache.get(TEST_KEY)).hasValue(TEST_VALUE);
     }
 
     @Test
     void shouldReadStringValueInsertedDirectly() {
-        var key = "TestKey";
-        var value = "TestValue";
+        var key = TEST_KEY;
+        var value = TEST_VALUE;
         try (var jedis = jedisPool.getResource()) {
             jedis.set(key, value);
         }
@@ -52,10 +53,9 @@ class RedisCacheTest {
         assertThat(redisCache.get(key)).hasValue(value);
     }
 
-    @Disabled
     @Test
     void shouldReplaceDirectStringValueWithCompressedOption() {
-        var key = "TestKey";
+        var key = TEST_KEY;
         var value = "TestValueTestValueTestValueTestValueTestValueTestValueTestValue";
         try (var jedis = jedisPool.getResource()) {
             jedis.set(key, value);

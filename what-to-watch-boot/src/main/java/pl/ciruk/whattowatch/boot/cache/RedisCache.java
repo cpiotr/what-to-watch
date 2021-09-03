@@ -6,6 +6,8 @@ import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.function.CheckedRunnable;
+import net.jpountz.lz4.LZ4Exception;
+import net.jpountz.lz4.LZ4Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
@@ -15,6 +17,8 @@ import redis.clients.jedis.JedisPool;
 
 import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +35,7 @@ public class RedisCache implements CacheProvider<String> {
     private final CircuitBreaker<Optional<String>> circuitBreaker;
     private final long expiryInterval;
     private final TimeUnit expiryUnit;
+    private final LZ4Factory lz4Factory = LZ4Factory.fastestInstance();
 
     public RedisCache(
             JedisPool jedisPool,
@@ -63,6 +68,11 @@ public class RedisCache implements CacheProvider<String> {
         requestCounter.incrementAndGet();
 
         var optionalValue = Failsafe.with(circuitBreaker, Fallback.of(Optional.empty()))
+                .onComplete(event -> {
+                    if (event.getFailure() != null) {
+                        LOGGER.error("Cannot retrieve value", event.getFailure());
+                    }
+                })
                 .get(() -> getValueFromCache(key));
         if (optionalValue.isEmpty()) {
             LOGGER.debug("Missing key: {}", key);
@@ -74,8 +84,38 @@ public class RedisCache implements CacheProvider<String> {
     @SuppressFBWarnings(justification = "jedis")
     private Optional<String> getValueFromCache(String key) {
         try (Jedis jedis = jedisPool.getResource()) {
-            return Optional.ofNullable(jedis.get(key))
-                    .map(identity(() -> jedis.expire(key, getExpirySeconds())));
+            var keyBytes = key.getBytes(StandardCharsets.UTF_8);
+            return Optional.ofNullable(jedis.get(keyBytes))
+                    .map(this::decompress)
+                    .map(identity(() -> jedis.expire(keyBytes, getExpirySeconds())))
+                    .or(() -> Optional.ofNullable(jedis.get(key))
+                            .map(identity(value -> {
+                                jedis.expire(keyBytes, getExpirySeconds());
+                                var bytes = compress(value);
+                                jedis.setex(keyBytes, getExpirySeconds(), bytes);
+                            }))
+                    );
+        }
+    }
+
+    private byte[] compress(String value) {
+        var bytes = value.getBytes(StandardCharsets.UTF_8);
+        var compressor = lz4Factory.fastCompressor();
+        var maxCompressedLength = compressor.maxCompressedLength(bytes.length);
+        byte[] compressed = new byte[maxCompressedLength];
+        int compressedLength = compressor.compress(bytes, 0, bytes.length, compressed, 0, maxCompressedLength);
+        return Arrays.copyOf(compressed, compressedLength);
+    }
+
+    private String decompress(byte[] bytes) {
+        var buffer = new byte[2 * 1024 * 1024];
+        try {
+            var decompressor = lz4Factory.safeDecompressor();
+            var length = decompressor.decompress(bytes, buffer);
+            return new String(buffer, 0, length, StandardCharsets.UTF_8);
+        } catch (LZ4Exception exception) {
+            LOGGER.error("Error deserializing data: {}", exception.getMessage());
+            return null;
         }
     }
 
@@ -88,8 +128,8 @@ public class RedisCache implements CacheProvider<String> {
     @SuppressFBWarnings(justification = "jedis")
     private void putValueToCache(String key, String value) {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.set(key, value);
-            jedis.expire(key, getExpirySeconds());
+            var bytes = compress(value);
+            jedis.setex(key.getBytes(StandardCharsets.UTF_8), getExpirySeconds(), bytes);
         }
     }
 
