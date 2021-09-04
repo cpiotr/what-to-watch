@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
@@ -24,18 +23,19 @@ public class BackoffInterceptor implements Interceptor {
     private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
     private final Function<String, Duration> backoffByDomain;
     private final IntConsumer backOffFunction;
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(16);
 
     public BackoffInterceptor() {
-        this(domain -> Duration.ofMillis(0L), BackoffInterceptor::backOff);
+        this(domain -> Duration.ofMillis(0L));
     }
 
     public BackoffInterceptor(Function<String, Duration> backoffByDomain) {
-        this(backoffByDomain, BackoffInterceptor::backOff);
+        this(backoffByDomain, null);
     }
 
     BackoffInterceptor(Function<String, Duration> backoffByDomain, IntConsumer backOffFunction) {
         this.backoffByDomain = backoffByDomain;
-        this.backOffFunction = backOffFunction;
+        this.backOffFunction = (backOffFunction == null) ? this::backOff : backOffFunction;
     }
 
     @Override
@@ -64,11 +64,18 @@ public class BackoffInterceptor implements Interceptor {
         }
     }
 
-    private static void backOff(int errorsValue) {
+    private void backOff(int errorsValue) {
         long waitTimeMillis = calculateTimeToWait(errorsValue);
 
         LOGGER.debug("Waiting {} ms", waitTimeMillis);
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(waitTimeMillis));
+        final var latch = new CountDownLatch(1);
+        executorService.schedule(latch::countDown, waitTimeMillis, TimeUnit.MILLISECONDS);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            LOGGER.warn("Interrupted while backing off", e);
+            Thread.currentThread().interrupt();
+        }
     }
 
     private static int calculateTimeToWait(int errorsValue) {
