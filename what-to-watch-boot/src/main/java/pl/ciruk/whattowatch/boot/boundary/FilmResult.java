@@ -15,8 +15,8 @@ public record FilmResult(
         @JsonProperty String poster,
         @JsonProperty Double score,
         @JsonProperty Integer numberOfScores,
-        @JsonProperty List<Score>scores,
-        @JsonProperty List<String>genres) {
+        @JsonProperty List<Score> scores,
+        @JsonProperty List<String> genres) {
     static FilmResultBuilder builder() {
         return new FilmResultBuilder();
     }
