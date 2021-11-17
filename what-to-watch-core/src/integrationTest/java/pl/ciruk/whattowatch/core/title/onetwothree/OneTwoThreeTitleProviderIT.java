@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.title.onetwothree;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 class OneTwoThreeTitleProviderIT {
     private TitleProvider provider;
 
