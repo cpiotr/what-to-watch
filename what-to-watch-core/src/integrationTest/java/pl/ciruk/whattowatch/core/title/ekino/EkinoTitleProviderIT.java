@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.title.ekino;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
@@ -10,8 +11,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 class EkinoTitleProviderIT {
-
     private TitleProvider provider;
 
     @BeforeEach
