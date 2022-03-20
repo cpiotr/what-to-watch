@@ -14,7 +14,7 @@ class FilmwebSelectors {
     }
 
     Optional<Integer> findYear(Element details) {
-        var yearElement = details.selectFirst("span.filmCoverSection__year");
+        var yearElement = details.selectFirst(".fP__year");
         return Optional.ofNullable(yearElement)
                 .map(Element::text)
                 .map(text -> Patterns.nonDigit().matcher(text).replaceAll(""))
@@ -22,12 +22,12 @@ class FilmwebSelectors {
     }
 
     Optional<String> findLocalTitle(Element details) {
-        return Optional.ofNullable(details.selectFirst("h1.filmCoverSection__title"))
+        return Optional.ofNullable(details.selectFirst("h1.fP__title"))
                 .map(Element::text);
     }
 
     Optional<String> findOriginalTitle(Element details) {
-        return Optional.ofNullable(details.selectFirst("h2.filmCoverSection__orginalTitle"))
+        return Optional.ofNullable(details.selectFirst(".fP__originalTitle"))
                 .map(Element::text);
     }
 
