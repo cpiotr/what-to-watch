@@ -181,6 +181,11 @@ public class FilmSuggestionsBenchmark {
                     return Optional.ofNullable(jedis.get(key));
                 }
             }
+
+            @Override
+            public long removeAll(String keyExpression) {
+                return 0;
+            }
         };
     }
 

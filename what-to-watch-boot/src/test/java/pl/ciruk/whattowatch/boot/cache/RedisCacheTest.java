@@ -68,4 +68,16 @@ class RedisCacheTest {
 
         assertThat(redisCache.get(key)).hasValue(value);
     }
+
+    @Test
+    void shouldRemoveEntriesWithKeysMatchingGivenExpression() {
+        redisCache.put(TEST_KEY, TEST_VALUE);
+        var expectedCount = 100;
+        for (var i = 0; i < expectedCount; i ++) {
+            redisCache.put(TEST_KEY + "suffix" + i, TEST_VALUE);
+        }
+
+        assertThat(redisCache.removeAll(TEST_KEY + "suffix" + "*")).isEqualTo(100L);
+        assertThat(redisCache.removeAll(TEST_KEY)).isEqualTo(1L);
+    }
 }

@@ -81,6 +81,16 @@ public class RedisCache implements CacheProvider<String> {
         return optionalValue;
     }
 
+    @Override
+    public long removeAll(String keyExpression) {
+        LOGGER.info("Remove all entries with keys matching: {}", keyExpression);
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            final var keys = jedis.keys(keyExpression);
+            return jedis.del(keys.toArray(String[]::new));
+        }
+    }
+
     @SuppressFBWarnings(justification = "jedis")
     private Optional<String> getValueFromCache(String key) {
         try (Jedis jedis = jedisPool.getResource()) {
