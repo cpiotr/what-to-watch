@@ -103,7 +103,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     }
 
     private Description extractDescriptionFrom(Element pageWithDetails) {
-        Element mainElement = pageWithDetails.selectFirst(".fP__titleDetails");
+        Element mainElement = pageWithDetails.selectFirst(".filmCoverSection__titleDetails");
         var localTitle = selector.findLocalTitle(mainElement)
                 .orElseThrow(MissingValueException::new);
         var originalTitle = selector.findOriginalTitle(mainElement)
