@@ -11,10 +11,8 @@ import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MetacriticScoresProviderIT {
@@ -35,7 +33,9 @@ class MetacriticScoresProviderIT {
                 .build();
 
         try (Stream<Score> scores = scoresProvider.findScoresBy(description)) {
-            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+            assertThat(scores)
+                    .isNotEmpty()
+                    .allMatch(ScoreAssert::isMeaningful);
         }
     }
 
@@ -47,7 +47,9 @@ class MetacriticScoresProviderIT {
                 .build();
 
         try (Stream<Score> scores = scoresProvider.findScoresBy(description)) {
-            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+            assertThat(scores)
+                    .isNotEmpty()
+                    .allMatch(ScoreAssert::isMeaningful);
         }
     }
 
@@ -67,6 +69,23 @@ class MetacriticScoresProviderIT {
     }
 
     @Test
+    void shouldRetrieveMeaningfulScoreForTitleWhenCriticScoresRedirectToSearch() {
+        Title title = Title.builder()
+                .title("Fantastic Beasts: The Secrets of Dumbledore")
+                .year(2022)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        try (Stream<Score> scores = scoresProvider.findScoresBy(description)) {
+            assertThat(scores)
+                    .isNotEmpty()
+                    .allMatch(ScoreAssert::isMeaningful);
+        }
+    }
+
+    @Test
     void shouldRetrieveMeaningfulScoreForTitleWhichRepeatsTwoYearsInARow() {
         Title title = Title.builder()
                 .title("Little women")
@@ -76,7 +95,7 @@ class MetacriticScoresProviderIT {
                 .title(title)
                 .build();
 
-        List<Score> scores = scoresProvider.findScoresBy(description).collect(toList());
+        List<Score> scores = scoresProvider.findScoresBy(description).toList();
         assertThat(scores).isNotEmpty();
         scores.forEach(score -> ScoreAssert.assertThat(score).hasGradeGreaterThan(0.8));
     }
@@ -92,7 +111,9 @@ class MetacriticScoresProviderIT {
                 .build();
 
         try (Stream<Score> scores = scoresProvider.findScoresBy(description)) {
-            assertThat(scores).allMatch(ScoreAssert::isMeaningful);
+            assertThat(scores)
+                    .isNotEmpty()
+                    .allMatch(ScoreAssert::isMeaningful);
         }
     }
 

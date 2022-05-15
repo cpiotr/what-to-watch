@@ -96,7 +96,8 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Optional<Element> followDetailsLinkAndFindPageWithScores(String linkToDetails) {
-        return getPage(linkToDetails)
+        final var page = getPage(linkToDetails);
+        return page
                 .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
                 .flatMap(link -> getPageWithCriticReviews(List.of(link)))
                 .map(this::extractCriticReviews);

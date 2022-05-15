@@ -16,7 +16,7 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
             .filter(review -> review.select("span.source a img").attr("alt").equalsIgnoreCase("The New York Times"))
             .map(review -> review.select("div.metascore_w.movie").text())
             .findFirst()),
-    LINK_TO_CRITIC_REVIEWS(details -> Optional.ofNullable(details.selectFirst("div.fxdcol.gu4 .subsection_title a"))
+    LINK_TO_CRITIC_REVIEWS(details -> Optional.ofNullable(details.selectFirst("div.header_title.oswald a"))
             .map(link -> link.attr("href"))),
     TITLE(details -> Optional.ofNullable(details.selectFirst("h3.product_title"))
             .map(Element::text)),
