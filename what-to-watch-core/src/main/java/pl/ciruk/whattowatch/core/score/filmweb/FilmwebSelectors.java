@@ -9,13 +9,13 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
-    LINK_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("a.filmPreview__link"))
+    LINK_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("a.preview__link"))
             .map(link -> link.attr("href"))),
-    TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".filmPreview__title"))
+    TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__title"))
             .map(Element::text)),
-    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".filmPreview__originalTitle"))
+    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__originalTitle"))
             .map(Element::text)),
-    YEAR_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".filmPreview__year"))
+    YEAR_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__year"))
             .map(Element::text)
             .map(year -> Patterns.nonDigit().matcher(year).replaceAll(""))),
     SCORE_FROM_DETAILS(details -> extractScoreFromText(details.toString()));
