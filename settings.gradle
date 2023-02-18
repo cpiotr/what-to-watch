@@ -1,3 +1,12 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
 include 'what-to-watch-core'
 include 'what-to-watch-boot'
 include 'what-to-watch-neural'

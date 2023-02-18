@@ -10,6 +10,9 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
+sourceCompatibility = "$javaVersion"
+targetCompatibility = "$javaVersion"
+
 tasks.withType(JavaCompile) {
     options.compilerArgs += "--enable-preview"
 }
