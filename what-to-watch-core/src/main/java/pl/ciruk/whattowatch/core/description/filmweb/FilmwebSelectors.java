@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 class FilmwebSelectors {
     Stream<String> findLinksFromSearchResult(Element searchResults) {
-        return searchResults.select("ul.resultsList li div.preview__card div.preview__header a")
+        return searchResults.select("div.preview__card div.preview__header a")
                 .stream()
                 .map(a -> a.attr("href"));
     }

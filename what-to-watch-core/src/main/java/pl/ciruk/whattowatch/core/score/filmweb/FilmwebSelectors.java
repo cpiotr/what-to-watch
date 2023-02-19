@@ -13,7 +13,7 @@ public enum FilmwebSelectors implements Extractable<Optional<String>> {
             .map(link -> link.attr("href"))),
     TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__title"))
             .map(Element::text)),
-    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__originalTitle"))
+    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__alternateTitle"))
             .map(Element::text)),
     YEAR_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__year"))
             .map(Element::text)
