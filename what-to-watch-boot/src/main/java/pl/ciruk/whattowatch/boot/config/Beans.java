@@ -28,7 +28,6 @@ import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
-import pl.ciruk.whattowatch.core.title.onetwothree.OneTwoThreeTitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -36,6 +35,7 @@ import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 
@@ -47,16 +47,19 @@ public class Beans {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Integer filmPoolSize;
+    private final boolean useVirtualPool;
     private final Integer titlePagesPerRequest;
     private final Double filmScoreThreshold;
     private final Integer filmCacheSize;
 
     public Beans(
             @Value("${w2w.pool.size:16}") Integer filmPoolSize,
+            @Value("${w2w.pool.useVirtualPool:false}") boolean useVirtualPool,
             @Value("${w2w.titles.pagesPerRequest:10}") Integer titlePagesPerRequest,
             @Value("${w2w.suggestions.filter.scoreThreshold:0.6}") Double filmScoreThreshold,
             @Value("${w2w.films.cache.size:10000}") Integer filmCacheSize) {
         this.filmPoolSize = filmPoolSize;
+        this.useVirtualPool = useVirtualPool;
         this.titlePagesPerRequest = titlePagesPerRequest;
         this.filmScoreThreshold = filmScoreThreshold;
         this.filmCacheSize = filmCacheSize;
@@ -65,6 +68,11 @@ public class Beans {
     @Bean
     ExecutorService executorService() {
         var threadPrefix = "WhatToWatch";
+        return useVirtualPool ? createVirtualPool(threadPrefix) : createForkJoinPool(threadPrefix);
+    }
+
+    private ExecutorService createForkJoinPool(String threadPrefix) {
+        LOGGER.info("Creating fork join pool");
         ExecutorService threadPoolExecutor = new ForkJoinPool(
                 filmPoolSize,
                 Threads.createForkJoinThreadFactory(threadPrefix),
@@ -72,6 +80,16 @@ public class Beans {
                 true);
         return ExecutorServiceMetrics.monitor(Metrics.globalRegistry, threadPoolExecutor, threadPrefix);
     }
+
+    private static ExecutorService createVirtualPool(String threadPrefix) {
+        LOGGER.info("Creating pool of virtual threads");
+        final var factory = Thread.ofVirtual()
+                .name(threadPrefix + "-", 1)
+                .uncaughtExceptionHandler(Threads.createUncaughtExceptionHandler())
+                .factory();
+        return Executors.newThreadPerTaskExecutor(factory);
+    }
+
 
     @Bean
     TitleProvider titleProvider(@Cached @ShortExpiry HttpConnection<Element> httpConnection) {

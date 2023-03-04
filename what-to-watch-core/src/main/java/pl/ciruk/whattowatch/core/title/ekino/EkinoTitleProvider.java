@@ -18,8 +18,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-
 public class EkinoTitleProvider implements TitleProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String BASE_URL = "https://ekino-tv.pl";
@@ -63,12 +61,11 @@ public class EkinoTitleProvider implements TitleProvider {
         int startFromPage = (requestNumber - 1) * pagesPerRequest;
         LOGGER.debug("Pages: <{}; {}>", startFromPage, startFromPage + pagesPerRequest);
 
-        List<HttpUrl> urls = IntStream.range(startFromPage, startFromPage + pagesPerRequest)
+        return IntStream.range(startFromPage, startFromPage + pagesPerRequest)
                 .boxed()
+                .parallel()
                 .map(index -> String.format(TITLES_PAGE_PATTERN, index))
-                .map(HttpUrl::get)
-                .collect(toList());
-        return urls.parallelStream();
+                .map(HttpUrl::get);
     }
 
     private Title parseToTitle(Element linkToTitle) {

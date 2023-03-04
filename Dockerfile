@@ -1,4 +1,4 @@
-FROM eclipse-temurin:18-alpine
+FROM eclipse-temurin:19-alpine
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
@@ -8,6 +8,7 @@ ENV W2W_VERSION=${W2W_VERSION}
 
 ENV W2W_TITLES_PAGES_PER_REQUEST=10
 ENV W2W_THREAD_POOL_SIZE=16
+ENV W2W_THREAD_POOL_USE_VIRTUAL=false
 ENV W22_FILM_SCORE_THRESHOLD=0.55
 ENV W2W_LOGGING_LEVEL=INFO
 ENV W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS=100
@@ -26,7 +27,6 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-XX:+TieredCompilation \
 	-XX:InitialCodeCacheSize=128m \
 	-XX:ReservedCodeCacheSize=128m \
-	-XX:-UseBiasedLocking \
 	-XX:+PreserveFramePointer \
 	-XX:+UnlockExperimentalVMOptions \
 	-XX:+UseZGC \
@@ -44,6 +44,7 @@ CMD sh -c "java \
 		-Djava.security.egd=file:/dev/./urandom \
 		-Dw2w.titles.pagesPerRequest=$W2W_TITLES_PAGES_PER_REQUEST \
 		-Dw2w.pool.size=$W2W_THREAD_POOL_SIZE \
+		-Dw2w.pool.useVirtualPool=$W2W_THREAD_POOL_USE_VIRTUAL \
 		-Dw2w.suggestions.filter.scoreThreshold=$W22_FILM_SCORE_THRESHOLD \
 		-Dhttp.connection.delayByDomain.default=$W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS \
 		-Dhttp.connection.delayByDomain.map=$W2W_HTTP_CLIENT_DELAY_BY_DOMAIN_MILLIS \
