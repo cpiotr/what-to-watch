@@ -153,7 +153,9 @@ public class HtmlConnection implements HttpConnection<String> {
     private Response processResponse(Response response) {
         Response processedResponse = response.newBuilder().build();
         for (var responseProcessor : responseProcessors) {
-            processedResponse = responseProcessor.process(processedResponse);
+            var nextResponse = responseProcessor.process(processedResponse);
+            processedResponse.close();
+            processedResponse = nextResponse;
             LOGGER.trace("Processed response code: {}", processedResponse.code());
         }
         return processedResponse;

@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ImdbScoresProviderIT {
+class ImdbScoresProviderIntegationTest {
     private ScoresProvider scores;
 
     @BeforeEach

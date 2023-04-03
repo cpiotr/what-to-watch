@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 
 import static pl.ciruk.whattowatch.core.description.DescriptionAssert.assertThat;
 
-class FilmwebDescriptionProviderIT {
+class FilmwebDescriptionProviderIntegrationTest {
     private FilmwebDescriptionProvider descriptions;
 
     @BeforeEach

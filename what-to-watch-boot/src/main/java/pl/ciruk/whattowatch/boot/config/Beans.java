@@ -71,6 +71,7 @@ public class Beans {
         return useVirtualPool ? createVirtualPool(threadPrefix) : createForkJoinPool(threadPrefix);
     }
 
+    @SuppressWarnings("PMD.CloseResource")
     private ExecutorService createForkJoinPool(String threadPrefix) {
         LOGGER.info("Creating fork join pool");
         ExecutorService threadPoolExecutor = new ForkJoinPool(

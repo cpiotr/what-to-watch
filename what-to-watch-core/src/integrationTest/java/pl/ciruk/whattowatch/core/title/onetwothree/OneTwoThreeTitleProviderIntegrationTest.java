@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled
-class OneTwoThreeTitleProviderIT {
+class OneTwoThreeTitleProviderIntegrationTest {
     private TitleProvider provider;
 
     @BeforeEach

@@ -25,7 +25,7 @@ allprojects {
 
     pmd {
         rulesMinimumPriority = 3
-        toolVersion = "6.21.0"
+        toolVersion = "6.55.0"
 
         ruleSets = []
         ruleSetFiles = files("$rootProject.projectDir/config/pmd-rules.xml")

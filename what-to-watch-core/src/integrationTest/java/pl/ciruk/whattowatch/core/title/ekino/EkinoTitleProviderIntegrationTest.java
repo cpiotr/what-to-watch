@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled
-class EkinoTitleProviderIT {
+class EkinoTitleProviderIntegrationTest {
     private TitleProvider provider;
 
     @BeforeEach

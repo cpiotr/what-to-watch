@@ -23,20 +23,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = WhatToWatchBoot.class)
-@ContextConfiguration(classes = WhatToWatchBootTest.TestConfig.class)
-public class WhatToWatchBootTest {
+@ContextConfiguration(classes = WhatToWatchBootTest.InternalConfig.class)
+class WhatToWatchBootTest {
 
     @Autowired
-    private TestConfig testConfig;
+    private InternalConfig internalConfig;
 
     @Test
-    public void contextLoads() {
-        assertThat(testConfig).isNotNull();
+    void contextLoads() {
+        assertThat(internalConfig).isNotNull();
     }
 
     @ComponentScan("pl.ciruk.whattowatch")
     @Configuration
-    static class TestConfig {
+    static class InternalConfig {
         private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
         @Bean

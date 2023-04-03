@@ -1,8 +1,6 @@
 package pl.ciruk.whattowatch.core.score.filmweb;
 
 import org.jsoup.nodes.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
@@ -11,14 +9,12 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
 
 public class FilmwebScoresFinder implements ScoresFinder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String FILMWEB = "Filmweb";
 
     private final FilmwebProxy filmwebProxy;

@@ -5,7 +5,7 @@ import pl.ciruk.whattowatch.core.title.Title;
 import java.util.List;
 import java.util.Objects;
 
-public class Description {
+public final class Description {
     private static final Description EMPTY = Description.builder().build();
 
     private final Title title;

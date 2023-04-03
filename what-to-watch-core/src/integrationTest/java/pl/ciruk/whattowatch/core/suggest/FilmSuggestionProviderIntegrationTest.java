@@ -24,12 +24,11 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FilmSuggestionProviderIT {
+class FilmSuggestionProviderIntegrationTest {
     private static final int NUMBER_OF_TITLES = 25;
 
     private FilmSuggestionProvider suggestions;
@@ -92,7 +91,7 @@ class FilmSuggestionProviderIT {
                 .lines()
                 .limit(NUMBER_OF_TITLES)
                 .map(line -> line.split(";"))
-                .map(FilmSuggestionProviderIT::buildTitle)
+                .map(FilmSuggestionProviderIntegrationTest::buildTitle)
                 .collect(toList());
         return (int pageNumber) -> titles.stream();
     }
