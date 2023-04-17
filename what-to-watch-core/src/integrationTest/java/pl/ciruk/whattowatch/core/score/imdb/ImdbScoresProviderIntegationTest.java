@@ -121,6 +121,19 @@ class ImdbScoresProviderIntegationTest {
         assertScoresForDescriptionAreMeaningful(description);
     }
 
+    @Test
+    void shouldRetrieveMeaningfulScoreOfShortAnimatedVideo() {
+        Title title = Title.builder()
+                .originalTitle("The Boy, the Mole, the Fox and the Horse")
+                .year(2022)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        assertScoresForDescriptionAreMeaningful(description);
+    }
+
     private Title titleOfOldAndRespectfulFilm() {
         return Title.builder()
                 .title("Rambo")
