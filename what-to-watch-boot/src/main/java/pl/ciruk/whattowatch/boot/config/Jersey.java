@@ -8,6 +8,10 @@ import pl.ciruk.whattowatch.boot.boundary.Suggestions;
 import pl.ciruk.whattowatch.boot.boundary.Titles;
 
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.ext.Provider;
 
 @Configuration
 @ApplicationPath("/resources")
@@ -17,5 +21,18 @@ public class Jersey extends ResourceConfig {
         register(Scores.class);
         register(Titles.class);
         register(Suggestions.class);
+        register(CorsFilter.class);
+    }
+
+    @Provider
+    static class CorsFilter implements ContainerResponseFilter {
+
+        @Override
+        public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+            responseContext.getHeaders().add("Access-Control-Allow-Origin", "*");
+            responseContext.getHeaders().add("Access-Control-Allow-Credentials", "true");
+            responseContext.getHeaders().add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+            responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+        }
     }
 }

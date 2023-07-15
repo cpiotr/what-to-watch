@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Timer;
 import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
@@ -39,6 +40,7 @@ import static pl.ciruk.whattowatch.utils.concurrent.Threads.manageBlocking;
 
 @Named
 @Path("/suggestions")
+@CrossOrigin(origins = "http://localhost:8080")
 public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
