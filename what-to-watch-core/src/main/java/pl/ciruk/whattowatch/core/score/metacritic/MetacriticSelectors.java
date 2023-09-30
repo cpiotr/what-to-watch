@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("PMD.FieldDeclarationsShouldBeAtStartOfClass")
 public enum MetacriticSelectors implements Extractable<Optional<String>> {
-    LINK_TO_DETAILS(details -> Optional.ofNullable(details.selectFirst("h3.product_title a"))
+    LINK_TO_DETAILS(details -> Optional.ofNullable(details.selectFirst("div.c-pageSiteSearch-results-item a"))
             .map(link -> link.attr("href"))),
     NEW_YORK_TIMES_GRADE(details -> details.select("div.critic_reviews div.review")
             .stream()

@@ -11,7 +11,7 @@ public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
             page -> page.select("ul.search_results li.result").stream()
     ),
     CRITIC_REVIEWS(
-            page -> page.select("div.critic_reviews div.review div.metascore_w").stream()
+            page -> page.html().// score:93,metaScore:f
     );
 
     private final Function<Element, Stream<Element>> extractor;

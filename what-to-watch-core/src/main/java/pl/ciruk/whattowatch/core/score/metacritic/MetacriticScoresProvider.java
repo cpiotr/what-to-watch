@@ -15,6 +15,7 @@ import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -67,7 +68,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
         LOGGER.debug("Description: {}", description);
 
         return metacriticSummaryOf(description.getTitle())
-                .flatMap(LINK_TO_DETAILS::extractFrom)
+                .flatMap(LINK_TO_DETAILS::extractFrom) // ,criticScoreSummary:{url:"\u002Fmovie\u002Fmoana\u002Fcritic-reviews\u002F"
                 .stream()
                 .flatMap(linkToDetails -> findScores(linkToDetails, description));
     }
@@ -115,8 +116,12 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private Optional<Element> getSearchResultsFor(Title title) {
-        var url = buildUrl(List.of("search", "movie", title.asText(), "results"));
-        return connection.connectToAndGet(url, "<ul class=\"search_results", "</ul>");
+        var url = metacriticUrlBuilder()
+                .addPathSegments("movie")
+                .addPathSegment(title.asText().replace(' ', '-').toLowerCase(Locale.ROOT))
+                .addPathSegment("critic-reviews")
+                .build();
+        return connection.connectToAndGet(url);
     }
 
     private Optional<Element> getPage(String pathSegment) {
@@ -147,8 +152,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
     private Optional<Element> metacriticSummaryOf(Title title) {
         try {
-            return getSearchResultsFor(title)
-                    .flatMap(searchResults -> findFirstResultMatching(title, searchResults));
+            return getSearchResultsFor(title);
         } catch (Exception e) {
             LOGGER.warn("Cannot find metacritic summary of {}", title, e);
             return Optional.empty();
