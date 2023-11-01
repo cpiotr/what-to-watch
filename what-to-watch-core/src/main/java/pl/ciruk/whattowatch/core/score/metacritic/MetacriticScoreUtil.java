@@ -24,6 +24,7 @@ final class MetacriticScoreUtil {
 
     private static Optional<Double> averageGradeFrom(Element htmlWithScores) {
         return MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
+                .map(element -> element.selectFirst("div"))
                 .map(Element::text)
                 .mapToDouble(Double::valueOf)
                 .average()

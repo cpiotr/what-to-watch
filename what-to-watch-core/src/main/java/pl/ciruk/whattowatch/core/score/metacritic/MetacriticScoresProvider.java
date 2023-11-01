@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
@@ -67,7 +68,12 @@ public class MetacriticScoresProvider implements ScoresProvider {
     public Stream<Score> findScoresBy(Description description) {
         LOGGER.debug("Description: {}", description);
 
-        return metacriticSummaryOf(description.getTitle())
+        final var element = metacriticSummaryOf(description.getTitle());
+        final var collect = element.stream()
+                .flatMap(MetacriticStreamSelectors.CRITIC_REVIEWS::extractFrom)
+                .collect(Collectors.toList());
+
+        return element
                 .flatMap(LINK_TO_DETAILS::extractFrom) // ,criticScoreSummary:{url:"\u002Fmovie\u002Fmoana\u002Fcritic-reviews\u002F"
                 .stream()
                 .flatMap(linkToDetails -> findScores(linkToDetails, description));
