@@ -21,7 +21,7 @@ public record Title(
         return Optional.ofNullable(originalTitle)
                 .filter(not(String::isEmpty))
                 .orElse(localTitle)
-                .replace("/", " ");
+                .replace("/", "");
     }
 
     public boolean matches(Title otherTitle) {

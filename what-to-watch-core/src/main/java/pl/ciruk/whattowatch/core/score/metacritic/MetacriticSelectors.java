@@ -5,16 +5,18 @@ import pl.ciruk.whattowatch.utils.net.html.Extractable;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("PMD.FieldDeclarationsShouldBeAtStartOfClass")
 public enum MetacriticSelectors implements Extractable<Optional<String>> {
     LINK_TO_DETAILS(details -> Optional.ofNullable(details.selectFirst("div.c-pageSiteSearch-results-item a"))
             .map(link -> link.attr("href"))),
-    NEW_YORK_TIMES_GRADE(details -> details.select("div.critic_reviews div.review")
+    NEW_YORK_TIMES_GRADE(htmlWithScores -> htmlWithScores.select("p")
             .stream()
-            .filter(review -> "The New York Times".equalsIgnoreCase(review.select("span.source a img").attr("alt")))
-            .map(review -> review.select("div.metascore_w.movie").text())
+            .filter(review -> "The New York Times".equalsIgnoreCase(review.selectFirst("span").text()))
+            .map(review -> review.select("div").text())
+            .filter(Predicate.not(String::isBlank))
             .findFirst()),
     LINK_TO_CRITIC_REVIEWS(details -> Optional.ofNullable(details.selectFirst("div.header_title.oswald a"))
             .map(link -> link.attr("href"))),

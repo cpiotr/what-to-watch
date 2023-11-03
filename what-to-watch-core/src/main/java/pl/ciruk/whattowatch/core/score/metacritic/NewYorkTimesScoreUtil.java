@@ -5,6 +5,8 @@ import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 final class NewYorkTimesScoreUtil {
     static final String NEW_YORK_TIMES = "NewYorkTimes";
@@ -15,9 +17,12 @@ final class NewYorkTimesScoreUtil {
     }
 
     static Optional<Score.ScoreBuilder> extractToScoreBuilder(Element htmlWithScores) {
-        return MetacriticSelectors.NEW_YORK_TIMES_GRADE.extractFrom(htmlWithScores)
+        return MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
+                .map(MetacriticSelectors.NEW_YORK_TIMES_GRADE::extractFrom)
+                .flatMap(Optional::stream)
                 .map(grade -> (Double.parseDouble(grade) / 100.0))
-                .map(NewYorkTimesScoreUtil::createScore);
+                .map(NewYorkTimesScoreUtil::createScore)
+                .findFirst();
     }
 
     private static Score.ScoreBuilder createScore(Double percentage) {

@@ -36,8 +36,6 @@ final class MetacriticScoreUtil {
 
     private static Optional<Double> numberOfReviewsFrom(Element htmlWithScores) {
         double count = MetacriticStreamSelectors.CRITIC_REVIEWS.extractFrom(htmlWithScores)
-                .map(Element::text)
-                .mapToDouble(Double::valueOf)
                 .count();
         return Optional.of(count).filter(Doubles.greaterThan(0.0));
     }

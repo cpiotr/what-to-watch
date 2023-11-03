@@ -69,36 +69,25 @@ public class MetacriticScoresProvider implements ScoresProvider {
         LOGGER.debug("Description: {}", description);
 
         final var element = metacriticSummaryOf(description.getTitle());
-        final var collect = element.stream()
-                .flatMap(MetacriticStreamSelectors.CRITIC_REVIEWS::extractFrom)
-                .collect(Collectors.toList());
 
-        return element
-                .flatMap(LINK_TO_DETAILS::extractFrom) // ,criticScoreSummary:{url:"\u002Fmovie\u002Fmoana\u002Fcritic-reviews\u002F"
-                .stream()
-                .flatMap(linkToDetails -> findScores(linkToDetails, description));
+        return element.stream().flatMap(htmlWithScores -> findScores(htmlWithScores, description));
     }
 
-    private Stream<Score> findScores(String linkToDetails, Description description) {
-        var htmlWithScores = getPageWithCriticReviews(List.of(linkToDetails, "critic-reviews"))
-                .map(this::extractCriticReviews)
-                .or(() -> followDetailsLinkAndFindPageWithScores(linkToDetails));
-
-        var metacriticScoreBuilder = htmlWithScores
-                .flatMap(MetacriticScoreUtil::extractToScoreBuilder);
+    private Stream<Score> findScores(Element htmlWithScores, Description description) {
+        var metacriticScoreBuilder = MetacriticScoreUtil.extractToScoreBuilder(htmlWithScores);
         if (metacriticScoreBuilder.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
             missingMetacriticScores.incrementAndGet();
         }
 
-        var nytScoreBuilder = htmlWithScores.flatMap(NewYorkTimesScoreUtil::extractToScoreBuilder);
+        var nytScoreBuilder = NewYorkTimesScoreUtil.extractToScoreBuilder(htmlWithScores);
         if (nytScoreBuilder.isEmpty()) {
             LOGGER.warn("Missing NYT score for: {}", description.getTitle());
             missingNewYorkTimesScores.incrementAndGet();
         }
 
         return Stream.concat(metacriticScoreBuilder.stream(), nytScoreBuilder.stream())
-                .map(scoreBuilder -> scoreBuilder.url(resolve(linkToDetails)).build())
+                .map(scoreBuilder -> scoreBuilder.url(resolve("")).build())
                 .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
 
@@ -124,7 +113,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private Optional<Element> getSearchResultsFor(Title title) {
         var url = metacriticUrlBuilder()
                 .addPathSegments("movie")
-                .addPathSegment(title.asText().replace(' ', '-').toLowerCase(Locale.ROOT))
+                .addPathSegment(title.asText().replace(":", "").replace(' ', '-').toLowerCase(Locale.ROOT))
                 .addPathSegment("critic-reviews")
                 .build();
         return connection.connectToAndGet(url);

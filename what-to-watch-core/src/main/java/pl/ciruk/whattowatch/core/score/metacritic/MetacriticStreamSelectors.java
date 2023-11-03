@@ -1,13 +1,11 @@
 package pl.ciruk.whattowatch.core.score.metacritic;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.html.Extractable;
 
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
@@ -20,8 +18,6 @@ public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
                 final var from = html.indexOf("meta={");
                 final var to = html.indexOf("</script>", from);
                 final var content = html.substring(from, to);// score:93,metaScore:f
-                final var pattern = Pattern.compile("\\{.*score:([0-9]+).*publicationName:\"(.*)\"\\}");
-                final var matcher = pattern.matcher(content);
                 return Stream.generate(new ScoreSupplier(content)).takeWhile(Objects::nonNull);
             }
     );
@@ -61,7 +57,7 @@ public enum MetacriticStreamSelectors implements Extractable<Stream<Element>> {
             index = i;
             final var nameFrom = content.indexOf("publicationName:\"", index) + "publicationName:\"".length();
             if (nameFrom < index) return null;
-            final var nameTo = content.indexOf('"', nameFrom+1);
+            final var nameTo = content.indexOf('"', nameFrom + 1);
             final var name = content.substring(nameFrom, nameTo);
             index = nameTo;
             final var p = new Element("p");
