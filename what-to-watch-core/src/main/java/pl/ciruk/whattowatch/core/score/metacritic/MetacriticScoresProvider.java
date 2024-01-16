@@ -20,12 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.util.Comparator.comparing;
-import static pl.ciruk.whattowatch.core.score.metacritic.MetacriticSelectors.LINK_TO_DETAILS;
-import static pl.ciruk.whattowatch.core.title.Title.MISSING_YEAR;
 
 public class MetacriticScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -91,18 +86,6 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
 
-    private Optional<Element> followDetailsLinkAndFindPageWithScores(String linkToDetails) {
-        final var page = getPage(linkToDetails);
-        return page
-                .flatMap(MetacriticSelectors.LINK_TO_CRITIC_REVIEWS::extractFrom)
-                .flatMap(link -> getPageWithCriticReviews(List.of(link)))
-                .map(this::extractCriticReviews);
-    }
-
-    private Element extractCriticReviews(Element page) {
-        return page.selectFirst("div.critic_reviews");
-    }
-
     private String resolve(String link) {
         HttpUrl httpUrl = metacriticUrlBuilder().build();
         return Optional.ofNullable(httpUrl.resolve(link))
@@ -119,26 +102,6 @@ public class MetacriticScoresProvider implements ScoresProvider {
         return connection.connectToAndGet(url);
     }
 
-    private Optional<Element> getPage(String pathSegment) {
-        return getPage(List.of(pathSegment));
-    }
-
-    private Optional<Element> getPageWithCriticReviews(List<String> pathSegments) {
-        var url = buildUrl(pathSegments);
-        return connection.connectToAndGet(url, "<div class=\"critic_reviews", "<div class=\"side_col\"");
-    }
-
-    private Optional<Element> getPage(List<String> pathSegments) {
-        HttpUrl url = buildUrl(pathSegments);
-        return connection.connectToAndGet(url, "<div class=\"content_under_header", "<div class=\"content_after_header");
-    }
-
-    private HttpUrl buildUrl(List<String> pathSegments) {
-        var builder = metacriticUrlBuilder();
-        pathSegments.forEach(builder::addPathSegments);
-        return builder.build();
-    }
-
     private HttpUrl.Builder metacriticUrlBuilder() {
         return new HttpUrl.Builder()
                 .scheme("https")
@@ -151,44 +114,6 @@ public class MetacriticScoresProvider implements ScoresProvider {
         } catch (Exception e) {
             LOGGER.warn("Cannot find metacritic summary of {}", title, e);
             return Optional.empty();
-        }
-    }
-
-    private Optional<Element> findFirstResultMatching(Title title, Element searchResults) {
-        return MetacriticStreamSelectors.SEARCH_RESULTS.extractFrom(searchResults)
-                .map(searchResult -> new SearchResultWithTitle(searchResult, extractTitle(searchResult)))
-                .filter(searchResult -> searchResult.matches(title))
-                .min(comparing(searchResult -> searchResult.calculateDifferenceInYears(title)))
-                .map(SearchResultWithTitle::getResultElement);
-    }
-
-    private Title extractTitle(Element searchResult) {
-        var title = MetacriticSelectors.TITLE.extractFrom(searchResult).orElse("");
-        var year = MetacriticSelectors.RELEASE_YEAR.extractFrom(searchResult)
-                .map(Integer::parseInt)
-                .orElse(MISSING_YEAR);
-
-        return Title.builder()
-                .title(title)
-                .year(year)
-                .build();
-    }
-
-    private record SearchResultWithTitle(Element resultElement, Title title) {
-        public int calculateDifferenceInYears(Title otherTitle) {
-            return Math.abs(title.year() - otherTitle.year());
-        }
-
-        public boolean matches(Title otherTitle) {
-            return title.matches(otherTitle);
-        }
-
-        public Element getResultElement() {
-            return resultElement;
-        }
-
-        public Title getTitle() {
-            return title;
         }
     }
 }

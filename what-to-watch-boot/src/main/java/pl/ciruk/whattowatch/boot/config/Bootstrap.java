@@ -1,11 +1,11 @@
 package pl.ciruk.whattowatch.boot.config;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 
-import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CompletableFuture;
 

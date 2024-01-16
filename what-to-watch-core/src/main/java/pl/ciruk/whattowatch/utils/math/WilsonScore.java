@@ -4,7 +4,7 @@ package pl.ciruk.whattowatch.utils.math;
 import static java.lang.Math.*;
 
 @SuppressWarnings("PMD")
-class WilsonScore {
+final class WilsonScore {
     private static final double[] DISTRIBUTION = new double[]{
             1.570796288, 0.03706987906, -0.8364353589e-3,
             -0.2250947176e-3, 0.6841218299e-5, 0.5824238515e-5,

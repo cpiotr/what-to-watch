@@ -1,8 +1,8 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 final class Responses {

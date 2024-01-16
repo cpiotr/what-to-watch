@@ -31,7 +31,7 @@ import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.ExecutorService;

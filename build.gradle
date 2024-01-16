@@ -40,7 +40,7 @@ allprojects {
 }
 
 wrapper {
-    gradleVersion = '7.6'
+    gradleVersion = '8.5'
 }
 
 println("[what-to-watch] Building version: $version")

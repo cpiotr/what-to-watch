@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.boot.cache;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.core.instrument.Metrics;
+import jakarta.annotation.PostConstruct;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
@@ -15,7 +16,6 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import javax.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;

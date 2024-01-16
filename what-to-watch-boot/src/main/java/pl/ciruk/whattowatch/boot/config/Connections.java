@@ -2,6 +2,8 @@ package pl.ciruk.whattowatch.boot.config;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Qualifier;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
@@ -18,10 +20,6 @@ import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.net.*;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Qualifier;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -94,12 +92,6 @@ public class Connections {
                 .connectTimeout(500, TimeUnit.MILLISECONDS)
                 .eventListener(metricsEventListener)
                 .addInterceptor(backoffInterceptor);
-    }
-
-
-    @Bean
-    ScriptEngine engine() {
-        return new ScriptEngineManager().getEngineByName("js");
     }
 
     @Bean

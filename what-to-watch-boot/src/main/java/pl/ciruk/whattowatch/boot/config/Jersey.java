@@ -7,11 +7,11 @@ import pl.ciruk.whattowatch.boot.boundary.Scores;
 import pl.ciruk.whattowatch.boot.boundary.Suggestions;
 import pl.ciruk.whattowatch.boot.boundary.Titles;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.ext.Provider;
 
 @Configuration
 @ApplicationPath("/resources")

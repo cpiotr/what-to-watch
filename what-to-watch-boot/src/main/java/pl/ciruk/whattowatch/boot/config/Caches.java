@@ -13,7 +13,7 @@ import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.Optional;
