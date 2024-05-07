@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 class FilmwebSelectors {
     Stream<String> findLinksFromSearchResult(Element searchResults) {
-        return searchResults.select("div.preview__card div.preview__header a")
+        return searchResults.select("div.preview__card div.preview__header a.preview__link")
                 .stream()
                 .map(a -> a.attr("href"));
     }
@@ -22,7 +22,8 @@ class FilmwebSelectors {
     }
 
     Optional<String> findLocalTitle(Element details) {
-        return Optional.ofNullable(details.selectFirst("h1.filmCoverSection__title"))
+        return Optional.ofNullable(details)
+                .map(html -> html.selectFirst("h1.filmCoverSection__title"))
                 .map(Element::text);
     }
 

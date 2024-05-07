@@ -79,6 +79,16 @@ class FilmwebDescriptionProviderIntegrationTest {
     }
 
     @Test
+    void shouldResolveDescriptionFromOriginalTitleWhenDocumentariesWithSimilarTitleWhereReleasedOneYearLater() {
+        Title title = Title.builder().originalTitle("Gran Torino").year(2008).build();
+
+        Description description = descriptions.findDescriptionBy(title)
+                .orElseThrow(AssertionError::new);
+
+        assertThat(description).hasTitle("Gran Torino");
+    }
+
+    @Test
     void shouldNotFindDescriptionForUnknownFilm() {
         Title title = Title.builder().originalTitle("NoWaySuchTitleExistsPC").year(2019).build();
 
