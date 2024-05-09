@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-alpine
+FROM mcr.microsoft.com/playwright/java:v1.43.0-jammy
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp
