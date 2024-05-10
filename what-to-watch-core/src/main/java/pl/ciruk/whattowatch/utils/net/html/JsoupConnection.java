@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.utils.net.html;
 
+import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Playwright;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
@@ -10,13 +11,24 @@ import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class JsoupConnection implements HttpConnection<Element> {
     private final HttpConnection<String> connection;
+    private final Playwright playwright;
+    private final Browser browser;
+    private final ExecutorService threadPool;
+    private final ThreadLocal<Browser> browserThreadLocal;
 
     public JsoupConnection(HttpConnection<String> connection) {
         this.connection = connection;
+        playwright = Playwright.create();
+        browser = playwright.webkit().launch();
+        threadPool = Executors.newFixedThreadPool(32);
+        browserThreadLocal = ThreadLocal.withInitial(() -> Playwright.create().webkit().launch());
     }
 
     @Override
@@ -26,11 +38,13 @@ public class JsoupConnection implements HttpConnection<Element> {
     }
 
     private Document parseContent(String html) {
-        try (final var browser = Playwright.create().webkit().launch()) {
-            final var page = browser.newPage();
-            page.setContent(html);
-            return Jsoup.parse(page.content());
-        }
+        return CompletableFuture.supplyAsync(() -> {
+            final var browser = browserThreadLocal.get();
+            try (final var page = browser.newPage()) {
+                page.setContent(html);
+                return Jsoup.parse(page.content());
+            }
+        }, threadPool).join();
     }
 
     @Override
