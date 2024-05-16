@@ -81,8 +81,7 @@ class FilmSuggestionProviderIntegrationTest {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
                 new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection), executorService),
-                new MetacriticScoresProvider(jsoupConnection, executorService),
-                new ImdbScoresProvider(jsoupConnection, executorService)
+                new MetacriticScoresProvider(jsoupConnection, executorService)
         );
     }
 

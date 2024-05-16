@@ -27,6 +27,7 @@ public class Bootstrap {
         long numberOfFilms = filmSuggestions.suggestFilms(1)
                 .map(CompletableFuture::join)
                 .filter(filmFilter::isWorthWatching)
+                .distinct()
                 .count();
         LOGGER.info("Processed {} film suggestions", numberOfFilms);
     }
