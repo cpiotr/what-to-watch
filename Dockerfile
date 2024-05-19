@@ -1,3 +1,15 @@
+FROM gradle:8.7.0-jdk21-alpine as build
+MAINTAINER c.piotre@gmail.com
+
+VOLUME /tmp
+
+ARG W2W_VERSION
+ENV W2W_VERSION=${W2W_VERSION}
+
+COPY ./ /what-to-watch/
+WORKDIR /what-to-watch
+RUN sh -c 'gradle clean build -Pversion=$W2W_VERSION --stacktrace -x check'
+
 FROM mcr.microsoft.com/playwright/java:v1.43.0-jammy
 MAINTAINER c.piotre@gmail.com
 
@@ -33,9 +45,9 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-XX:+UseNUMA \
 	-Xlog:gc:stdout:time"
 
-COPY ./ /what-to-watch/
+
+COPY --from=build /what-to-watch /what-to-watch
 WORKDIR /what-to-watch
-RUN sh -c './gradlew clean build -Pversion=$W2W_VERSION --stacktrace -x check'
 
 EXPOSE 8080
 EXPOSE 9999
