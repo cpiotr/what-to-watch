@@ -45,6 +45,7 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-XX:+UseNUMA \
 	-Xlog:gc:stdout:time"
 
+ENV TZ "Europe/Warsaw"
 
 COPY --from=build /what-to-watch /what-to-watch
 WORKDIR /what-to-watch
