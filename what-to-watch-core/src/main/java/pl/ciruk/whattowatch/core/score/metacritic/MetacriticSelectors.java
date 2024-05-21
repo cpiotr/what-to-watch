@@ -18,7 +18,7 @@ public enum MetacriticSelectors implements Extractable<Optional<String>> {
             .map(review -> review.select("div").text())
             .filter(Predicate.not(String::isBlank))
             .findFirst()),
-    LINK_TO_CRITIC_REVIEWS(details -> Optional.ofNullable(details.selectFirst("div.header_title.oswald a"))
+    LINK_TO_FILM_PAGE(details -> Optional.ofNullable(details.selectFirst("a.c-productSubpageHeader_back"))
             .map(link -> link.attr("href"))),
     TITLE(details -> Optional.ofNullable(details.selectFirst("h3.product_title"))
             .map(Element::text)),

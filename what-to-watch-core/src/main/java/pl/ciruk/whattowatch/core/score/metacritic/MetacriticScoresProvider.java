@@ -81,8 +81,9 @@ public class MetacriticScoresProvider implements ScoresProvider {
             missingNewYorkTimesScores.incrementAndGet();
         }
 
+        final var linkToFilmPage = MetacriticSelectors.LINK_TO_FILM_PAGE.extractFrom(htmlWithScores);
         return Stream.concat(metacriticScoreBuilder.stream(), nytScoreBuilder.stream())
-                .map(scoreBuilder -> scoreBuilder.url(resolve("")).build())
+                .map(scoreBuilder -> scoreBuilder.url(resolve(linkToFilmPage.orElse(""))).build())
                 .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
     }
 
