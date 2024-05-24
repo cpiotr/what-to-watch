@@ -30,9 +30,13 @@ public class CachedConnection implements HttpConnection<String> {
         if (optionalDocument.isEmpty()) {
             LOGGER.trace("Cache miss for: {}", url);
             optionalDocument = connection.connectToAndGet(url);
-            optionalDocument.ifPresent(content -> cache.put(url.toString(), content));
+            optionalDocument.ifPresent(content -> addToCache(url, content));
         }
         return optionalDocument;
+    }
+
+    private void addToCache(HttpUrl url, String content) {
+        cache.put(url.toString(), content);
     }
 
     @Override

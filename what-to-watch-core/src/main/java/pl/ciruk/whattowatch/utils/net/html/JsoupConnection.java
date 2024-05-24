@@ -34,7 +34,7 @@ public class JsoupConnection implements HttpConnection<Element> {
     @Override
     public Optional<Element> connectToAndGet(HttpUrl url) {
         return connection.connectToAndGet(url)
-                .map(html -> parseContent(html));
+                .map(this::parseContent);
     }
 
     private Document parseContent(String html) {
