@@ -8,14 +8,13 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
-import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.Resources;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
-import pl.ciruk.whattowatch.utils.net.HtmlConnection;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
@@ -36,7 +35,7 @@ class FilmSuggestionProviderIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        HtmlConnection htmlConnection = TestConnections.html();
+        HttpConnection<String> htmlConnection = TestConnections.cached();
         pool = Executors.newWorkStealingPool(32);
         suggestions = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
@@ -72,12 +71,12 @@ class FilmSuggestionProviderIntegrationTest {
         pool.awaitTermination(1, TimeUnit.SECONDS);
     }
 
-    private FilmwebDescriptionProvider sampleDescriptionProvider(HtmlConnection htmlConnection, ExecutorService pool) {
+    private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
         FilmwebProxy filmwebProxy = new FilmwebProxy(new JsoupConnection(htmlConnection));
         return new FilmwebDescriptionProvider(filmwebProxy, pool);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(HtmlConnection connection, ExecutorService executorService) {
+    private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
                 new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection), executorService),
