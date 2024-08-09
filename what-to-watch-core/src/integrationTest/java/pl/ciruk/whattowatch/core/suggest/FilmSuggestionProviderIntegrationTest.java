@@ -62,7 +62,7 @@ class FilmSuggestionProviderIntegrationTest {
                 .map(String::toLowerCase)
                 .collect(toList());
 
-        assertThat(titles).containsOnlyElementsOf(expectedTitles);
+        assertThat(titles).containsOnlyOnceElementsOf(expectedTitles);
     }
 
     @AfterEach
@@ -90,7 +90,7 @@ class FilmSuggestionProviderIntegrationTest {
                 .limit(NUMBER_OF_TITLES)
                 .map(line -> line.split(";"))
                 .map(FilmSuggestionProviderIntegrationTest::buildTitle)
-                .collect(toList());
+                .toList();
         return (int pageNumber) -> titles.stream();
     }
 
