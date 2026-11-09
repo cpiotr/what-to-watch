@@ -19,7 +19,6 @@ import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,16 +36,27 @@ public class ImdbScoresProvider implements ScoresProvider {
     private static final int MAX_IMDB_SCORE = 10;
     private static final String IMDB = "IMDb";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final int MAX_PAGE_ATTEMPTS = 3;
+    private static final Duration DELAY_BETWEEN_PAGE_ATTEMPTS = Duration.ofSeconds(5);
     private final HttpConnection<Element> httpConnection;
     private final ExecutorService executorService;
+    private final Duration delayBetweenPageAttempts;
     private final AtomicLong missingScores = new AtomicLong();
     private final ObjectMapper objectMapper;
 
     public ImdbScoresProvider(
             HttpConnection<Element> httpConnection,
             ExecutorService executorService) {
+        this(httpConnection, executorService, DELAY_BETWEEN_PAGE_ATTEMPTS);
+    }
+
+    ImdbScoresProvider(
+            HttpConnection<Element> httpConnection,
+            ExecutorService executorService,
+            Duration delayBetweenPageAttempts) {
         this.httpConnection = httpConnection;
         this.executorService = executorService;
+        this.delayBetweenPageAttempts = delayBetweenPageAttempts;
         this.objectMapper = new ObjectMapper();
 
         Metrics.gauge(
@@ -83,20 +93,28 @@ public class ImdbScoresProvider implements ScoresProvider {
     }
 
     private Optional<Element> getPage(Description description) {
-        var url = createUrl(description);
-        var element = httpConnection.connectToAndGet(url);
-        while (element.stream().flatMap(html -> html.select("#__NEXT_DATA__").stream()).count() == 0) {
-            System.out.println("Again...");
-            System.out.println(element.get().html());
-            url = createUrl(description);
-            try {
-                Thread.sleep(Duration.of(5, ChronoUnit.SECONDS));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        // IMDb sometimes serves a page without search data, such as a bot challenge.
+        // Another URL (createUrl varies it) usually gets a real one.
+        for (int attempt = 1; attempt <= MAX_PAGE_ATTEMPTS; attempt++) {
+            var page = httpConnection.connectToAndGet(createUrl(description));
+            if (page.isEmpty() || hasSearchData(page.get())) {
+                return page;
             }
-            element = httpConnection.connectToAndGet(url);
+            LOGGER.debug("No search data for {}, attempt {} of {}", description, attempt, MAX_PAGE_ATTEMPTS);
+            if (attempt < MAX_PAGE_ATTEMPTS) {
+                try {
+                    Thread.sleep(delayBetweenPageAttempts);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
-        return element;
+        return Optional.empty();
+    }
+
+    private static boolean hasSearchData(Element page) {
+        return !page.select("#__NEXT_DATA__").isEmpty();
     }
 
     private static HttpUrl createUrl(Description description) {
