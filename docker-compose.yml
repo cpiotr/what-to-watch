@@ -4,7 +4,7 @@ services:
     image: redis:6.2.4-alpine
     hostname: redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
   w2w:
       build:
         context: .
