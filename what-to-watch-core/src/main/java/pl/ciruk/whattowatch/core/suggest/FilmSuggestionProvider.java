@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -77,13 +77,36 @@ public class FilmSuggestionProvider {
     }
 
     private CompletableFuture<Film> descriptionToFilm(Description description) {
+        var anyProviderFailed = new AtomicBoolean();
         var scoresFuture = scoresProviders.stream()
-                .map(scoresProvider -> scoresProvider.findScoresByAsync(description))
+                .map(scoresProvider -> findScoresOrNone(scoresProvider, description, anyProviderFailed))
                 .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService));
         return scoresFuture
                 .thenApply(stream -> stream.collect(toList()))
                 .thenApply(scores -> createFilm(description, scores))
-                .thenApply(cacheAndCount());
+                .thenApply(film -> {
+                    suggestedFilms.incrementAndGet();
+                    // A film with missing scores isn't cached, so the next request retries the failed providers
+                    if (!anyProviderFailed.get()) {
+                        cache.put(film.description().getFoundFor(), film);
+                    }
+                    return film;
+                });
+    }
+
+    private CompletableFuture<Stream<Score>> findScoresOrNone(
+            ScoresProvider scoresProvider,
+            Description description,
+            AtomicBoolean anyProviderFailed) {
+        return scoresProvider.findScoresByAsync(description)
+                // Collect here, so errors thrown while the lazy stream runs are caught below too
+                .thenApply(Stream::toList)
+                .exceptionally(e -> {
+                    LOGGER.warn("Cannot get scores from {} for {}", scoresProvider.getClass().getSimpleName(), description, e);
+                    anyProviderFailed.set(true);
+                    return List.of();
+                })
+                .thenApply(List::stream);
     }
 
     private Film createFilm(Description description, List<Score> scores) {
@@ -91,13 +114,5 @@ public class FilmSuggestionProvider {
                 .description(description)
                 .scores(scores)
                 .build();
-    }
-
-    private UnaryOperator<Film> cacheAndCount() {
-        return film -> {
-            suggestedFilms.incrementAndGet();
-            cache.put(film.description().getFoundFor(), film);
-            return film;
-        };
     }
 }

@@ -90,6 +90,56 @@ class FilmSuggestionProviderTest {
         assertThat(cache.asMap()).containsEntry(title, Film.empty());
     }
 
+    @Test
+    void shouldKeepOtherScoresWhenOneProviderFails() {
+        var failingScoreProvider = mock(ScoresProvider.class);
+        when(failingScoreProvider.findScoresByAsync(description))
+                .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("Unexpected page")));
+        var provider = createProviderWith(List.of(scoreProvider, failingScoreProvider));
+
+        List<Film> films = CompletableFutures.getAllOf(provider.suggestFilms(1))
+                .collect(toList());
+
+        assertThat(films).hasSize(1);
+        assertThat(films.get(0).scores()).containsExactly(Score.critic(1.0, 100));
+        assertThat(cache.asMap()).doesNotContainKey(title);
+    }
+
+    @Test
+    void shouldKeepOtherScoresWhenProviderStreamFailsLazily() {
+        var lazilyFailingScoreProvider = mock(ScoresProvider.class);
+        when(lazilyFailingScoreProvider.findScoresByAsync(description))
+                .thenAnswer(ignored -> CompletableFuture.completedFuture(
+                        Stream.of("page").map(page -> page.substring(-1))
+                                .map(ignoredPage -> Score.amateur(1.0, 100))));
+        var provider = createProviderWith(List.of(scoreProvider, lazilyFailingScoreProvider));
+
+        List<Film> films = CompletableFutures.getAllOf(provider.suggestFilms(1))
+                .collect(toList());
+
+        assertThat(films.get(0).scores()).containsExactly(Score.critic(1.0, 100));
+    }
+
+    @Test
+    void shouldCacheFilmWhenAllProvidersSucceed() {
+        List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
+                .collect(toList());
+
+        assertThat(cache.asMap()).containsEntry(title, films.get(0));
+    }
+
+    private FilmSuggestionProvider createProviderWith(List<ScoresProvider> scoresProviders) {
+        TitleProvider titleProvider = mock(TitleProvider.class);
+        when(titleProvider.streamOfTitles(1))
+                .thenAnswer(ignored -> Stream.of(title));
+        return new FilmSuggestionProvider(
+                titleProvider,
+                descriptionProvider,
+                scoresProviders,
+                Executors.newSingleThreadExecutor(),
+                cache);
+    }
+
     private Description createDescription(Title title) {
         return Description.builder()
                 .foundFor(title)
