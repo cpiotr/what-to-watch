@@ -2,19 +2,19 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            url "https://plugins.gradle.org/m2/"
+            url = "https://plugins.gradle.org/m2/"
         }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.3.0")
+        classpath("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.5.13")
     }
 }
 
 apply plugin: 'org.springframework.boot'
 
 allprojects {
-    version "${version != 'unspecified' ? version : 'SNAPSHOT'}"
+    version = "${version != 'unspecified' ? version : 'SNAPSHOT'}"
 
     apply plugin: 'pmd'
     apply plugin: 'com.github.spotbugs'
@@ -32,15 +32,13 @@ allprojects {
     }
 
     spotbugs {
+        toolVersion = spotbugsVersion
         excludeFilter = file("$rootProject.projectDir/config/spotbugs-exclude.xml")
-        dependencies {
-            spotbugs "com.github.spotbugs:spotbugs:$spotbugsVersion"
-        }
     }
 }
 
 wrapper {
-    gradleVersion = '8.5'
+    gradleVersion = '9.7.1'
 }
 
 println("[what-to-watch] Building version: $version")

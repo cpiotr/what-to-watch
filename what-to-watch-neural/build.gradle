@@ -10,32 +10,31 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-sourceCompatibility = "$javaVersion"
-targetCompatibility = "$javaVersion"
-
-tasks.withType(JavaCompile) {
-    options.compilerArgs += "--enable-preview"
+java {
+    sourceCompatibility = JavaVersion.toVersion(project.javaVersion)
+    targetCompatibility = JavaVersion.toVersion(project.javaVersion)
 }
 
-tasks.withType(Test) {
-    jvmArgs += "--enable-preview"
+tasks.withType(JavaCompile).configureEach {
+    options.release = project.javaVersion.toInteger()
 }
 
-tasks.withType(JavaExec) {
-    jvmArgs += '--enable-preview'
+testing {
+    suites {
+        test {
+            useJUnitJupiter(junitVersion)
+        }
+    }
 }
 
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "$javaVersionForKotlin"
-}
-
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "$javaVersionForKotlin"
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(project.javaVersion)
+    }
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.beykery:neuroph:$neurophVersion")
     implementation project(":what-to-watch-core")
 

@@ -1,24 +1,14 @@
-plugins {
-    id "org.unbroken-dome.test-sets" version "4.1.0"
-}
-
 ext.moduleName = 'what.to.watch.core'
 
 apply plugin: 'java'
 
-sourceCompatibility = "$javaVersion"
-targetCompatibility = "$javaVersion"
-
-tasks.withType(JavaCompile) {
-    options.compilerArgs += "--enable-preview"
+java {
+    sourceCompatibility = JavaVersion.toVersion(project.javaVersion)
+    targetCompatibility = JavaVersion.toVersion(project.javaVersion)
 }
 
-tasks.withType(Test) {
-    jvmArgs += "--enable-preview"
-}
-
-tasks.withType(JavaExec) {
-    jvmArgs += '--enable-preview'
+tasks.withType(JavaCompile).configureEach {
+    options.release = project.javaVersion.toInteger()
 }
 
 compileJava {
@@ -29,20 +19,30 @@ compileJava {
     }
 }
 
-testSets {
-    integrationTest
+testing {
+    suites {
+        test {
+            useJUnitJupiter(junitVersion)
+        }
+        integrationTest(JvmTestSuite) {
+            useJUnitJupiter(junitVersion)
+            dependencies {
+                implementation project()
+            }
+            targets.all {
+                testTask.configure {
+                    mustRunAfter test
+                }
+            }
+        }
+    }
 }
 
-test {
-    useJUnitPlatform()
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
 }
 
-integrationTest {
-    useJUnitPlatform()
-}
-
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
+check.dependsOn testing.suites.integrationTest
 
 dependencies {
     implementation("org.jsoup:jsoup:$jsoupVersion")

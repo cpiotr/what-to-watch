@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.boot;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
@@ -122,7 +121,6 @@ public class WhatToWatchApplication {
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
         return new CacheProvider<>() {
             @Override
-            @SuppressFBWarnings(justification = "jedis")
             public void put(String key, String value) {
                 try (Jedis jedis = pool.getResource()) {
                     jedis.set(key, value);
@@ -130,7 +128,6 @@ public class WhatToWatchApplication {
             }
 
             @Override
-            @SuppressFBWarnings(justification = "jedis")
             public Optional<String> get(String key) {
                 try (Jedis jedis = pool.getResource()) {
                     return Optional.ofNullable(jedis.get(key));

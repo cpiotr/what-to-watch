@@ -1,7 +1,6 @@
 package pl.ciruk.whattowatch.core.suggest;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -167,7 +166,6 @@ public class FilmSuggestionsBenchmark {
     private static CacheProvider<String> createJedisCache(final JedisPool pool) {
         return new CacheProvider<>() {
             @Override
-            @SuppressFBWarnings(justification = "jedis")
             public void put(String key, String value) {
                 try (Jedis jedis = pool.getResource()) {
                     jedis.set(key, value);
@@ -175,7 +173,6 @@ public class FilmSuggestionsBenchmark {
             }
 
             @Override
-            @SuppressFBWarnings(justification = "jedis")
             public Optional<String> get(String key) {
                 try (Jedis jedis = pool.getResource()) {
                     return Optional.ofNullable(jedis.get(key));

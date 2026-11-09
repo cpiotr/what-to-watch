@@ -102,7 +102,8 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Optional<ProcessedResponse> unwrapBody(Response response) {
-        return extractBodyAsString(response.body(), response.request().url())
+        return Optional.ofNullable(response.body())
+                .flatMap(responseBody -> extractBodyAsString(responseBody, response.request().url()))
                 .map(body -> new ProcessedResponse(body, response.isSuccessful()));
     }
 

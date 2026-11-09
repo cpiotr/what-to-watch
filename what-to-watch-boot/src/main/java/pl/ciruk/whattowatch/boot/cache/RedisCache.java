@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.boot.cache;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.core.instrument.Metrics;
 import jakarta.annotation.PostConstruct;
 import net.jodah.failsafe.CircuitBreaker;
@@ -91,7 +90,6 @@ public class RedisCache implements CacheProvider<String> {
         }
     }
 
-    @SuppressFBWarnings(justification = "jedis")
     private Optional<String> getValueFromCache(String key) {
         try (Jedis jedis = jedisPool.getResource()) {
             var keyBytes = key.getBytes(StandardCharsets.UTF_8);
@@ -135,7 +133,6 @@ public class RedisCache implements CacheProvider<String> {
                 .run(() -> putValueToCache(key, value));
     }
 
-    @SuppressFBWarnings(justification = "jedis")
     private void putValueToCache(String key, String value) {
         try (Jedis jedis = jedisPool.getResource()) {
             var bytes = compress(value);
