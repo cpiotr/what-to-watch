@@ -110,8 +110,9 @@ class FilmSuggestionProviderTest {
         var lazilyFailingScoreProvider = mock(ScoresProvider.class);
         when(lazilyFailingScoreProvider.findScoresByAsync(description))
                 .thenAnswer(ignored -> CompletableFuture.completedFuture(
-                        Stream.of("page").map(page -> page.substring(-1))
-                                .map(ignoredPage -> Score.amateur(1.0, 100))));
+                        Stream.of("page").<Score>map(page -> {
+                            throw new IllegalStateException("Unexpected page");
+                        })));
         var provider = createProviderWith(List.of(scoreProvider, lazilyFailingScoreProvider));
 
         List<Film> films = CompletableFutures.getAllOf(provider.suggestFilms(1))

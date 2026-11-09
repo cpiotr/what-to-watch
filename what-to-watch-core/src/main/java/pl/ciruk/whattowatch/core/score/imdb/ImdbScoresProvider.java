@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -119,7 +120,7 @@ public class ImdbScoresProvider implements ScoresProvider {
 
     private static HttpUrl createUrl(Description description) {
         var year = description.getYear();
-        int offset = ((int) (NUMBER_OF_VOTES_LOWER_BOUND * Math.random()));
+        int offset = ThreadLocalRandom.current().nextInt(NUMBER_OF_VOTES_LOWER_BOUND);
         var url = createUrlBuilder()
                 .addPathSegment("search")
                 .addPathSegment("title")
