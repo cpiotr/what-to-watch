@@ -4,6 +4,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.GenericScoreProvider;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
+import pl.ciruk.whattowatch.core.source.FilmwebFilm;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 
 import java.util.concurrent.CompletableFuture;
@@ -11,10 +12,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 public class FilmwebScoresProvider implements ScoresProvider {
-    private final GenericScoreProvider genericScoreProvider;
+    private final GenericScoreProvider<FilmwebFilm> genericScoreProvider;
 
     public FilmwebScoresProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
-        genericScoreProvider = new GenericScoreProvider(executorService, new FilmwebScoresFinder(filmwebProxy));
+        genericScoreProvider = new GenericScoreProvider<>(executorService, new FilmwebScoresFinder(filmwebProxy));
     }
 
     @Override

@@ -123,7 +123,7 @@ public class FilmSuggestionsBenchmark {
 
     private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
         return new FilmwebDescriptionProvider(
-                new FilmwebProxy(new JsoupConnection(htmlConnection)),
+                new FilmwebProxy(new JsoupConnection(htmlConnection), htmlConnection),
                 pool);
     }
 
@@ -132,7 +132,7 @@ public class FilmSuggestionsBenchmark {
             ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection, connection), executorService),
                 new MetacriticScoresProvider(jsoupConnection, executorService),
                 new ImdbScoresProvider(jsoupConnection, executorService)
         );

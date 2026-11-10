@@ -23,7 +23,7 @@ class FilmwebScoresProviderIntegrationTest {
         JsoupConnection connection = TestConnections.jsoup();
 
         scores = new FilmwebScoresProvider(
-                new FilmwebProxy(connection),
+                new FilmwebProxy(connection, TestConnections.html()),
                 Executors.newSingleThreadExecutor());
     }
 

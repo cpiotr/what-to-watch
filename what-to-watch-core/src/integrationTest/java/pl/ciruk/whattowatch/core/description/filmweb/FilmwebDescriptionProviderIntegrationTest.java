@@ -19,7 +19,7 @@ class FilmwebDescriptionProviderIntegrationTest {
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptionProvider(
-                new FilmwebProxy(connection),
+                new FilmwebProxy(connection, TestConnections.html()),
                 Executors.newSingleThreadExecutor());
     }
 

@@ -7,12 +7,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 class FilmwebSelectors {
-    Stream<String> findLinksFromSearchResult(Element searchResults) {
-        return searchResults.select("div.preview__card div.preview__header a.preview__link")
-                .stream()
-                .map(a -> a.attr("href"));
-    }
-
     Optional<Integer> findYear(Element details) {
         var yearElement = details.selectFirst(".filmCoverSection__year");
         return Optional.ofNullable(yearElement)
@@ -28,8 +22,9 @@ class FilmwebSelectors {
     }
 
     Optional<String> findOriginalTitle(Element details) {
+        // The year is nested inside the original title, so take only the title's own text
         return Optional.ofNullable(details.selectFirst(".filmCoverSection__originalTitle"))
-                .map(Element::text);
+                .map(Element::ownText);
     }
 
     Optional<String> findPoster(Element details) {
@@ -43,12 +38,8 @@ class FilmwebSelectors {
     }
 
     Stream<String> findGenres(Element details) {
-        return details.select("div.filmPosterSection__info div.filmInfo__info")
+        return details.select("[itemprop=genre]")
                 .stream()
-                .filter(div -> div.classNames().size() == 1)
-                .findFirst()
-                .stream()
-                .flatMap(div -> div.select("span a").stream())
                 .map(Element::text);
     }
 }

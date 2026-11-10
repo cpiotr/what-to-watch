@@ -16,16 +16,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-public class GenericScoreProvider implements ScoresProvider {
+public class GenericScoreProvider<T> implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ExecutorService executorService;
-    private final ScoresFinder scoresFinder;
+    private final ScoresFinder<T> scoresFinder;
     private final String providerName;
     private final AtomicLong missingScores = new AtomicLong();
 
     public GenericScoreProvider(
             ExecutorService executorService,
-            ScoresFinder scoresFinder) {
+            ScoresFinder<T> scoresFinder) {
         this.executorService = executorService;
         this.scoresFinder = scoresFinder;
         this.providerName = scoresFinder.getName();

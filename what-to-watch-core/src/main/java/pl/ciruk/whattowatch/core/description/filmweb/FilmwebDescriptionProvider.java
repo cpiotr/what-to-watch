@@ -77,12 +77,9 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
     }
 
     private Stream<Description> filmsForTitle(String title, int year) {
-        var optionalResult = filmwebProxy.searchBy(title, year);
-
-        var futures = optionalResult.stream()
-                .flatMap(selector::findLinksFromSearchResult)
-                .map(link -> CompletableFuture.supplyAsync(() -> filmwebProxy.getPageWithFilmDetailsFor(link), executorService))
+        var futures = filmwebProxy.searchBy(title, year)
                 .limit(3)
+                .map(film -> CompletableFuture.supplyAsync(() -> filmwebProxy.getPageWithFilmDetailsFor(film), executorService))
                 .toList();
         return CompletableFutures.allOf(futures)
                 .join()

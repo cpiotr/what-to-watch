@@ -95,7 +95,7 @@ public class WhatToWatchApplication {
 
     private static FilmwebDescriptionProvider sampleDescriptionProvider(ExecutorService executorService, JsoupConnection connection) {
         return new FilmwebDescriptionProvider(
-                new FilmwebProxy(connection),
+                new FilmwebProxy(connection, createHttpConnection(createHttpClient())),
                 executorService);
     }
 
@@ -103,7 +103,7 @@ public class WhatToWatchApplication {
             ExecutorService executorService,
             JsoupConnection connection) {
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(connection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(connection, createHttpConnection(createHttpClient())), executorService),
                 new ImdbScoresProvider(connection, executorService),
                 new MetacriticScoresProvider(connection, executorService)
         );

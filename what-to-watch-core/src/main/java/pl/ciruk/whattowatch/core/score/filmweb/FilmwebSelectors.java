@@ -3,21 +3,11 @@ package pl.ciruk.whattowatch.core.score.filmweb;
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.html.Extractable;
 import pl.ciruk.whattowatch.utils.stream.Optionals;
-import pl.ciruk.whattowatch.utils.text.Patterns;
 
 import java.util.Optional;
 import java.util.function.Function;
 
 public enum FilmwebSelectors implements Extractable<Optional<String>> {
-    LINK_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst("a.preview__link"))
-            .map(link -> link.attr("href"))),
-    TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__title"))
-            .map(Element::text)),
-    ORIGINAL_TITLE_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__alternateTitle"))
-            .map(Element::text)),
-    YEAR_FROM_SEARCH_RESULT(result -> Optional.ofNullable(result.selectFirst(".preview__year"))
-            .map(Element::text)
-            .map(year -> Patterns.nonDigit().matcher(year).replaceAll(""))),
     SCORE_FROM_DETAILS(details -> extractScoreFromText(details.toString()));
 
     private final Function<Element, Optional<String>> extractor;

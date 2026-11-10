@@ -1,0 +1,75 @@
+package pl.ciruk.whattowatch.core.source;
+
+import okhttp3.HttpUrl;
+import org.jsoup.nodes.Element;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import pl.ciruk.whattowatch.utils.net.HttpConnection;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.*;
+
+class FilmwebProxyTest {
+
+    private HttpConnection<String> apiConnection;
+    private FilmwebProxy filmwebProxy;
+
+    @BeforeEach
+    @SuppressWarnings("unchecked")
+    void setUp() {
+        apiConnection = mock(HttpConnection.class);
+        filmwebProxy = new FilmwebProxy(mock(HttpConnection.class), apiConnection);
+    }
+
+    @Test
+    void shouldFindFilmsInSearchResults() {
+        givenResponse("/api/v1/films/search", """
+                {"total":2,"searchHits":[
+                  {"id":500891,"type":"film","matchedTitle":"Incepcja"},
+                  {"id":42,"type":"serial","matchedTitle":"Incepcja: serial"}
+                ]}""");
+        givenResponse("/api/v1/title/500891/info", """
+                {"id":500891,"title":"Incepcja","originalTitle":"Inception","year":2010,"type":"film"}""");
+
+        var films = filmwebProxy.searchBy("Incepcja", 2010).toList();
+
+        assertThat(films).containsExactly(new FilmwebFilm(500891, "Incepcja", "Inception", 2010));
+    }
+
+    @Test
+    void shouldSearchAroundGivenYear() {
+        givenResponse("/api/v1/films/search", """
+                {"total":0,"searchHits":[]}""");
+
+        assertThat(filmwebProxy.searchBy("Incepcja", 2010)).isEmpty();
+
+        verify(apiConnection).connectToAndGet(argThat((HttpUrl url) ->
+                "Incepcja".equals(url.queryParameter("query"))
+                        && "2009".equals(url.queryParameter("startYear"))
+                        && "2011".equals(url.queryParameter("endYear"))));
+    }
+
+    @Test
+    void shouldFindNoFilmsWhenResponseIsNotJson() {
+        givenResponse("/api/v1/films/search", "<html>Service unavailable</html>");
+
+        assertThat(filmwebProxy.searchBy("Incepcja", 2010)).isEmpty();
+    }
+
+    @Test
+    void shouldLinkToFilmPage() {
+        var film = new FilmwebFilm(500891, "Incepcja", "Inception", 2010);
+
+        assertThat(filmwebProxy.linkTo(film).toString())
+                .isEqualTo("https://www.filmweb.pl/film/Incepcja-2010-500891");
+    }
+
+    private void givenResponse(String path, String json) {
+        when(apiConnection.connectToAndGet(argThat((HttpUrl url) -> url != null && path.equals(url.encodedPath()))))
+                .thenReturn(Optional.of(json));
+    }
+}

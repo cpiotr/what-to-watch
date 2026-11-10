@@ -1,17 +1,16 @@
 package pl.ciruk.whattowatch.core.score;
 
-import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.core.description.Description;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface ScoresFinder {
-    Stream<Element> searchFor(Description description);
+public interface ScoresFinder<T> {
+    Stream<T> searchFor(Description description);
 
-    boolean matchesDescription(Element search, Description description);
+    boolean matchesDescription(T searchResult, Description description);
 
-    Optional<Score> extractScore(Element scoreResult);
+    Optional<Score> extractScore(T searchResult);
 
     String getName();
 }

@@ -72,14 +72,14 @@ class FilmSuggestionProviderIntegrationTest {
     }
 
     private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
-        FilmwebProxy filmwebProxy = new FilmwebProxy(new JsoupConnection(htmlConnection));
+        FilmwebProxy filmwebProxy = new FilmwebProxy(new JsoupConnection(htmlConnection), htmlConnection);
         return new FilmwebDescriptionProvider(filmwebProxy, pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection, connection), executorService),
                 new MetacriticScoresProvider(jsoupConnection, executorService)
         );
     }
