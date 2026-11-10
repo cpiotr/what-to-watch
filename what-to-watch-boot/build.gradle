@@ -58,7 +58,8 @@ dependencies {
     implementation("net.jodah:failsafe:$failsafeVersion")
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotbugsVersion")
-    implementation("org.lz4:lz4-java:$lz4Version")
+    // The maintained fork of org.lz4, which stopped at 1.8.1 with known CVEs
+    implementation("at.yawk.lz4:lz4-java:$lz4Version")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api")

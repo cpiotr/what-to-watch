@@ -34,7 +34,8 @@ public class RedisCache implements CacheProvider<String> {
     private final CircuitBreaker<Optional<String>> circuitBreaker;
     private final long expiryInterval;
     private final TimeUnit expiryUnit;
-    private final LZ4Factory lz4Factory = LZ4Factory.fastestInstance();
+    // Pure Java: the native library needs extra JVM flags on JDK 25, and the cache doesn't need its speed
+    private final LZ4Factory lz4Factory = LZ4Factory.fastestJavaInstance();
 
     public RedisCache(
             JedisPool jedisPool,
