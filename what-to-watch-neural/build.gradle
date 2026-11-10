@@ -22,7 +22,7 @@ tasks.withType(JavaCompile).configureEach {
 testing {
     suites {
         test {
-            useJUnitJupiter(junitVersion)
+            useJUnitJupiter()
         }
     }
 }
@@ -34,13 +34,13 @@ kotlin {
 }
 
 dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.beykery:neuroph:$neurophVersion")
     implementation project(":what-to-watch-core")
 
     implementation("com.github.spotbugs:spotbugs-annotations:$spotbugsVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation("org.assertj:assertj-core:$assertjVersion")
+    testImplementation("org.mockito:mockito-core")
+    testImplementation("org.assertj:assertj-core")
 }

@@ -12,6 +12,7 @@ import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
 
 import jakarta.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
@@ -52,9 +53,9 @@ public class Caches {
     JedisPool redisConnectionPool() {
         var poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(redisPoolMaxActive);
-        poolConfig.setMaxWaitMillis(500);
-        poolConfig.setMinEvictableIdleTimeMillis(100);
-        return new JedisPool(poolConfig, redisHost);
+        poolConfig.setMaxWait(Duration.ofMillis(500));
+        poolConfig.setMinEvictableIdleDuration(Duration.ofMillis(100));
+        return new JedisPool(poolConfig, redisHost, Protocol.DEFAULT_PORT);
     }
 
     @Bean

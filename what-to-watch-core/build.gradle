@@ -22,10 +22,10 @@ compileJava {
 testing {
     suites {
         test {
-            useJUnitJupiter(junitVersion)
+            useJUnitJupiter()
         }
         integrationTest(JvmTestSuite) {
-            useJUnitJupiter(junitVersion)
+            useJUnitJupiter()
             dependencies {
                 implementation project()
             }
@@ -44,20 +44,22 @@ configurations {
 
 check.dependsOn testing.suites.integrationTest
 
+
 dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
     implementation("org.jsoup:jsoup:$jsoupVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("io.micrometer:micrometer-core:$micrometerVersion")
-    implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
+    implementation("org.slf4j:slf4j-api")
+    implementation("com.fasterxml.jackson.core:jackson-core")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("io.micrometer:micrometer-core")
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation("org.assertj:assertj-core:$assertjVersion")
+    testImplementation("ch.qos.logback:logback-classic")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.mockito:mockito-core")
+    testImplementation("org.assertj:assertj-core")
 
     integrationTestImplementation sourceSets.test.output
 }
