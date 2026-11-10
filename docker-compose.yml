@@ -1,7 +1,7 @@
 version: '2'
 services:
   cache:
-    image: redis:6.2.4-alpine
+    image: redis:6.2.24-alpine
     hostname: redis
     ports:
       - "127.0.0.1:6379:6379"
