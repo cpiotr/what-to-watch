@@ -29,12 +29,6 @@ ENV LOGGING_LEVEL=INFO
 
 ENV REDIS_HOST 172.17.0.2
 
-ENV JMX_OPTS="-Dcom.sun.management.jmxremote \
-	-Dcom.sun.management.jmxremote.local.only=false \
-	-Dcom.sun.management.jmxremote.authenticate=false \
-	-Dcom.sun.management.jmxremote.port=9999 \
-	-Dcom.sun.management.jmxremote.ssl=false"
-
 ENV JVM_OPTS="-Xmx2G -Xms2G \
 	-XX:+TieredCompilation \
 	-XX:InitialCodeCacheSize=128m \
@@ -51,7 +45,6 @@ COPY --from=build /what-to-watch /what-to-watch
 WORKDIR /what-to-watch
 
 EXPOSE 8080
-EXPOSE 9999
 
 CMD sh -c "java \
 		-Djava.security.egd=file:/dev/./urandom \
@@ -64,6 +57,5 @@ CMD sh -c "java \
 		-Dredis.host=$REDIS_HOST \
 		-Dlogging.level.root=$LOGGING_LEVEL\
 		-Dlogging.level.pl.ciruk=$W2W_LOGGING_LEVEL\
-		$JMX_OPTS \
 		$JVM_OPTS \
 		-jar ./what-to-watch-boot/build/libs/what-to-watch-boot-$W2W_VERSION.jar"

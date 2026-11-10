@@ -32,6 +32,5 @@ services:
           -Xlog:gc:stdout:time
       ports:
         - "8080:8080"
-        - "9999:9999"
       links:
         - "cache:redis"
