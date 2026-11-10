@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.metrics.Names;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.RedisClient;
+import redis.clients.jedis.params.SetParams;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +28,7 @@ public class RedisCache implements CacheProvider<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_COMPRESSION_RATIO = 255;
 
-    private final JedisPool jedisPool;
+    private final RedisClient redisClient;
     private final AtomicLong missCounter = new AtomicLong();
     private final AtomicLong requestCounter = new AtomicLong();
     private final CircuitBreaker<Optional<String>> circuitBreaker;
@@ -37,11 +37,11 @@ public class RedisCache implements CacheProvider<String> {
     private final LZ4Factory lz4Factory = LZ4Factory.fastestJavaInstance();
 
     public RedisCache(
-            JedisPool jedisPool,
+            RedisClient redisClient,
             String name,
             Duration expiry,
             CircuitBreaker<Optional<String>> circuitBreaker) {
-        this.jedisPool = jedisPool;
+        this.redisClient = redisClient;
         this.expiry = expiry;
         this.circuitBreaker = circuitBreaker;
 
@@ -80,19 +80,17 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     private Optional<String> getValueFromCache(String key) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            var keyBytes = key.getBytes(StandardCharsets.UTF_8);
-            var compressed = jedis.get(keyBytes);
-            if (compressed == null) {
-                return Optional.empty();
-            }
-            var value = decompress(compressed);
-            if (value.isEmpty()) {
-                // An entry that can't be decompressed would never become readable, so make room for a fresh one
-                jedis.del(keyBytes);
-            }
-            return value;
+        var keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        var compressed = redisClient.get(keyBytes);
+        if (compressed == null) {
+            return Optional.empty();
         }
+        var value = decompress(compressed);
+        if (value.isEmpty()) {
+            // An entry that can't be decompressed would never become readable, so make room for a fresh one
+            redisClient.del(keyBytes);
+        }
+        return value;
     }
 
     private byte[] compress(String value) {
@@ -123,14 +121,7 @@ public class RedisCache implements CacheProvider<String> {
     }
 
     private void putValueToCache(String key, String value) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            var bytes = compress(value);
-            jedis.setex(key.getBytes(StandardCharsets.UTF_8), getExpirySeconds(), bytes);
-        }
-    }
-
-    private long getExpirySeconds() {
-        return expiry.toSeconds();
+        redisClient.set(key.getBytes(StandardCharsets.UTF_8), compress(value), SetParams.setParams().ex(expiry.toSeconds()));
     }
 
     private CheckedRunnable doNothing() {

@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.boot.cache;
 
 import net.jodah.failsafe.CircuitBreaker;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -8,7 +9,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.RedisClient;
 
 import java.time.Duration;
 
@@ -23,15 +24,18 @@ class RedisCacheTest {
             .withExposedPorts(6379)
             .waitingFor(Wait.forListeningPort());
     private RedisCache redisCache;
-    private JedisPool jedisPool;
+    private RedisClient redisClient;
 
     @BeforeEach
     void setUp() {
-        jedisPool = new JedisPool(redis.getHost(), redis.getFirstMappedPort());
-        redisCache = new RedisCache(jedisPool, "test", Duration.ofHours(1), new CircuitBreaker<>());
-        try (var jedis = jedisPool.getResource()) {
-            jedis.flushAll();
-        }
+        redisClient = RedisClient.create(redis.getHost(), redis.getFirstMappedPort());
+        redisCache = new RedisCache(redisClient, "test", Duration.ofHours(1), new CircuitBreaker<>());
+        redisClient.flushAll();
+    }
+
+    @AfterEach
+    void tearDown() {
+        redisClient.close();
     }
 
     @Test
@@ -52,23 +56,19 @@ class RedisCacheTest {
 
     @Test
     void shouldRemoveEntryThatCannotBeRead() {
-        try (var jedis = jedisPool.getResource()) {
-            jedis.set(TEST_KEY, TEST_VALUE);
+        redisClient.set(TEST_KEY, TEST_VALUE);
 
-            assertThat(redisCache.get(TEST_KEY)).isEmpty();
-            assertThat(jedis.exists(TEST_KEY)).isFalse();
-        }
+        assertThat(redisCache.get(TEST_KEY)).isEmpty();
+        assertThat(redisClient.exists(TEST_KEY)).isFalse();
     }
 
     @Test
     void shouldNotExtendExpiryWhenRead() {
         redisCache.put(TEST_KEY, TEST_VALUE);
-        try (var jedis = jedisPool.getResource()) {
-            jedis.expire(TEST_KEY, 100);
+        redisClient.expire(TEST_KEY, 100);
 
-            redisCache.get(TEST_KEY);
+        redisCache.get(TEST_KEY);
 
-            assertThat(jedis.ttl(TEST_KEY)).isLessThanOrEqualTo(100);
-        }
+        assertThat(redisClient.ttl(TEST_KEY)).isLessThanOrEqualTo(100);
     }
 }

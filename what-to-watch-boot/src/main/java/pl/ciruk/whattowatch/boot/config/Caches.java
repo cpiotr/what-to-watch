@@ -9,9 +9,9 @@ import pl.ciruk.whattowatch.boot.cache.LongExpiry;
 import pl.ciruk.whattowatch.boot.cache.RedisCache;
 import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisClient;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
@@ -31,24 +31,27 @@ public class Caches {
     }
 
     @Bean
-    JedisPool redisConnectionPool() {
-        var poolConfig = new JedisPoolConfig();
+    RedisClient redisClient() {
+        var poolConfig = new ConnectionPoolConfig();
         poolConfig.setMaxTotal(redis.maxConnections());
         poolConfig.setMaxWait(Duration.ofMillis(500));
         poolConfig.setMinEvictableIdleDuration(Duration.ofMillis(100));
-        return new JedisPool(poolConfig, redis.host(), Protocol.DEFAULT_PORT);
+        return RedisClient.builder()
+                .hostAndPort(redis.host(), Protocol.DEFAULT_PORT)
+                .poolConfig(poolConfig)
+                .build();
     }
 
     @Bean
     @LongExpiry
-    CacheProvider<String> longExpiryCache(JedisPool jedisPool, CircuitBreaker<Optional<String>> circuitBreaker) {
-        return new RedisCache(jedisPool, "long", cache.longExpiry(), circuitBreaker);
+    CacheProvider<String> longExpiryCache(RedisClient redisClient, CircuitBreaker<Optional<String>> circuitBreaker) {
+        return new RedisCache(redisClient, "long", cache.longExpiry(), circuitBreaker);
     }
 
     @Bean
     @ShortExpiry
-    CacheProvider<String> shortExpiryCache(JedisPool jedisPool, CircuitBreaker<Optional<String>> circuitBreaker) {
-        return new RedisCache(jedisPool, "short", cache.shortExpiry(), circuitBreaker);
+    CacheProvider<String> shortExpiryCache(RedisClient redisClient, CircuitBreaker<Optional<String>> circuitBreaker) {
+        return new RedisCache(redisClient, "short", cache.shortExpiry(), circuitBreaker);
     }
 
     @Bean
