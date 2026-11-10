@@ -27,6 +27,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.sse.OutboundSseEvent;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
@@ -156,7 +157,7 @@ public class Suggestions {
         }
 
         @Override
-        public void close() {
+        public void close() throws IOException {
             if (!eventSink.isClosed()) {
                 OutboundSseEvent event = this.sse.newEventBuilder()
                         .name("poisonPill")

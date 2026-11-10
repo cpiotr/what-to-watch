@@ -46,10 +46,12 @@ configurations.matching { it.name.startsWith('spotbugs') }.configureEach {
 dependencies {
     implementation project(":what-to-watch-core")
 
-    implementation("org.springframework.boot:spring-boot-starter-jersey:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-jersey")
+    // Jersey 4 doesn't support Jackson 3 yet, so its JSON goes through Jackson 2
+    implementation("org.springframework.boot:spring-boot-jackson2")
     implementation("org.glassfish.jersey.media:jersey-media-sse")
-    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-jmx")
     implementation("io.micrometer:micrometer-core")
     implementation("redis.clients:jedis")
@@ -61,11 +63,11 @@ dependencies {
     // The maintained fork of org.lz4, which stopped at 1.8.1 with known CVEs
     implementation("at.yawk.lz4:lz4-java:$lz4Version")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.testcontainers:testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 
     benchmarkImplementation("org.openjdk.jmh:jmh-core:$jmhVersion")
     benchmarkImplementation("org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion")
