@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -46,20 +45,15 @@ public class GenericScoreProvider<T> implements ScoresProvider {
                 .filter(scoreResult -> scoresFinder.matchesDescription(scoreResult, description))
                 .map(scoresFinder::extractScore)
                 .flatMap(Optional::stream)
-                .filter(Score::isSignificant);
+                .filter(Score::isSignificant)
+                .toList();
 
-        AtomicBoolean containsResult = new AtomicBoolean(false);
-        try {
-            return scores.peek(score -> {
-                containsResult.set(true);
-                LOGGER.debug("{} Score for {}: {}", providerName, description, score);
-            });
-        } finally {
-            if (!containsResult.get()) {
-                LOGGER.warn("{} Missing score for {}", providerName, description);
-                missingScores.incrementAndGet();
-            }
+        if (scores.isEmpty()) {
+            LOGGER.warn("{} Missing score for {}", providerName, description);
+            missingScores.incrementAndGet();
         }
+        scores.forEach(score -> LOGGER.debug("{} Score for {}: {}", providerName, description, score));
+        return scores.stream();
     }
 
     @Override
