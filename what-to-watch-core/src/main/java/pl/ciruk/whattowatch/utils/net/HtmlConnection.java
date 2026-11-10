@@ -11,7 +11,6 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.SocketTimeoutException;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -22,21 +21,10 @@ public class HtmlConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final OkHttpClient okHttpClient;
-    private final List<RequestProcessor> requestProcessors;
-    private final List<ResponseProcessor> responseProcessors;
     private final Timer requestsTimer;
 
     public HtmlConnection(OkHttpClient httpClient) {
-        this(httpClient, List.of(), List.of());
-    }
-
-    public HtmlConnection(
-            OkHttpClient httpClient,
-            List<RequestProcessor> requestProcessors,
-            List<ResponseProcessor> responseProcessors) {
         this.okHttpClient = httpClient;
-        this.requestProcessors = requestProcessors;
-        this.responseProcessors = responseProcessors;
 
         this.requestsTimer = Metrics.timer(Names.createName(HtmlConnection.class, "request"));
     }
@@ -119,11 +107,10 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Response executeRequest(Request request) {
-        Request processedRequest = processRequest(request);
         try {
-            return executeOrWait(processedRequest);
+            return executeOrWait(request);
         } catch (RetryableException e) {
-            return executeOrWait(processedRequest);
+            return executeOrWait(request);
         }
     }
 
@@ -132,7 +119,6 @@ public class HtmlConnection implements HttpConnection<String> {
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 LOGGER.trace("Got response {} from: {}", response.code(), request.url());
-                response = processResponse(response);
                 return response;
             } catch (SocketTimeoutException e) {
                 throw new RetryableException(e);
@@ -140,27 +126,6 @@ public class HtmlConnection implements HttpConnection<String> {
                 throw new NonRetryableException(e);
             }
         });
-    }
-
-    private Request processRequest(Request request) {
-        var processedRequest = request.newBuilder().build();
-        for (var requestProcessor : requestProcessors) {
-            processedRequest = requestProcessor.process(processedRequest);
-        }
-        return processedRequest;
-    }
-
-    // The caller closes the returned response
-    @SuppressWarnings("PMD.CloseResource")
-    private Response processResponse(Response response) {
-        Response processedResponse = response.newBuilder().build();
-        for (var responseProcessor : responseProcessors) {
-            var nextResponse = responseProcessor.process(processedResponse);
-            processedResponse.close();
-            processedResponse = nextResponse;
-            LOGGER.trace("Processed response code: {}", processedResponse.code());
-        }
-        return processedResponse;
     }
 
     private Request.Builder buildRequestTo(HttpUrl url) {

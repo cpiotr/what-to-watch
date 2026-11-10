@@ -27,7 +27,6 @@ import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -104,12 +103,8 @@ public class Connections {
     @NotCached
     @AllCookies
     HttpConnection<String> notCachedAllCookiesConnection(
-            @AllCookies OkHttpClient httpClient,
-            List<RequestProcessor> requestProcessors,
-            List<ResponseProcessor> responseProcessors) {
-        logConfigurationEntry(LOGGER, "Request processors", requestProcessors);
-        logConfigurationEntry(LOGGER, "Response processors", responseProcessors);
-        return new HtmlConnection(httpClient, requestProcessors, responseProcessors);
+            @AllCookies OkHttpClient httpClient) {
+        return new HtmlConnection(httpClient);
     }
 
     @Bean

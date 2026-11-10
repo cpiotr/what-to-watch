@@ -19,13 +19,6 @@ public interface CacheProvider<T> {
             public Optional<T> get(String key) {
                 return Optional.empty();
             }
-
-            @Override
-            public long removeAll(String keyExpression) {
-                return 0;
-            }
         };
     }
-
-    long removeAll(String keyExpression);
 }

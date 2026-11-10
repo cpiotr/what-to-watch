@@ -1,13 +1,14 @@
 package pl.ciruk.whattowatch.core.suggest;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import pl.ciruk.whattowatch.boot.WhatToWatchApplication;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
@@ -16,13 +17,10 @@ import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
-import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
+import pl.ciruk.whattowatch.utils.net.HtmlConnection;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +29,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +42,6 @@ import static java.util.stream.Collectors.toList;
 @Measurement(iterations = 10, time = 5)
 @Fork(1)
 @State(Scope.Thread)
-@SuppressWarnings("PMD")
 public class FilmSuggestionsBenchmark {
     private static final int NUMBER_OF_TITLES = 200;
     private static final int NUMBER_OF_THREADS = 16;
@@ -67,7 +63,9 @@ public class FilmSuggestionsBenchmark {
 
     @Setup(Level.Trial)
     public void initialize() {
-        HttpConnection<String> connection = WhatToWatchApplication.createHttpConnection(WhatToWatchApplication.createHttpClient());
+        HttpConnection<String> connection = new HtmlConnection(new OkHttpClient.Builder()
+                .connectionPool(new ConnectionPool(32, 12_000, TimeUnit.SECONDS))
+                .build());
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
         suggestionsWorkStealing = new FilmSuggestionProvider(
@@ -161,34 +159,5 @@ public class FilmSuggestionsBenchmark {
             throw new IllegalStateException("Missing resource: " + name);
         }
         return inputStream;
-    }
-
-    private static CacheProvider<String> createJedisCache(final JedisPool pool) {
-        return new CacheProvider<>() {
-            @Override
-            public void put(String key, String value) {
-                try (Jedis jedis = pool.getResource()) {
-                    jedis.set(key, value);
-                }
-            }
-
-            @Override
-            public Optional<String> get(String key) {
-                try (Jedis jedis = pool.getResource()) {
-                    return Optional.ofNullable(jedis.get(key));
-                }
-            }
-
-            @Override
-            public long removeAll(String keyExpression) {
-                return 0;
-            }
-        };
-    }
-
-    private static JedisPool createJedisPool() {
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(NUMBER_OF_THREADS);
-        return new JedisPool(poolConfig, "172.17.0.2");
     }
 }

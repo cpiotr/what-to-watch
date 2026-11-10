@@ -4,7 +4,6 @@ import okhttp3.OkHttpClient;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
-import java.util.List;
 
 @SuppressWarnings("PMD.TestClassWithoutTestCases")
 public final class TestConnections {
@@ -18,11 +17,7 @@ public final class TestConnections {
                 .cookieJar(new InMemoryCookieJar())
                 .addInterceptor(new BackoffInterceptor())
                 .build();
-        return new HtmlConnection(
-                httpClient,
-                List.of(),
-                List.of()
-        );
+        return new HtmlConnection(httpClient);
     }
 
     public static HttpConnection<String> cached() {
