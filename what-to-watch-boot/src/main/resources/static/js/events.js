@@ -114,7 +114,7 @@ class FilmApp extends React.Component {
   loadPage() {
     const currentIndex = this.state.index;
     const current = this.state;
-    const eventSource = new EventSource(`http://localhost:8080/resources/suggestions/${currentIndex}/stream`);
+    const eventSource = new EventSource(`/resources/suggestions/${currentIndex}/stream`);
     eventSource.onError = function(event) {
         eventSource.close();
     }
