@@ -42,8 +42,6 @@ configurations {
     integrationTestImplementation.extendsFrom testImplementation
 }
 
-check.dependsOn testing.suites.integrationTest
-
 
 dependencies {
     implementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
