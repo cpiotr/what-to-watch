@@ -10,7 +10,7 @@ COPY ./ /what-to-watch/
 WORKDIR /what-to-watch
 RUN sh -c './gradlew clean build -Pversion=$W2W_VERSION --stacktrace -x check'
 
-FROM mcr.microsoft.com/playwright/java:v1.43.0-jammy
+FROM eclipse-temurin:21-jre
 MAINTAINER c.piotre@gmail.com
 
 VOLUME /tmp

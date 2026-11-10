@@ -20,5 +20,4 @@ module what.to.watch.core {
     requires com.fasterxml.jackson.databind;
     requires java.scripting;
     requires com.github.benmanes.caffeine;
-    requires playwright;
 }
