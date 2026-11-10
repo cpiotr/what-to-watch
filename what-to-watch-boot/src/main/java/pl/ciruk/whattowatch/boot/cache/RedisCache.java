@@ -6,6 +6,8 @@ import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.function.CheckedRunnable;
+import net.jpountz.lz4.LZ4CompressorWithLength;
+import net.jpountz.lz4.LZ4DecompressorWithLength;
 import net.jpountz.lz4.LZ4Exception;
 import net.jpountz.lz4.LZ4Factory;
 import org.slf4j.Logger;
@@ -17,16 +19,14 @@ import redis.clients.jedis.JedisPool;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static pl.ciruk.whattowatch.utils.stream.Functions.identity;
-
 public class RedisCache implements CacheProvider<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final int MAX_COMPRESSION_RATIO = 255;
 
     private final JedisPool jedisPool;
     private final AtomicLong missCounter = new AtomicLong();
@@ -93,37 +93,37 @@ public class RedisCache implements CacheProvider<String> {
     private Optional<String> getValueFromCache(String key) {
         try (Jedis jedis = jedisPool.getResource()) {
             var keyBytes = key.getBytes(StandardCharsets.UTF_8);
-            return Optional.ofNullable(jedis.get(keyBytes))
-                    .map(this::decompress)
-                    .map(identity(() -> jedis.expire(keyBytes, getExpirySeconds())))
-                    .or(() -> Optional.ofNullable(jedis.get(key))
-                            .map(identity(value -> {
-                                jedis.expire(keyBytes, getExpirySeconds());
-                                var bytes = compress(value);
-                                jedis.setex(keyBytes, getExpirySeconds(), bytes);
-                            }))
-                    );
+            var compressed = jedis.get(keyBytes);
+            if (compressed == null) {
+                return Optional.empty();
+            }
+            var value = decompress(compressed);
+            if (value.isEmpty()) {
+                // An entry that can't be decompressed would never become readable, so make room for a fresh one
+                jedis.del(keyBytes);
+            }
+            return value;
         }
     }
 
     private byte[] compress(String value) {
-        var bytes = value.getBytes(StandardCharsets.UTF_8);
-        var compressor = lz4Factory.fastCompressor();
-        var maxCompressedLength = compressor.maxCompressedLength(bytes.length);
-        byte[] compressed = new byte[maxCompressedLength];
-        int compressedLength = compressor.compress(bytes, 0, bytes.length, compressed, 0, maxCompressedLength);
-        return Arrays.copyOf(compressed, compressedLength);
+        return new LZ4CompressorWithLength(lz4Factory.fastCompressor())
+                .compress(value.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String decompress(byte[] bytes) {
-        var buffer = new byte[2 * 1024 * 1024];
+    private Optional<String> decompress(byte[] compressed) {
         try {
-            var decompressor = lz4Factory.safeDecompressor();
-            var length = decompressor.decompress(bytes, buffer);
-            return new String(buffer, 0, length, StandardCharsets.UTF_8);
-        } catch (LZ4Exception exception) {
-            LOGGER.error("Error deserializing data: {}", exception.getMessage());
-            return null;
+            // A value that isn't LZ4 data can declare any length, so check it before allocating
+            var length = LZ4DecompressorWithLength.getDecompressedLength(compressed);
+            if (length < 0 || length > (long) compressed.length * MAX_COMPRESSION_RATIO) {
+                LOGGER.warn("Unreadable cache entry of {} bytes", compressed.length);
+                return Optional.empty();
+            }
+            var bytes = new LZ4DecompressorWithLength(lz4Factory.safeDecompressor()).decompress(compressed);
+            return Optional.of(new String(bytes, StandardCharsets.UTF_8));
+        } catch (LZ4Exception | IllegalArgumentException | ArrayIndexOutOfBoundsException exception) {
+            LOGGER.warn("Unreadable cache entry: {}", exception.getMessage());
+            return Optional.empty();
         }
     }
 

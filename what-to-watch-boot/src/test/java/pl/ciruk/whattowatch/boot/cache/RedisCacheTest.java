@@ -10,7 +10,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.JedisPool;
 
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,30 +42,34 @@ class RedisCacheTest {
     }
 
     @Test
-    void shouldReadStringValueInsertedDirectly() {
-        var key = TEST_KEY;
-        var value = TEST_VALUE;
-        try (var jedis = jedisPool.getResource()) {
-            jedis.set(key, value);
-        }
+    void shouldRetrieveValueLargerThanTwoMegabytes() {
+        var value = "<p>Long page</p>".repeat(200_000);
 
-        assertThat(redisCache.get(key)).hasValue(value);
+        redisCache.put(TEST_KEY, value);
+
+        assertThat(redisCache.get(TEST_KEY)).hasValue(value);
     }
 
     @Test
-    void shouldReplaceDirectStringValueWithCompressedOption() {
-        var key = TEST_KEY;
-        var value = "TestValueTestValueTestValueTestValueTestValueTestValueTestValue";
+    void shouldRemoveEntryThatCannotBeRead() {
         try (var jedis = jedisPool.getResource()) {
-            jedis.set(key, value);
+            jedis.set(TEST_KEY, TEST_VALUE);
 
-            redisCache.get(key);
-
-            var bytes = jedis.get(key.getBytes(StandardCharsets.UTF_8));
-            assertThat(bytes).hasSizeLessThan(value.getBytes(StandardCharsets.UTF_8).length);
+            assertThat(redisCache.get(TEST_KEY)).isEmpty();
+            assertThat(jedis.exists(TEST_KEY)).isFalse();
         }
+    }
 
-        assertThat(redisCache.get(key)).hasValue(value);
+    @Test
+    void shouldNotExtendExpiryWhenRead() {
+        redisCache.put(TEST_KEY, TEST_VALUE);
+        try (var jedis = jedisPool.getResource()) {
+            jedis.expire(TEST_KEY, 100);
+
+            redisCache.get(TEST_KEY);
+
+            assertThat(jedis.ttl(TEST_KEY)).isLessThanOrEqualTo(100);
+        }
     }
 
     @Test
