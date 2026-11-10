@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 
 import java.util.Optional;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 public final class DescriptionAssert extends AbstractAssert<DescriptionAssert, Description> {
     private DescriptionAssert(Description description, Class<?> selfType) {
         super(description, selfType);

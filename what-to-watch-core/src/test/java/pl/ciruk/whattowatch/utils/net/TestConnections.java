@@ -6,7 +6,7 @@ import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.List;
 
-@SuppressWarnings({"PMD.ClassNamingConventions", "PMD.TestClassWithoutTestCases"})
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public final class TestConnections {
     private TestConnections() {
         throw new AssertionError();

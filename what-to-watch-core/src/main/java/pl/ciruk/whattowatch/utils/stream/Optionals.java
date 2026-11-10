@@ -3,7 +3,6 @@ package pl.ciruk.whattowatch.utils.stream;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 public final class Optionals {
     private Optionals() {
         throw new AssertionError();

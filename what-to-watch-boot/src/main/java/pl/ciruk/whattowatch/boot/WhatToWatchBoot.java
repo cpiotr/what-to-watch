@@ -11,7 +11,6 @@ import org.springframework.context.ApplicationListener;
 import java.lang.invoke.MethodHandles;
 
 @SpringBootApplication
-@SuppressWarnings("PMD")
 public class WhatToWatchBoot implements ApplicationListener<ApplicationReadyEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

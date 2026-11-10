@@ -3,7 +3,6 @@ package pl.ciruk.whattowatch.utils.net;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 final class UserAgents {
     private static final List<String> AGENTS = List.of(
             "Mozilla/5.0 (U; Linux i541 x86_64) AppleWebKit/535.49 (KHTML, like Gecko) Chrome/54.0.3684.195 Safari/600",

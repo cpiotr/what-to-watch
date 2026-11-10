@@ -12,6 +12,8 @@ import jakarta.ws.rs.ApplicationPath;
 @Configuration
 @ApplicationPath("/resources")
 public class Jersey extends ResourceConfig {
+    // Registering resources in the constructor is how Jersey's ResourceConfig is meant to be used
+    @SuppressWarnings("PMD.ConstructorCallsOverridableMethod")
     public Jersey() {
         register(Descriptions.class);
         register(Scores.class);

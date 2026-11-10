@@ -17,11 +17,10 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
+import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -29,14 +28,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-import static pl.ciruk.whattowatch.core.score.imdb.ImdbSelectors.*;
-
+// Most of the coupling comes from the nested types that map IMDb's search response
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class ImdbScoresProvider implements ScoresProvider {
     static final int NUMBER_OF_VOTES_LOWER_BOUND = 100;
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
     private static final String IMDB = "IMDb";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int MAX_PAGE_ATTEMPTS = 3;
     private static final Duration DELAY_BETWEEN_PAGE_ATTEMPTS = Duration.ofSeconds(5);
     private final HttpConnection<Element> httpConnection;
@@ -121,7 +119,7 @@ public class ImdbScoresProvider implements ScoresProvider {
     private static HttpUrl createUrl(Description description) {
         var year = description.getYear();
         int offset = ThreadLocalRandom.current().nextInt(NUMBER_OF_VOTES_LOWER_BOUND);
-        var url = createUrlBuilder()
+        return createUrlBuilder()
                 .addPathSegment("search")
                 .addPathSegment("title")
                 .addQueryParameter("title", description.titleAsText())
@@ -129,7 +127,6 @@ public class ImdbScoresProvider implements ScoresProvider {
                 .addQueryParameter("num_votes", String.format("%d,", NUMBER_OF_VOTES_LOWER_BOUND + offset))
                 .addQueryParameter("title_type", "feature,tv_movie,video,short")
                 .build();
-        return url;
     }
 
     private Optional<TitleItem> findFirstResult(Element searchResults, Description description) {
@@ -141,7 +138,7 @@ public class ImdbScoresProvider implements ScoresProvider {
             final var html = searchResults.select("#__NEXT_DATA__").html();
             imdbData = objectMapper.readValue(html, ImdbData.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
         return imdbData.getProps().getPageProps().getSearchResults().getTitleResults().getTitleListItems().stream()
                 .limit(3)
@@ -157,63 +154,6 @@ public class ImdbScoresProvider implements ScoresProvider {
                 .title(searchResult.getTitleText())
                 .build();
         return title.matches(descriptionTitle);
-    }
-
-    private Title extractTitleFrom(Element searchResult) {
-        return extractTitleBuilderFrom(searchResult)
-                .build();
-    }
-
-    private Title extractFullTitleFrom(Element searchResult) {
-        return extractTitleBuilderFrom(searchResult)
-                .originalTitle(getOriginalTitle(searchResult).orElse(""))
-                .build();
-    }
-
-    private Title.TitleBuilder extractTitleBuilderFrom(Element searchResult) {
-        return Title.builder()
-                .title(TITLE.extractFrom(searchResult).orElse(""))
-                .year(extractYearFrom(searchResult).orElse(Title.MISSING_YEAR));
-    }
-
-    private Optional<String> getOriginalTitle(Element searchResult) {
-        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(searchResult)
-                .flatMap(this::getDetails)
-                .flatMap(this::extractTitle);
-    }
-
-    private Optional<String> extractTitle(Element pageWithDetails) {
-        return extractTitleFromLdJsonScript(pageWithDetails)
-                .or(() -> ORIGINAL_TITLE.extractFrom(pageWithDetails));
-    }
-
-    private Optional<String> extractTitleFromLdJsonScript(Element pageWithDetails) {
-        return pageWithDetails.select("script")
-                .stream()
-                .filter(e -> "application/ld+json".equals(e.attr("type")))
-                .map(this::extractNameFromJson)
-                .filter(Objects::nonNull)
-                .findFirst();
-    }
-
-    private String extractNameFromJson(Element jsonElement) {
-        var json = jsonElement.html();
-        try {
-            return (String) OBJECT_MAPPER.readValue(json, Map.class).get("name");
-        } catch (JsonProcessingException e) {
-            LOGGER.warn("Could not parse JSON: {}", json.substring(0, Math.min(20, json.length())));
-            return null;
-        }
-    }
-
-    private Optional<Element> getDetails(String linkToDetails) {
-        var url = createUrlBuilder().build().resolve(linkToDetails);
-
-        return httpConnection.connectToAndGet(url, "<script", "<div class=\"SubNav");
-    }
-
-    private Optional<Integer> extractYearFrom(Element searchResult) {
-        return YEAR.extractFrom(searchResult).map(Integer::parseInt);
     }
 
     private Optional<Score> extractScore(TitleItem searchResult) {
@@ -234,13 +174,6 @@ public class ImdbScoresProvider implements ScoresProvider {
         return Optional.of(imdbScore)
                 .filter(score -> score.grade() > 0.0)
                 .filter(score -> score.quantity() > 0);
-    }
-
-    private String extractLink(Element searchResult) {
-        return ImdbSelectors.LINK_FROM_SEARCH_RESULT.extractFrom(searchResult)
-                .map(link -> createUrlBuilder().build().resolve(link))
-                .map(HttpUrl::toString)
-                .orElse(null);
     }
 
     private double asPercentage(double imdbRating) {

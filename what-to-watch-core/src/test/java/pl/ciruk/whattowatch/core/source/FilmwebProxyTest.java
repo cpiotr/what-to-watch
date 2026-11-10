@@ -14,6 +14,8 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 class FilmwebProxyTest {
+    private static final String TITLE = "Incepcja";
+    private static final long FILM_ID = 500_891;
 
     private HttpConnection<String> apiConnection;
     private FilmwebProxy filmwebProxy;
@@ -35,9 +37,9 @@ class FilmwebProxyTest {
         givenResponse("/api/v1/title/500891/info", """
                 {"id":500891,"title":"Incepcja","originalTitle":"Inception","year":2010,"type":"film"}""");
 
-        var films = filmwebProxy.searchBy("Incepcja", 2010).toList();
+        var films = filmwebProxy.searchBy(TITLE, 2010).toList();
 
-        assertThat(films).containsExactly(new FilmwebFilm(500891, "Incepcja", "Inception", 2010));
+        assertThat(films).containsExactly(new FilmwebFilm(FILM_ID, TITLE, "Inception", 2010));
     }
 
     @Test
@@ -45,10 +47,10 @@ class FilmwebProxyTest {
         givenResponse("/api/v1/films/search", """
                 {"total":0,"searchHits":[]}""");
 
-        assertThat(filmwebProxy.searchBy("Incepcja", 2010)).isEmpty();
+        assertThat(filmwebProxy.searchBy(TITLE, 2010)).isEmpty();
 
         verify(apiConnection).connectToAndGet(argThat((HttpUrl url) ->
-                "Incepcja".equals(url.queryParameter("query"))
+                TITLE.equals(url.queryParameter("query"))
                         && "2009".equals(url.queryParameter("startYear"))
                         && "2011".equals(url.queryParameter("endYear"))));
     }
@@ -57,12 +59,12 @@ class FilmwebProxyTest {
     void shouldFindNoFilmsWhenResponseIsNotJson() {
         givenResponse("/api/v1/films/search", "<html>Service unavailable</html>");
 
-        assertThat(filmwebProxy.searchBy("Incepcja", 2010)).isEmpty();
+        assertThat(filmwebProxy.searchBy(TITLE, 2010)).isEmpty();
     }
 
     @Test
     void shouldLinkToFilmPage() {
-        var film = new FilmwebFilm(500891, "Incepcja", "Inception", 2010);
+        var film = new FilmwebFilm(FILM_ID, TITLE, "Inception", 2010);
 
         assertThat(filmwebProxy.linkTo(film).toString())
                 .isEqualTo("https://www.filmweb.pl/film/Incepcja-2010-500891");

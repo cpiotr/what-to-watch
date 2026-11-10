@@ -13,14 +13,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InMemoryCookieJarTest {
     private static final HttpUrl URL = HttpUrl.get("https://www.example.com/");
+    private static final String SESSION = "session";
 
     private final InMemoryCookieJar cookieJar = new InMemoryCookieJar();
 
     @Test
     void shouldReplaceCookieWithSameName() {
-        cookieJar.saveFromResponse(URL, List.of(cookie("session", "old")));
+        cookieJar.saveFromResponse(URL, List.of(cookie(SESSION, "old")));
 
-        cookieJar.saveFromResponse(URL, List.of(cookie("session", "new")));
+        cookieJar.saveFromResponse(URL, List.of(cookie(SESSION, "new")));
 
         assertThat(cookieJar.loadForRequest(URL))
                 .extracting(Cookie::value)
@@ -29,9 +30,9 @@ class InMemoryCookieJarTest {
 
     @Test
     void shouldDeleteCookieWhenServerExpiresIt() {
-        cookieJar.saveFromResponse(URL, List.of(cookie("session", "value"), cookie("other", "value")));
+        cookieJar.saveFromResponse(URL, List.of(cookie(SESSION, "value"), cookie("other", "value")));
 
-        cookieJar.saveFromResponse(URL, List.of(expiredCookie("session")));
+        cookieJar.saveFromResponse(URL, List.of(expiredCookie(SESSION)));
 
         assertThat(cookieJar.loadForRequest(URL))
                 .extracting(Cookie::name)
@@ -40,16 +41,13 @@ class InMemoryCookieJarTest {
 
     @Test
     void shouldKeepAllCookiesSavedConcurrently() {
-        var pool = Executors.newFixedThreadPool(8);
-        try {
+        try (var pool = Executors.newFixedThreadPool(8)) {
             var saves = IntStream.range(0, 1_000)
                     .mapToObj(i -> CompletableFuture.runAsync(
                             () -> cookieJar.saveFromResponse(URL, List.of(cookie("cookie" + i, "value"))),
                             pool))
                     .toArray(CompletableFuture[]::new);
             CompletableFuture.allOf(saves).join();
-        } finally {
-            pool.shutdown();
         }
 
         assertThat(cookieJar.loadForRequest(URL)).hasSize(1_000);

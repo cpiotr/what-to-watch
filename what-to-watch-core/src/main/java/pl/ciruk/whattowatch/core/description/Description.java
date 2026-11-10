@@ -73,13 +73,8 @@ public final class Description {
 
     @Override
     public boolean equals(Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (!(object instanceof Description other)) {
-            return false;
-        }
-        return Objects.equals(title, other.getTitle());
+        return object == this
+                || object instanceof Description other && Objects.equals(title, other.getTitle());
     }
 
     @Override

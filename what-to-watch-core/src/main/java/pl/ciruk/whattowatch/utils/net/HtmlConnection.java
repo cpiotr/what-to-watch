@@ -83,7 +83,6 @@ public class HtmlConnection implements HttpConnection<String> {
         return Optional.empty();
     }
 
-    @SuppressWarnings("PMD.AvoidRethrowingException")
     private Response execute(Request.Builder requestBuilder) {
         var request = requestBuilder.build();
         try {
@@ -151,6 +150,8 @@ public class HtmlConnection implements HttpConnection<String> {
         return processedRequest;
     }
 
+    // The caller closes the returned response
+    @SuppressWarnings("PMD.CloseResource")
     private Response processResponse(Response response) {
         Response processedResponse = response.newBuilder().build();
         for (var responseProcessor : responseProcessors) {

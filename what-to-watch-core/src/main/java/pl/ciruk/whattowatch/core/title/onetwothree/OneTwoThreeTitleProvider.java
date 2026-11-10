@@ -30,7 +30,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     private final HttpConnection<Element> listConnection;
     private final int pagesPerRequest;
     private final AtomicLong numberOfTitles = new AtomicLong();
-    private volatile HttpUrl moviesUrl;
+    private final AtomicReference<HttpUrl> moviesUrl = new AtomicReference<>();
 
     public OneTwoThreeTitleProvider(HttpConnection<Element> listConnection, int pagesPerRequest) {
         this.listConnection = listConnection;
@@ -64,10 +64,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     }
 
     private HttpUrl moviesUrl() {
-        if (moviesUrl == null) {
-            moviesUrl = findMoviesUrl();
-        }
-        return moviesUrl;
+        return moviesUrl.updateAndGet(url -> url == null ? findMoviesUrl() : url);
     }
 
     // The site moves between domains and redirects to the current one

@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.utils.math;
 
 import java.util.function.Predicate;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 public final class Doubles {
     private static final double EPSILON = 1e-5;
 

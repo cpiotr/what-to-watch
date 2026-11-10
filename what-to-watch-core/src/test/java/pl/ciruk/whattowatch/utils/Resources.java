@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-@SuppressWarnings({"PMD.UseProperClassLoader", "PMD.ClassNamingConventions"})
+@SuppressWarnings("PMD.UseProperClassLoader")
 public final class Resources {
     public static String readContentOf(String resourceName) {
         try {

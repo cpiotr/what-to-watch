@@ -43,7 +43,6 @@ import java.util.function.Predicate;
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
-@SuppressWarnings("PMD.TooManyMethods")
 public class Beans {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -72,7 +71,6 @@ public class Beans {
         return useVirtualPool ? createVirtualPool(threadPrefix) : createForkJoinPool(threadPrefix);
     }
 
-    @SuppressWarnings("PMD.CloseResource")
     private ExecutorService createForkJoinPool(String threadPrefix) {
         LOGGER.info("Creating fork join pool");
         ExecutorService threadPoolExecutor = new ForkJoinPool(
@@ -156,7 +154,7 @@ public class Beans {
 
     @Bean
     Predicate<Film> atLeastOneCriticScore() {
-        return film -> film.scores().stream().anyMatch(score -> score.type().equals(ScoreType.CRITIC));
+        return film -> film.scores().stream().anyMatch(score -> score.type() == ScoreType.CRITIC);
     }
 
     @Bean

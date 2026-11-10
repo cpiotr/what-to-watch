@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 public final class Threads {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -64,7 +63,7 @@ public final class Threads {
         return managedBlock.getResult();
     }
 
-    private static class SupplierManagedBlock<T> implements ForkJoinPool.ManagedBlocker {
+    private static final class SupplierManagedBlock<T> implements ForkJoinPool.ManagedBlocker {
         private final Supplier<T> supplier;
         private T result;
         private boolean finished;

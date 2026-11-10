@@ -2,7 +2,6 @@ package pl.ciruk.whattowatch.utils.text;
 
 import java.util.Locale;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 public final class Texts {
     private static final String[] ARTICLES = {"a ", "an ", "the "};
 

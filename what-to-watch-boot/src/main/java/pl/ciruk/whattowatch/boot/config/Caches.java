@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
-@SuppressWarnings("PMD.TooManyMethods")
 public class Caches {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

@@ -19,7 +19,7 @@ class RedisCacheTest {
     static final String TEST_VALUE = "TestValue";
     static final String TEST_KEY = "TestKey";
     @Container
-    public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:6.2.24-alpine"))
+    private final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:6.2.24-alpine"))
             .withExposedPorts(6379)
             .waitingFor(Wait.forListeningPort());
     private RedisCache redisCache;

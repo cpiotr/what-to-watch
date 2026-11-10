@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("PMD.TooManyMethods")
 public record Film(
         Description description,
         List<Score>scores) {
@@ -42,7 +41,7 @@ public record Film(
 
     private long countQuantity(ScoreType type) {
         long totalQuantity = significantScores()
-                .filter(score -> score.type().equals(type))
+                .filter(score -> score.type() == type)
                 .mapToLong(Score::quantity)
                 .sum();
         return totalQuantity * type.getScale();
@@ -50,7 +49,7 @@ public record Film(
 
     private List<Score> scoresOfType(ScoreType type) {
         return significantScores()
-                .filter(score -> score.type().equals(type))
+                .filter(score -> score.type() == type)
                 .collect(Collectors.toList());
     }
 

@@ -5,7 +5,6 @@ import jakarta.ws.rs.core.Response;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
-@SuppressWarnings("PMD.ClassNamingConventions")
 final class Responses {
     private Responses() {
         throw new AssertionError();

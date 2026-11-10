@@ -35,7 +35,6 @@ import java.util.function.Function;
 import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
-@SuppressWarnings("PMD.TooManyMethods")
 public class Connections {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
