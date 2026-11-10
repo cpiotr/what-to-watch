@@ -10,7 +10,7 @@ import pl.ciruk.whattowatch.core.score.ScoreType
 @Disabled
 class NeuralScoresTest {
     companion object {
-        private var neuralScores: NeuralScores = NeuralScores(NeuralScores.readDataSet())
+        private val neuralScores: NeuralScores = NeuralScores(NeuralScores.readDataSet())
 
         @BeforeAll
         @JvmStatic
@@ -67,12 +67,12 @@ class NeuralScoresTest {
         return listOf(
                 createScore(filmweb, "Filmweb", ScoreType.AMATEUR),
                 createScore(metacritic, "Metacritic", ScoreType.CRITIC),
-                createScore(newYorkTimes, "New York Times", ScoreType.CRITIC),
-                createScore(imdb, "Imdb", ScoreType.AMATEUR)
+                createScore(newYorkTimes, "NewYorkTimes", ScoreType.CRITIC),
+                createScore(imdb, "IMDb", ScoreType.AMATEUR)
         )
     }
 
-    private fun createScore(filmweb: Double, source: String, type: ScoreType): Score {
-        return Score.builder().source(source).grade(filmweb).quantity(1000).type(type).build()
+    private fun createScore(grade: Double, source: String, type: ScoreType): Score {
+        return Score.builder().source(source).grade(grade).quantity(1000).type(type).build()
     }
 }

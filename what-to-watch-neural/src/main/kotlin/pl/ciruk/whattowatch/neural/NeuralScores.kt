@@ -9,14 +9,19 @@ import pl.ciruk.whattowatch.core.score.Score
 import pl.ciruk.whattowatch.core.score.ScoreType
 
 class NeuralScores(private val dataSet: DataSet) {
-    private val network = MultiLayerPerceptron(4, 256, 1)
+    private val network = MultiLayerPerceptron(SOURCES.size, 256, 1)
 
     @SuppressFBWarnings(justification = "kotlin")
     companion object {
+        // The network's inputs, in the order of the training data's columns
+        private val SOURCES = listOf("Filmweb", "Metacritic", "NewYorkTimes", "IMDb")
+
         fun readDataSet(): DataSet {
-            val dataSet = DataSet(4, 1)
-            val resource = Thread.currentThread().contextClassLoader.getResource("films.csv")
-            resource!!.readText()
+            val dataSet = DataSet(SOURCES.size, 1)
+            val resource = checkNotNull(Thread.currentThread().contextClassLoader.getResource("films.csv")) {
+                "Missing training data: films.csv"
+            }
+            resource.readText()
                     .split("\n")
                     .drop(1) // Header
                     .map { it.split("\t") }
@@ -38,36 +43,28 @@ class NeuralScores(private val dataSet: DataSet) {
     fun train(maxIterations: Int) {
         val backPropagation = BackPropagation()
         backPropagation.maxIterations = maxIterations
-//        backPropagation.learningRate = 0.05
-//        backPropagation.addListener { println((it.source as BackPropagation).totalNetworkError) }
 
         network.learn(dataSet, backPropagation)
     }
 
-    fun calculateScore(scores: List<Score>): Score {
-        val sources = arrayOf("Filmweb", "Metacritic", "New York Times", "Imdb")
-        val input = DoubleArray(4)
-        for (i in sources.indices) {
-            input[i] = findScore(scores, sources[i])
-        }
-        println(input.toList())
+    /**
+     * Returns null when any source the network was trained on has no score,
+     * since the network can't produce a meaningful result without all its inputs.
+     */
+    fun calculateScore(scores: List<Score>): Score? {
+        val input = SOURCES.map { source -> findGrade(scores, source) ?: return null }
 
-        network.setInput(*input)
+        network.setInput(*input.toDoubleArray())
         network.calculate()
-        val score = network.output.first()
         return Score.builder()
-                .grade(score)
+                .grade(network.output.first())
                 .quantity(1000)
                 .type(ScoreType.CRITIC)
                 .source("AI")
                 .build()
     }
 
-    @SuppressFBWarnings(justification = "kotlin")
-    private fun findScore(scores: List<Score>, title: String): Double {
-        return scores
-                .filter { score -> score.source().equals(title, ignoreCase = true) }
-                .map { it.grade() }
-                .first()
+    private fun findGrade(scores: List<Score>, source: String): Double? {
+        return scores.firstOrNull { score -> score.source().equals(source, ignoreCase = true) }?.grade()
     }
 }
