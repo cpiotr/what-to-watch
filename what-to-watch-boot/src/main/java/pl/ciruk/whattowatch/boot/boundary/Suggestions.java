@@ -35,7 +35,6 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static pl.ciruk.whattowatch.utils.concurrent.Threads.manageBlocking;
 
 @Named
@@ -85,7 +84,7 @@ public class Suggestions {
             LOGGER.info("Finished getting suggestions for page {}", pageNumber);
         } catch (Exception e) {
             LOGGER.error("Error while getting suggestions", e);
-            asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build());
+            asyncResponse.resume(Responses.internalError());
         }
     }
 

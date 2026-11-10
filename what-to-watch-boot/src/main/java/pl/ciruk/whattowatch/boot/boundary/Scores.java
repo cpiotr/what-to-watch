@@ -18,7 +18,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.AsyncResponse;
 import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -28,7 +27,6 @@ import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUsing;
 
 @Component
@@ -74,8 +72,10 @@ public class Scores {
                 .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat))
                 .thenApply(stream -> stream.collect(toList()))
                 .thenApply(asyncResponse::resume)
-                .exceptionally(e ->
-                        asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e).build()));
+                .exceptionally(e -> {
+                    LOGGER.error("Error while getting scores for {}", titleObj, e);
+                    return asyncResponse.resume(Responses.internalError());
+                });
 
         asyncResponse.setTimeout(10, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
