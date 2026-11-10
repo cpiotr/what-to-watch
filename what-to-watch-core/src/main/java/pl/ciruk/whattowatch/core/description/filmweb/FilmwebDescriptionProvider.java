@@ -64,9 +64,8 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
         var foundDescription = Stream.of(title.originalTitle(), title.localTitle())
                 .filter(Objects::nonNull)
                 .filter(not(String::isEmpty))
-                .flatMap(t -> filmsForTitle(t, title.year()))
+                .flatMap(text -> filmsForTitle(text, title))
                 .filter(description -> description.getTitle().matches(title))
-                .peek(description -> description.foundFor(title))
                 .findAny();
         if (foundDescription.isEmpty()) {
             LOGGER.warn("Missing description for: {}", title);
@@ -76,22 +75,21 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
         return foundDescription;
     }
 
-    private Stream<Description> filmsForTitle(String title, int year) {
-        var futures = filmwebProxy.searchBy(title, year)
+    private Stream<Description> filmsForTitle(String titleText, Title requestedTitle) {
+        var futures = filmwebProxy.searchBy(titleText, requestedTitle.year())
                 .limit(3)
                 .map(film -> CompletableFuture.supplyAsync(() -> filmwebProxy.getPageWithFilmDetailsFor(film), executorService))
                 .toList();
-        return CompletableFutures.allOf(futures)
-                .join()
+        return CompletableFutures.getAllOf(futures)
                 .flatMap(Optional::stream)
-                .map(extractDescriptionOrElse(() -> LOGGER.warn("Could not get description for {} ({})", title, year)))
+                .map(extractDescriptionOrElse(requestedTitle, () -> LOGGER.warn("Could not get description for {} ({})", titleText, requestedTitle.year())))
                 .filter(not(Description::isEmpty));
     }
 
-    private Function<Element, Description> extractDescriptionOrElse(Runnable actionIfMissing) {
+    private Function<Element, Description> extractDescriptionOrElse(Title requestedTitle, Runnable actionIfMissing) {
         return pageWithDetails -> {
             try {
-                return extractDescriptionFrom(pageWithDetails);
+                return extractDescriptionFrom(pageWithDetails, requestedTitle);
             } catch (MissingValueException e) {
                 actionIfMissing.run();
                 return Description.empty();
@@ -99,7 +97,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
         };
     }
 
-    private Description extractDescriptionFrom(Element pageWithDetails) {
+    private Description extractDescriptionFrom(Element pageWithDetails, Title requestedTitle) {
         Element mainElement = Optional.ofNullable(pageWithDetails.selectFirst(".filmCoverSection__titleDetails"))
                 .orElseThrow(MissingValueException::new);
         var localTitle = selector.findLocalTitle(mainElement)
@@ -117,6 +115,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
 
         return Description.builder()
                 .title(retrievedTitle)
+                .foundFor(requestedTitle)
                 .poster(selector.findPoster(pageWithDetails).orElse(""))
                 .plot(selector.findPlot(pageWithDetails).orElse(""))
                 .genres(selector.findGenres(pageWithDetails).collect(toList()))

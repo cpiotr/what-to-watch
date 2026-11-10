@@ -12,15 +12,11 @@ import java.util.stream.Stream;
 
 public record Film(
         Description description,
-        List<Score>scores) {
-    private static final Film EMPTY = Film.builder().build();
+        List<Score> scores) {
+    private static final Film EMPTY = new Film(null, null);
 
     public static Film empty() {
         return EMPTY;
-    }
-
-    public static FilmBuilder builder() {
-        return new FilmBuilder();
     }
 
     public Double normalizedScore() {
@@ -76,29 +72,5 @@ public record Film(
                 .sum();
         return Optional.of(weightedScore / totalQuantity)
                 .filter(Doubles.greaterThan(0.0));
-    }
-
-    public static class FilmBuilder {
-        private Description description;
-        private List<Score> scores;
-
-        public Film.FilmBuilder description(Description description) {
-            this.description = description;
-            return this;
-        }
-
-        public Film.FilmBuilder scores(List<Score> scores) {
-            this.scores = scores;
-            return this;
-        }
-
-        public Film build() {
-            return new Film(description, scores);
-        }
-
-        @Override
-        public String toString() {
-            return "Film.FilmBuilder(description=" + this.description + ", scores=" + this.scores + ")";
-        }
     }
 }

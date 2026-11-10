@@ -58,7 +58,7 @@ class FilmSuggestionProviderTest {
 
     @Test
     void shouldNotSearchForFilmWhenCached() {
-        cache.put(title, Film.builder().build());
+        cache.put(title, new Film(null, null));
 
         List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());

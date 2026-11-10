@@ -23,7 +23,6 @@ public class BackoffInterceptor implements Interceptor {
     private final Map<String, AtomicInteger> errorsByDomain = new ConcurrentHashMap<>();
     private final Function<String, Duration> backoffByDomain;
     private final IntConsumer backOffFunction;
-    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(16);
 
     public BackoffInterceptor() {
         this(domain -> Duration.ofMillis(0L));
@@ -68,10 +67,8 @@ public class BackoffInterceptor implements Interceptor {
         long waitTimeMillis = calculateTimeToWait(errorsValue);
 
         LOGGER.debug("Waiting {} ms", waitTimeMillis);
-        final var latch = new CountDownLatch(1);
-        executorService.schedule(latch::countDown, waitTimeMillis, TimeUnit.MILLISECONDS);
         try {
-            latch.await();
+            Thread.sleep(waitTimeMillis);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted while backing off", e);
             Thread.currentThread().interrupt();

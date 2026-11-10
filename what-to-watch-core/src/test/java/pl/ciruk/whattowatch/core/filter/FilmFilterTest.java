@@ -29,7 +29,7 @@ class FilmFilterTest {
         when(firstFilter.test(any())).thenReturn(true);
         when(secondFilter.test(any())).thenReturn(true);
 
-        boolean worthWatching = filmFilter.isWorthWatching(Film.builder().build());
+        boolean worthWatching = filmFilter.isWorthWatching(new Film(null, null));
 
         assertThat(worthWatching).isTrue();
     }
@@ -39,7 +39,7 @@ class FilmFilterTest {
         when(firstFilter.test(any())).thenReturn(true);
         when(secondFilter.test(any())).thenReturn(false);
 
-        boolean worthWatching = filmFilter.isWorthWatching(Film.builder().build());
+        boolean worthWatching = filmFilter.isWorthWatching(new Film(null, null));
 
         assertThat(worthWatching).isFalse();
     }

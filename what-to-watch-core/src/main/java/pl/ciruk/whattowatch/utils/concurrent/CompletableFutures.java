@@ -2,9 +2,7 @@ package pl.ciruk.whattowatch.utils.concurrent;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
@@ -16,21 +14,7 @@ public final class CompletableFutures {
         throw new AssertionError();
     }
 
-    public static <T> CompletableFuture<Stream<T>> allOf(List<CompletableFuture<T>> futures) {
-        CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0])
-        );
-
-        return CompletableFuture.supplyAsync(
-                () -> futures.stream().map(CompletableFuture::join)
-        );
-    }
-
     public static <T> Stream<T> getAllOf(List<CompletableFuture<T>> futures) {
-        CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0])
-        );
-
         return futures.stream().map(CompletableFuture::join);
     }
 
@@ -46,15 +30,5 @@ public final class CompletableFutures {
             BiFunction<T, T, T> combinator,
             ExecutorService executorService) {
         return (first, second) -> first.thenCombineAsync(second, combinator, executorService);
-    }
-
-    public static <T> CompletableFuture<T> of(Future<T> future) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new IllegalArgumentException(e);
-            }
-        });
     }
 }

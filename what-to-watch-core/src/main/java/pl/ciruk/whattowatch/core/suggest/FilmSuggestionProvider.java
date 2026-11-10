@@ -110,9 +110,6 @@ public class FilmSuggestionProvider {
     }
 
     private Film createFilm(Description description, List<Score> scores) {
-        return Film.builder()
-                .description(description)
-                .scores(scores)
-                .build();
+        return new Film(description, scores);
     }
 }

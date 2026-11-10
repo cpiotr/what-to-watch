@@ -24,7 +24,7 @@ class FilmByScoreFilterTest {
         List<Score> scores = List.of(
                 Score.amateur(0.4, 1000),
                 Score.critic(0.4, 20));
-        boolean accepted = filter.test(Film.builder().scores(scores).build());
+        boolean accepted = filter.test(new Film(null, scores));
 
         assertThat(accepted).isTrue();
     }
@@ -41,10 +41,7 @@ class FilmByScoreFilterTest {
         List<Score> scores = List.of(
                 Score.amateur(0.4, 1000),
                 Score.critic(0.4, 20));
-        Film film = Film.builder()
-                .scores(scores)
-                .description(DataModel.description())
-                .build();
+        Film film = new Film(DataModel.description(), scores);
 
         filter.test(film);
 
@@ -61,10 +58,7 @@ class FilmByScoreFilterTest {
         List<Score> scores = List.of(
                 Score.amateur(0.3, 1000),
                 Score.critic(0.3, 20));
-        Film film = Film.builder()
-                .scores(scores)
-                .description(DataModel.description())
-                .build();
+        Film film = new Film(DataModel.description(), scores);
 
         boolean accepted = filter.test(film);
 

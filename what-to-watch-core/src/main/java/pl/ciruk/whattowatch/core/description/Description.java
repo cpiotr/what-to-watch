@@ -12,7 +12,7 @@ public final class Description {
     private final String poster;
     private final String plot;
     private final List<String> genres;
-    private Title foundFor;
+    private final Title foundFor;
 
     private Description(Title title, Title foundFor, String poster, String plot, List<String> genres) {
         this.title = title;
@@ -32,10 +32,6 @@ public final class Description {
 
     public int getYear() {
         return title.year();
-    }
-
-    public void foundFor(Title title) {
-        foundFor = title;
     }
 
     public boolean isEmpty() {
