@@ -103,7 +103,7 @@ public class Connections {
     @Bean
     @NotCached
     @AllCookies
-    HttpConnection<String> notCachedConnection(
+    HttpConnection<String> notCachedAllCookiesConnection(
             @AllCookies OkHttpClient httpClient,
             List<RequestProcessor> requestProcessors,
             List<ResponseProcessor> responseProcessors) {
@@ -133,14 +133,14 @@ public class Connections {
     @Bean
     @Cached
     @LongExpiry
-    HttpConnection<Element> jsoupConnection(@Cached @LongExpiry HttpConnection<String> connection) {
+    HttpConnection<Element> longCachedJsoupConnection(@Cached @LongExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 
     @Bean
     @Cached
     @ShortExpiry
-    HttpConnection<Element> notCachedJsoupConnection(@Cached @ShortExpiry HttpConnection<String> connection) {
+    HttpConnection<Element> shortCachedJsoupConnection(@Cached @ShortExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
     }
 

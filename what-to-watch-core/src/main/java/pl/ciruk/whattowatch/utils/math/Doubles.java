@@ -10,7 +10,7 @@ public final class Doubles {
     }
 
     public static Predicate<Double> greaterThan(double threshold) {
-        return value -> Math.abs(value - threshold) > EPSILON;
+        return value -> value - threshold > EPSILON;
     }
 
     public static double normalizeScore(double percentage, long totalQuantity) {
