@@ -15,6 +15,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -29,7 +30,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     private final HttpConnection<Element> listConnection;
     private final int pagesPerRequest;
     private final AtomicLong numberOfTitles = new AtomicLong();
-    private HttpUrl moviesUrl;
+    private volatile HttpUrl moviesUrl;
 
     public OneTwoThreeTitleProvider(HttpConnection<Element> listConnection, int pagesPerRequest) {
         this.listConnection = listConnection;
@@ -41,11 +42,6 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
                 numberOfTitles,
                 AtomicLong::get);
 
-        listConnection.connectToAndConsume(
-                HttpUrl.get(BASE_URL + "/movies"),
-                consumeNothing(),
-                response -> moviesUrl = response.request().url().resolve("/movies"));
-
         logConfiguration();
     }
 
@@ -53,7 +49,7 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     public Stream<Title> streamOfTitles(int pageNumber) {
         LOGGER.debug("Page number: {}", pageNumber);
 
-        return generatePageUrlsForRequest(pageNumber)
+        return generatePageUrlsForRequest(moviesUrl(), pageNumber)
                 .peek(url -> LOGGER.debug("Loading films from: {}", url))
                 .map(listConnection::connectToAndGet)
                 .flatMap(Optional::stream)
@@ -64,19 +60,36 @@ public class OneTwoThreeTitleProvider implements TitleProvider {
     }
 
     private void logConfiguration() {
-        LOGGER.info("URL: {}", moviesUrl);
         LOGGER.info("Pages per request: {}", pagesPerRequest);
     }
 
-    Stream<HttpUrl> generatePageUrlsForRequest(int requestNumber) {
+    private HttpUrl moviesUrl() {
+        if (moviesUrl == null) {
+            moviesUrl = findMoviesUrl();
+        }
+        return moviesUrl;
+    }
+
+    // The site moves between domains and redirects to the current one
+    private HttpUrl findMoviesUrl() {
+        var url = new AtomicReference<>(HttpUrl.get(BASE_URL).resolve("/movies"));
+        listConnection.connectToAndConsume(
+                HttpUrl.get(BASE_URL + "/movies"),
+                consumeNothing(),
+                response -> url.set(response.request().url().resolve("/movies")));
+        LOGGER.info("URL: {}", url.get());
+        return url.get();
+    }
+
+    Stream<HttpUrl> generatePageUrlsForRequest(HttpUrl moviesUrl, int requestNumber) {
         int startFromPage = (requestNumber - 1) * pagesPerRequest + 1;
         LOGGER.debug("Pages: <{}; {})", startFromPage, startFromPage + pagesPerRequest);
 
         return IntStream.iterate(startFromPage + pagesPerRequest - 1, i -> i >= startFromPage, i -> i - 1)
-                .mapToObj(this::createUrlForPageIndex);
+                .mapToObj(index -> createUrlForPageIndex(moviesUrl, index));
     }
 
-    private HttpUrl createUrlForPageIndex(int index) {
+    private static HttpUrl createUrlForPageIndex(HttpUrl moviesUrl, int index) {
         return index == 1
                 ? moviesUrl
                 : HttpUrl.get(moviesUrl.toString() + String.format(TITLES_URL_PATTERN, index));

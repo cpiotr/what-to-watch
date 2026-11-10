@@ -10,14 +10,13 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class FilmwebProxy {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int CURRENT_YEAR = LocalDate.now().getYear();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final HttpConnection<Element> pageConnection;
     private final HttpConnection<String> apiConnection;
@@ -90,7 +89,7 @@ public class FilmwebProxy {
     }
 
     private static String next(int year) {
-        return String.valueOf(Math.min(year + 1, CURRENT_YEAR));
+        return String.valueOf(Math.min(year + 1, Year.now().getValue()));
     }
 
     private static String previous(int year) {

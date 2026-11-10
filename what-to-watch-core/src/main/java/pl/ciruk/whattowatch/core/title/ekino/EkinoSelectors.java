@@ -5,6 +5,7 @@ import pl.ciruk.whattowatch.utils.net.html.Extractable;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 public enum EkinoSelectors implements Extractable<Optional<String>> {
     TITLE(film -> film.select(".title a")
@@ -24,7 +25,9 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
             .stream()
             .findFirst()
             .map(Element::text)
-            .map(EkinoSelectors::trimToYear));
+            .flatMap(EkinoSelectors::findYear));
+
+    private static final Pattern YEAR_PATTERN = Pattern.compile("\\b\\d{4}\\b");
 
     private final Function<Element, Optional<String>> extractor;
 
@@ -37,9 +40,10 @@ public enum EkinoSelectors implements Extractable<Optional<String>> {
         return extractor.apply(element);
     }
 
-    private static String trimToYear(String wholeDescriptionInTitle) {
-        int endOfFirstPart = wholeDescriptionInTitle.indexOf('|');
-        return wholeDescriptionInTitle.substring(0, endOfFirstPart).trim();
+    // The year leads a description such as "2015 | Komedia, Dramat", which can also come without it
+    private static Optional<String> findYear(String description) {
+        var matcher = YEAR_PATTERN.matcher(description);
+        return matcher.find() ? Optional.of(matcher.group()) : Optional.empty();
     }
 
     private static String stripTags(String title) {

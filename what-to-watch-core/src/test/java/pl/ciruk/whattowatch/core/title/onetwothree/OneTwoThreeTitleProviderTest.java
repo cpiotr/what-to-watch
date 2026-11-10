@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OneTwoThreeTitleProviderTest {
+    private static final HttpUrl MOVIES_URL = HttpUrl.get("https://example.com/movies");
+
     private OneTwoThreeTitleProvider titleProvider;
 
     @BeforeEach
@@ -20,7 +22,7 @@ class OneTwoThreeTitleProviderTest {
 
     @Test
     void shouldGeneratePageUrlsForFirstRequest() {
-        var urls = titleProvider.generatePageUrlsForRequest(1).collect(Collectors.toList());
+        var urls = titleProvider.generatePageUrlsForRequest(MOVIES_URL, 1).collect(Collectors.toList());
 
         assertThat(urls)
                 .extracting(HttpUrl::encodedQuery)
@@ -29,7 +31,7 @@ class OneTwoThreeTitleProviderTest {
 
     @Test
     void shouldGeneratePageUrlsForSecondRequest() {
-        var urls = titleProvider.generatePageUrlsForRequest(2).collect(Collectors.toList());
+        var urls = titleProvider.generatePageUrlsForRequest(MOVIES_URL, 2).collect(Collectors.toList());
 
         assertThat(urls)
                 .extracting(HttpUrl::encodedQuery)
