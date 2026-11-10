@@ -118,16 +118,20 @@ class MetacriticScoresProviderIntegrationTest {
     }
 
     @Test
-    void shouldRetrieveMultipleScores() {
-        Title title = titleOfRespectfulFilm();
+    void shouldFindLaterFilmWithSameTitle() {
+        Title title = Title.builder()
+                .title("Little women")
+                .year(2019)
+                .build();
         Description description = Description.builder()
                 .title(title)
                 .build();
 
-        long numberOfScores = scoresProvider.findScoresBy(description)
-                .count();
+        List<Score> scores = scoresProvider.findScoresBy(description).toList();
 
-        assertThat(numberOfScores).isGreaterThan(1L);
+        assertThat(scores)
+                .extracting(Score::url)
+                .containsExactly("https://www.metacritic.com/movie/little-women-2019/");
     }
 
     private Title titleOfRespectfulFilm() {

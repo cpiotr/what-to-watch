@@ -1,5 +1,8 @@
 package pl.ciruk.whattowatch.core.score.metacritic;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
@@ -7,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
+import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
@@ -14,21 +18,27 @@ import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class MetacriticScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final String METACRITIC = "Metacritic";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Pattern DIACRITICS = Pattern.compile("\\p{M}");
+    private static final Pattern NOT_IN_LINK = Pattern.compile("[^a-z0-9 -]");
+    private static final Pattern SEPARATORS = Pattern.compile("[ -]+");
 
     private final HttpConnection<Element> connection;
     private final ExecutorService executorService;
-    private final AtomicLong missingMetacriticScores = new AtomicLong();
-    private final AtomicLong missingNewYorkTimesScores = new AtomicLong();
+    private final AtomicLong missingScores = new AtomicLong();
 
     public MetacriticScoresProvider(
             HttpConnection<Element> connection,
@@ -38,15 +48,8 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
         Metrics.gauge(
                 Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag(MetacriticScoreUtil.METACRITIC)),
-                missingMetacriticScores,
-                AtomicLong::get
-        );
-
-        Metrics.gauge(
-                Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag(NewYorkTimesScoreUtil.NEW_YORK_TIMES)),
-                missingNewYorkTimesScores,
+                List.of(Tags.getProviderTag(METACRITIC)),
+                missingScores,
                 AtomicLong::get
         );
     }
@@ -63,58 +66,84 @@ public class MetacriticScoresProvider implements ScoresProvider {
     public Stream<Score> findScoresBy(Description description) {
         LOGGER.debug("Description: {}", description);
 
-        final var element = metacriticSummaryOf(description.getTitle());
-
-        return element.stream().flatMap(htmlWithScores -> findScores(htmlWithScores, description));
-    }
-
-    private Stream<Score> findScores(Element htmlWithScores, Description description) {
-        var metacriticScoreBuilder = MetacriticScoreUtil.extractToScoreBuilder(htmlWithScores);
-        if (metacriticScoreBuilder.isEmpty()) {
-            LOGGER.warn("Missing Metacritic score for: {}", description.getTitle());
-            missingMetacriticScores.incrementAndGet();
+        var title = description.getTitle();
+        var link = linkFor(title.asText());
+        // Metacritic gives a later film with the same title a link that ends with its year
+        var score = findScore(link, title)
+                .or(() -> findScore(link + "-" + title.year(), title));
+        if (score.isEmpty()) {
+            LOGGER.warn("Missing Metacritic score for: {}", title);
+            missingScores.incrementAndGet();
         }
 
-        var nytScoreBuilder = NewYorkTimesScoreUtil.extractToScoreBuilder(htmlWithScores);
-        if (nytScoreBuilder.isEmpty()) {
-            LOGGER.warn("Missing NYT score for: {}", description.getTitle());
-            missingNewYorkTimesScores.incrementAndGet();
-        }
-
-        final var linkToFilmPage = MetacriticSelectors.LINK_TO_FILM_PAGE.extractFrom(htmlWithScores);
-        return Stream.concat(metacriticScoreBuilder.stream(), nytScoreBuilder.stream())
-                .map(scoreBuilder -> scoreBuilder.url(resolve(linkToFilmPage.orElse(""))).build())
-                .peek(score -> LOGGER.debug("Score for {}: {}", description, score));
+        return score.stream()
+                .peek(found -> LOGGER.debug("Score for {}: {}", description, found));
     }
 
-    private String resolve(String link) {
-        HttpUrl httpUrl = metacriticUrlBuilder().build();
-        return Optional.ofNullable(httpUrl.resolve(link))
-                .map(Object::toString)
-                .orElseThrow(() -> new IllegalArgumentException("Could not resolve: " + link));
+    static String linkFor(String title) {
+        var withoutDiacritics = DIACRITICS.matcher(Normalizer.normalize(title, Normalizer.Form.NFD)).replaceAll("");
+        var lettersAndDigits = NOT_IN_LINK.matcher(withoutDiacritics.toLowerCase(Locale.ROOT)).replaceAll("");
+        return SEPARATORS.matcher(lettersAndDigits.strip()).replaceAll("-");
     }
 
-    private Optional<Element> getSearchResultsFor(Title title) {
-        var url = metacriticUrlBuilder()
-                .addPathSegments("movie")
-                .addPathSegment(title.asText().replace(":", "").replace(' ', '-').toLowerCase(Locale.ROOT))
-                .addPathSegment("critic-reviews")
-                .build();
-        return connection.connectToAndGet(url);
-    }
-
-    private HttpUrl.Builder metacriticUrlBuilder() {
-        return new HttpUrl.Builder()
+    private Optional<Score> findScore(String link, Title title) {
+        var url = new HttpUrl.Builder()
                 .scheme("https")
-                .host("www.metacritic.com");
+                .host("www.metacritic.com")
+                .addPathSegment("movie")
+                .addPathSegment(link)
+                .addPathSegment("")
+                .build();
+
+        return connection.connectToAndGet(url)
+                .flatMap(MetacriticScoresProvider::findFilmData)
+                .filter(film -> titleOf(film).matches(title))
+                .flatMap(film -> scoreOf(film, url));
     }
 
-    private Optional<Element> metacriticSummaryOf(Title title) {
+    // The film page describes the film and its Metascore as schema.org data
+    private static Optional<JsonNode> findFilmData(Element page) {
+        return page.select("script[type=application/ld+json]").stream()
+                .map(script -> readJson(script.data()))
+                .flatMap(Optional::stream)
+                .filter(json -> "Movie".equals(json.path("@type").asText()))
+                .findFirst();
+    }
+
+    private static Optional<JsonNode> readJson(String json) {
         try {
-            return getSearchResultsFor(title);
-        } catch (Exception e) {
-            LOGGER.warn("Cannot find metacritic summary of {}", title, e);
+            return Optional.of(OBJECT_MAPPER.readTree(json));
+        } catch (JsonProcessingException e) {
+            LOGGER.debug("Could not parse schema.org data", e);
             return Optional.empty();
         }
+    }
+
+    private static Title titleOf(JsonNode film) {
+        var name = film.path("name").asText();
+        var releaseDate = film.path("datePublished").asText();
+        var year = releaseDate.length() >= 4 ? Integer.parseInt(releaseDate.substring(0, 4)) : Title.MISSING_YEAR;
+        return Title.builder()
+                .title(name)
+                .originalTitle(name)
+                .year(year)
+                .build();
+    }
+
+    private static Optional<Score> scoreOf(JsonNode film, HttpUrl url) {
+        var rating = film.path("aggregateRating");
+        var metascore = rating.path("ratingValue").asDouble();
+        var numberOfReviews = rating.path("reviewCount").asInt();
+        if (metascore <= 0 || numberOfReviews <= 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Score.builder()
+                .grade(metascore / 100.0)
+                .quantity(numberOfReviews)
+                .source(METACRITIC)
+                .type(ScoreType.CRITIC)
+                .url(url.toString())
+                .build());
     }
 }
