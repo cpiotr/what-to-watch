@@ -21,7 +21,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RedisCache implements CacheProvider<String> {
@@ -32,27 +32,25 @@ public class RedisCache implements CacheProvider<String> {
     private final AtomicLong missCounter = new AtomicLong();
     private final AtomicLong requestCounter = new AtomicLong();
     private final CircuitBreaker<Optional<String>> circuitBreaker;
-    private final long expiryInterval;
-    private final TimeUnit expiryUnit;
+    private final Duration expiry;
     // Pure Java: the native library needs extra JVM flags on JDK 25, and the cache doesn't need its speed
     private final LZ4Factory lz4Factory = LZ4Factory.fastestJavaInstance();
 
     public RedisCache(
             JedisPool jedisPool,
-            long expiryInterval,
-            TimeUnit expiryUnit,
+            String name,
+            Duration expiry,
             CircuitBreaker<Optional<String>> circuitBreaker) {
         this.jedisPool = jedisPool;
-        this.expiryInterval = expiryInterval;
-        this.expiryUnit = expiryUnit;
+        this.expiry = expiry;
         this.circuitBreaker = circuitBreaker;
 
         Metrics.gauge(
-                Names.createName(RedisCache.class, List.of(expiryUnit, expiryInterval, "miss", "count")),
+                Names.createName(RedisCache.class, List.of(name, "miss", "count")),
                 missCounter,
                 AtomicLong::get);
         Metrics.gauge(
-                Names.createName(RedisCache.class, List.of(expiryUnit, expiryInterval, "request", "count")),
+                Names.createName(RedisCache.class, List.of(name, "request", "count")),
                 requestCounter,
                 AtomicLong::get);
     }
@@ -60,7 +58,7 @@ public class RedisCache implements CacheProvider<String> {
     @PostConstruct
     void init() {
         LOGGER.info("RedisCache created");
-        LOGGER.info("Cache expiry: {} {}", expiryInterval, expiryUnit);
+        LOGGER.info("Cache expiry: {}", expiry);
     }
 
     @Override
@@ -131,8 +129,8 @@ public class RedisCache implements CacheProvider<String> {
         }
     }
 
-    private int getExpirySeconds() {
-        return (int) expiryUnit.toSeconds(expiryInterval);
+    private long getExpirySeconds() {
+        return expiry.toSeconds();
     }
 
     private CheckedRunnable doNothing() {

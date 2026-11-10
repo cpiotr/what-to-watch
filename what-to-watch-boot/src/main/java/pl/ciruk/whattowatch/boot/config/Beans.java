@@ -7,7 +7,6 @@ import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +31,6 @@ import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
-import jakarta.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -40,41 +38,27 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 
-import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
-
 @Configuration
 public class Beans {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Integer filmPoolSize;
-    private final boolean useVirtualPool;
-    private final Integer titlePagesPerRequest;
-    private final Double filmScoreThreshold;
-    private final Integer filmCacheSize;
+    private final W2wProperties properties;
 
-    public Beans(
-            @Value("${w2w.pool.size:16}") Integer filmPoolSize,
-            @Value("${w2w.pool.useVirtualPool:false}") boolean useVirtualPool,
-            @Value("${w2w.titles.pagesPerRequest:10}") Integer titlePagesPerRequest,
-            @Value("${w2w.suggestions.filter.scoreThreshold:0.6}") Double filmScoreThreshold,
-            @Value("${w2w.films.cache.size:10000}") Integer filmCacheSize) {
-        this.filmPoolSize = filmPoolSize;
-        this.useVirtualPool = useVirtualPool;
-        this.titlePagesPerRequest = titlePagesPerRequest;
-        this.filmScoreThreshold = filmScoreThreshold;
-        this.filmCacheSize = filmCacheSize;
+    public Beans(W2wProperties properties) {
+        this.properties = properties;
+        LOGGER.info("{}", properties);
     }
 
     @Bean
     ExecutorService executorService() {
         var threadPrefix = "WhatToWatch";
-        return useVirtualPool ? createVirtualPool(threadPrefix) : createForkJoinPool(threadPrefix);
+        return properties.pool().useVirtual() ? createVirtualPool(threadPrefix) : createForkJoinPool(threadPrefix);
     }
 
     private ExecutorService createForkJoinPool(String threadPrefix) {
         LOGGER.info("Creating fork join pool");
         ExecutorService threadPoolExecutor = new ForkJoinPool(
-                filmPoolSize,
+                properties.pool().size(),
                 Threads.createForkJoinThreadFactory(threadPrefix),
                 Threads.createUncaughtExceptionHandler(),
                 true);
@@ -90,10 +74,9 @@ public class Beans {
         return Executors.newThreadPerTaskExecutor(factory);
     }
 
-
     @Bean
     TitleProvider titleProvider(@Cached @ShortExpiry HttpConnection<Element> httpConnection) {
-        return new EkinoTitleProvider(httpConnection, titlePagesPerRequest);
+        return new EkinoTitleProvider(httpConnection, properties.titles().pagesPerRequest());
     }
 
     @Bean
@@ -126,7 +109,7 @@ public class Beans {
     @Bean
     Cache<Title, Film> cache() {
         return Caffeine.newBuilder()
-                .maximumSize(filmCacheSize)
+                .maximumSize(properties.films().cacheSize())
                 .recordStats()
                 .build();
     }
@@ -149,7 +132,7 @@ public class Beans {
 
     @Bean
     FilmByScoreFilter filmByScoreFilter() {
-        return new FilmByScoreFilter(filmScoreThreshold);
+        return new FilmByScoreFilter(properties.suggestions().scoreThreshold());
     }
 
     @Bean
@@ -162,11 +145,4 @@ public class Beans {
         return new FilmFilter(filters);
     }
 
-    @PostConstruct
-    void logConfiguration() {
-        logConfigurationEntry(LOGGER, "Thread pool size", filmPoolSize);
-        logConfigurationEntry(LOGGER, "Number of title pages crawled per request", titlePagesPerRequest);
-        logConfigurationEntry(LOGGER, "Film score threshold", filmScoreThreshold);
-        logConfigurationEntry(LOGGER, "Film cache size", filmCacheSize);
-    }
 }

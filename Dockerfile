@@ -24,7 +24,6 @@ ENV W2W_THREAD_POOL_USE_VIRTUAL=false
 ENV W2W_FILM_SCORE_THRESHOLD=0.55
 ENV W2W_LOGGING_LEVEL=INFO
 ENV W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS=100
-ENV W2W_HTTP_CLIENT_DELAY_BY_DOMAIN_MILLIS={}
 ENV LOGGING_LEVEL=INFO
 
 ENV REDIS_HOST=cache
@@ -48,12 +47,11 @@ EXPOSE 8080
 
 CMD sh -c "java \
 		-Djava.security.egd=file:/dev/./urandom \
-		-Dw2w.titles.pagesPerRequest=$W2W_TITLES_PAGES_PER_REQUEST \
+		-Dw2w.titles.pages-per-request=$W2W_TITLES_PAGES_PER_REQUEST \
 		-Dw2w.pool.size=$W2W_THREAD_POOL_SIZE \
-		-Dw2w.pool.useVirtualPool=$W2W_THREAD_POOL_USE_VIRTUAL \
-		-Dw2w.suggestions.filter.scoreThreshold=$W2W_FILM_SCORE_THRESHOLD \
-		-Dhttp.connection.delayByDomain.default=$W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS \
-		-Dhttp.connection.delayByDomain.map=$W2W_HTTP_CLIENT_DELAY_BY_DOMAIN_MILLIS \
+		-Dw2w.pool.use-virtual=$W2W_THREAD_POOL_USE_VIRTUAL \
+		-Dw2w.suggestions.score-threshold=$W2W_FILM_SCORE_THRESHOLD \
+		-Dhttp.default-delay-millis=$W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS \
 		-Dredis.host=$REDIS_HOST \
 		-Dlogging.level.root=$LOGGING_LEVEL\
 		-Dlogging.level.pl.ciruk=$W2W_LOGGING_LEVEL\

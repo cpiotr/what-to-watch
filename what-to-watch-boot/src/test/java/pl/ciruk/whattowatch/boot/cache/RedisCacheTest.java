@@ -10,7 +10,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.JedisPool;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +28,7 @@ class RedisCacheTest {
     @BeforeEach
     void setUp() {
         jedisPool = new JedisPool(redis.getHost(), redis.getFirstMappedPort());
-        redisCache = new RedisCache(jedisPool, 1, TimeUnit.HOURS, new CircuitBreaker<>());
+        redisCache = new RedisCache(jedisPool, "test", Duration.ofHours(1), new CircuitBreaker<>());
         try (var jedis = jedisPool.getResource()) {
             jedis.flushAll();
         }

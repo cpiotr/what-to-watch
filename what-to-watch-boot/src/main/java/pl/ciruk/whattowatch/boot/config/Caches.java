@@ -3,7 +3,6 @@ package pl.ciruk.whattowatch.boot.config;
 import net.jodah.failsafe.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.LongExpiry;
@@ -14,59 +13,42 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
 
-import jakarta.annotation.PostConstruct;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
 public class Caches {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final String redisHost;
-    private final Integer redisPoolMaxActive;
-    private final long longExpiryInterval;
-    private final TimeUnit longExpiryUnit;
-    private final long shortExpiryInterval;
-    private final TimeUnit shortExpiryUnit;
+    private final RedisProperties redis;
+    private final W2wProperties.Cache cache;
 
-    public Caches(
-            @Value("${redis.host}") String redisHost,
-            @Value("${redis.pool.maxActive:8}") Integer redisPoolMaxActive,
-            @Value("${w2w.cache.expiry.long.interval:10}") long longExpiryInterval,
-            @Value("${w2w.cache.expiry.long.unit:DAYS}") TimeUnit longExpiryUnit,
-            @Value("${w2w.cache.expiry.short.interval:20}") long shortExpiryInterval,
-            @Value("${w2w.cache.expiry.short.unit:MINUTES}") TimeUnit shortExpiryUnit) {
-        this.redisHost = redisHost;
-        this.redisPoolMaxActive = redisPoolMaxActive;
-        this.longExpiryInterval = longExpiryInterval;
-        this.longExpiryUnit = longExpiryUnit;
-        this.shortExpiryInterval = shortExpiryInterval;
-        this.shortExpiryUnit = shortExpiryUnit;
+    public Caches(RedisProperties redis, W2wProperties w2w) {
+        this.redis = redis;
+        this.cache = w2w.cache();
+        LOGGER.info("{}", redis);
     }
 
     @Bean
     JedisPool redisConnectionPool() {
         var poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(redisPoolMaxActive);
+        poolConfig.setMaxTotal(redis.maxConnections());
         poolConfig.setMaxWait(Duration.ofMillis(500));
         poolConfig.setMinEvictableIdleDuration(Duration.ofMillis(100));
-        return new JedisPool(poolConfig, redisHost, Protocol.DEFAULT_PORT);
+        return new JedisPool(poolConfig, redis.host(), Protocol.DEFAULT_PORT);
     }
 
     @Bean
     @LongExpiry
     CacheProvider<String> longExpiryCache(JedisPool jedisPool, CircuitBreaker<Optional<String>> circuitBreaker) {
-        return new RedisCache(jedisPool, longExpiryInterval, longExpiryUnit, circuitBreaker);
+        return new RedisCache(jedisPool, "long", cache.longExpiry(), circuitBreaker);
     }
 
     @Bean
     @ShortExpiry
     CacheProvider<String> shortExpiryCache(JedisPool jedisPool, CircuitBreaker<Optional<String>> circuitBreaker) {
-        return new RedisCache(jedisPool, shortExpiryInterval, shortExpiryUnit, circuitBreaker);
+        return new RedisCache(jedisPool, "short", cache.shortExpiry(), circuitBreaker);
     }
 
     @Bean
@@ -77,11 +59,4 @@ public class Caches {
                 .withDelay(Duration.ofSeconds(1));
     }
 
-    @PostConstruct
-    void logConfiguration() {
-        logConfigurationEntry(LOGGER, "Redis host", redisHost);
-        logConfigurationEntry(LOGGER, "Redis thread pool max active", redisPoolMaxActive);
-        logConfigurationEntry(LOGGER, "Cache long expiry", longExpiryInterval, longExpiryUnit);
-        logConfigurationEntry(LOGGER, "Cache short expiry", shortExpiryInterval, shortExpiryUnit);
-    }
 }

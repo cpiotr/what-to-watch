@@ -2,14 +2,12 @@ package pl.ciruk.whattowatch.boot.config;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Qualifier;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.Cached;
@@ -26,40 +24,25 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-
-import static pl.ciruk.whattowatch.boot.config.Configs.logConfigurationEntry;
 
 @Configuration
 public class Connections {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Integer httpPoolMaxIdle;
-    private final Long httpConnectionDefaultDelay;
-    private final Map<String, Long> httpConnectionDelayByDomain;
-    private final TimeUnit httpConnectionDelayByDomainUnit;
+    private final HttpProperties http;
 
-    public Connections(
-            @Value("${http.pool.maxIdle:64}") Integer httpPoolMaxIdle,
-            @Value("${http.connection.delayByDomain.default:0}") Long httpConnectionDefaultDelay,
-            @Value("#{${http.connection.delayByDomain.map:null}}") Map<String, Long> httpConnectionDelayByDomain,
-            @Value("${http.connection.delayByDomain.unit:MILLISECONDS}") TimeUnit httpConnectionDelayByDomainUnit) {
-        this.httpPoolMaxIdle = httpPoolMaxIdle;
-        this.httpConnectionDefaultDelay = httpConnectionDefaultDelay;
-        this.httpConnectionDelayByDomain = httpConnectionDelayByDomain == null
-                ? new HashMap<>()
-                : httpConnectionDelayByDomain;
-        this.httpConnectionDelayByDomainUnit = httpConnectionDelayByDomainUnit;
+    public Connections(HttpProperties http) {
+        this.http = http;
+        LOGGER.info("{}", http);
     }
 
     @Bean
     BackoffInterceptor backoffInterceptor() {
         Function<String, Duration> durationByDomain = domain -> {
-            var delay = httpConnectionDelayByDomain.getOrDefault(domain, httpConnectionDefaultDelay);
-            return Duration.of(delay, httpConnectionDelayByDomainUnit.toChronoUnit());
+            var delay = http.delayMillisByDomain().getOrDefault(domain, http.defaultDelayMillis());
+            return Duration.ofMillis(delay);
         };
 
         return new BackoffInterceptor(durationByDomain);
@@ -81,7 +64,7 @@ public class Connections {
     }
 
     private OkHttpClient.Builder createHttpClientBuilder(String name, BackoffInterceptor backoffInterceptor) {
-        var connectionPool = new ConnectionPool(httpPoolMaxIdle, 30, TimeUnit.SECONDS);
+        var connectionPool = new ConnectionPool(http.maxIdleConnections(), 30, TimeUnit.SECONDS);
         var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, name).build();
         return new OkHttpClient.Builder()
                 .connectionPool(connectionPool)
@@ -137,14 +120,6 @@ public class Connections {
     @ShortExpiry
     HttpConnection<Element> shortCachedJsoupConnection(@Cached @ShortExpiry HttpConnection<String> connection) {
         return new JsoupConnection(connection);
-    }
-
-    @PostConstruct
-    void logConfiguration() {
-        logConfigurationEntry(LOGGER, "HttpClient pool max idle", httpPoolMaxIdle);
-        logConfigurationEntry(LOGGER, "HttpClient default delay", httpConnectionDefaultDelay);
-        logConfigurationEntry(LOGGER, "HttpClient delay by domain", httpConnectionDelayByDomain);
-        logConfigurationEntry(LOGGER, "HttpClient delay unit", httpConnectionDelayByDomainUnit);
     }
 
     @Retention(RetentionPolicy.RUNTIME)

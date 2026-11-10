@@ -17,7 +17,7 @@ services:
         - REDIS_HOST=cache
         - W2W_LOGGING_LEVEL=INFO
         - W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS=0
-        - W2W_HTTP_CLIENT_DELAY_BY_DOMAIN_MILLIS={'"metacritic.com"':750,'"filmweb.pl"':500}
+        - 'SPRING_APPLICATION_JSON={"http":{"delay-millis-by-domain":{"metacritic.com":750,"filmweb.pl":500}}}'
         - JVM_OPTS=-Xmx2G
           -Xms2G
           -XX:+TieredCompilation
