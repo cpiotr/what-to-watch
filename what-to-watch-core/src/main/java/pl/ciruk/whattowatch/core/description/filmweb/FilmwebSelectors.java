@@ -32,8 +32,9 @@ class FilmwebSelectors {
                 .map(e -> e.attr("src"));
     }
 
+    // The plot sits next to a "see full description" link; a film without a plot has only a prompt to add one
     Optional<String> findPlot(Element details) {
-        return Optional.ofNullable(details.selectFirst("div.filmPosterSection__container div.filmPosterSection__plot"))
+        return Optional.ofNullable(details.selectFirst("div.filmPosterSection__container div.filmPosterSection__plot [itemprop=description]"))
                 .map(Element::text);
     }
 
