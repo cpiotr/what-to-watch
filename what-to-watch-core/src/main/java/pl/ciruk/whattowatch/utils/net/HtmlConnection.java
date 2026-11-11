@@ -91,7 +91,8 @@ public class HtmlConnection implements HttpConnection<String> {
     private Optional<ProcessedResponse> unwrapBody(Response response) {
         return Optional.ofNullable(response.body())
                 .flatMap(responseBody -> extractBodyAsString(responseBody, response.request().url()))
-                .map(body -> new ProcessedResponse(body, response.isSuccessful()));
+                // An empty page, such as IMDb's bot challenge (202 with no body), is useless and mustn't be cached
+                .map(body -> new ProcessedResponse(body, response.isSuccessful() && !body.isEmpty()));
     }
 
     private Optional<String> extractBodyAsString(ResponseBody responseBody, HttpUrl url) {
