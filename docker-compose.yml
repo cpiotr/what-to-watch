@@ -17,6 +17,7 @@ services:
         - REDIS_HOST=cache
         - W2W_LOGGING_LEVEL=INFO
         - W2W_HTTP_REQUESTS_PER_SECOND=2
+        - W2W_FILM_RATING_THRESHOLD=5.4
         - JVM_OPTS=-Xmx2G
           -Xms2G
           -XX:+TieredCompilation

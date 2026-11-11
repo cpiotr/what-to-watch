@@ -43,7 +43,7 @@ class ScorePanel extends React.Component {
                     <div className="btn btn-success" role="button" title="My predicted rating">
                         <span className="oi oi-heart" aria-hidden="true"></span>
                         <span className="badge badge-light">
-                            {this.props.predictedRating.toFixed(1)}/10
+                            {(this.props.predictedRating * 10).toFixed(0)}%
                         </span>
                     </div>
                 }
