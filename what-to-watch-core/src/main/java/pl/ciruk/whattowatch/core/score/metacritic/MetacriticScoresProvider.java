@@ -16,9 +16,9 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.text.Texts;
 
 import java.lang.invoke.MethodHandles;
-import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -32,7 +32,6 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String METACRITIC = "Metacritic";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final Pattern DIACRITICS = Pattern.compile("\\p{M}");
     private static final Pattern NOT_IN_LINK = Pattern.compile("[^a-z0-9 -]");
     private static final Pattern SEPARATORS = Pattern.compile("[ -]+");
 
@@ -81,8 +80,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     static String linkFor(String title) {
-        var withoutDiacritics = DIACRITICS.matcher(Normalizer.normalize(title, Normalizer.Form.NFD)).replaceAll("");
-        var lettersAndDigits = NOT_IN_LINK.matcher(withoutDiacritics.toLowerCase(Locale.ROOT)).replaceAll("");
+        var lettersAndDigits = NOT_IN_LINK.matcher(Texts.withoutDiacritics(title).toLowerCase(Locale.ROOT)).replaceAll("");
         return SEPARATORS.matcher(lettersAndDigits.strip()).replaceAll("-");
     }
 

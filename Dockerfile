@@ -40,6 +40,9 @@ ENV JVM_OPTS="-Xmx2G -Xms2G \
 
 ENV TZ "Europe/Warsaw"
 
+# IMDb's non-commercial datasets, refreshed daily: rebuild the image to update the scores
+ADD https://datasets.imdbws.com/title.ratings.tsv.gz https://datasets.imdbws.com/title.basics.tsv.gz /what-to-watch/imdb/
+
 COPY --from=build /what-to-watch /what-to-watch
 WORKDIR /what-to-watch
 

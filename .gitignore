@@ -46,6 +46,9 @@ cmake-build-debug/
 # IntelliJ
 /out/
 
+# IMDb datasets for local runs
+/imdb/
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 

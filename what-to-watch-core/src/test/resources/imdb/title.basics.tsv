@@ -1,0 +1,11 @@
+tconst	titleType	primaryTitle	originalTitle	isAdult	startYear	endYear	runtimeMinutes	genres
+tt0083944	movie	First Blood	First Blood	0	1982	\N	93	Action,Adventure,Thriller
+tt0879843	movie	Katyn	Katyn	0	2007	\N	122	Drama,History,War
+tt0082755	movie	Teddy Bear	Mis	0	1981	\N	111	Comedy
+tt0109686	movie	Dumb and Dumber	Dumb and Dumber	0	1994	\N	107	Comedy
+tt2294629	movie	Frozen	Frozen	0	2013	\N	102	Animation,Adventure,Comedy
+tt2363439	movie	The Frozen	The Frozen	0	2012	\N	91	Horror,Thriller
+tt5253294	movie	Penny Pincher!	Radin!	0	2016	\N	89	Comedy
+tt1084971	tvSeries	Rambo	Rambo	0	2008	\N	\N	Action
+tt9999901	movie	Few Votes	Few Votes	0	2010	\N	90	Drama
+tt9999902	movie	No Year	No Year	0	\N	\N	90	Drama

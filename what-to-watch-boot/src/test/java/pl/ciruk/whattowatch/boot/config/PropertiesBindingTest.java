@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 
@@ -55,5 +56,6 @@ class PropertiesBindingTest {
         assertThat(w2w.cache().shortExpiry()).isEqualTo(Duration.ofMinutes(20));
         assertThat(w2w.pool().size()).isEqualTo(16);
         assertThat(w2w.suggestions().scoreThreshold()).isEqualTo(0.6);
+        assertThat(w2w.imdb().datasetsDirectory()).isEqualTo(Path.of("imdb"));
     }
 }

@@ -1,6 +1,7 @@
 package pl.ciruk.whattowatch.core.score.imdb;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.ScoreAssert;
@@ -14,6 +15,7 @@ import java.util.concurrent.Executors;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled("IMDb answers with an AWS WAF challenge; the app reads IMDb's datasets instead")
 class ImdbScoresProviderIntegationTest {
     private ScoresProvider scores;
 
