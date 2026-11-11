@@ -21,7 +21,8 @@ public record W2wProperties(
     public record Titles(@DefaultValue("10") int pagesPerRequest) {
     }
 
-    public record Suggestions(@DefaultValue("0.6") double scoreThreshold) {
+    // My predicted rating, from 1 to 10, that a film needs to be suggested
+    public record Suggestions(@DefaultValue("5.3") double ratingThreshold) {
     }
 
     public record Films(@DefaultValue("10000") int cacheSize) {

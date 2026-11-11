@@ -4,6 +4,9 @@ apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
+// The neural module is compiled with a newer Kotlin than Boot's BOM manages, and needs its standard library
+ext['kotlin.version'] = kotlinVersion
+
 java {
     sourceCompatibility = JavaVersion.toVersion(project.javaVersion)
     targetCompatibility = JavaVersion.toVersion(project.javaVersion)
@@ -50,6 +53,7 @@ configurations.matching { it.name.startsWith('spotbugs') }.configureEach {
 
 dependencies {
     implementation project(":what-to-watch-core")
+    implementation project(":what-to-watch-neural")
 
     implementation("org.springframework.boot:spring-boot-starter-jersey")
     // Jersey 4 doesn't support Jackson 3 yet, so its JSON goes through Jackson 2

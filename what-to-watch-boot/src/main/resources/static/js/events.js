@@ -14,7 +14,7 @@ class Film extends React.Component {
                         <a href={film.link}>{film.title} ({film.year})</a>
                     </h3>
                     <p>{film.plot}</p>
-                    <ScorePanel key={'score-panel'} totalScore={film.score} scores={film.scores} />
+                    <ScorePanel key={'score-panel'} totalScore={film.score} predictedRating={film.predictedRating} scores={film.scores} />
                     <GenrePanel key={'genre-panel'} genres={film.genres} />
                 </div>
             </div>
@@ -39,6 +39,14 @@ class ScorePanel extends React.Component {
                         {(this.props.totalScore * 100).toFixed(0)}%
                     </span>
                 </div>
+                {this.props.predictedRating &&
+                    <div className="btn btn-success" role="button" title="My predicted rating">
+                        <span className="oi oi-heart" aria-hidden="true"></span>
+                        <span className="badge badge-light">
+                            {this.props.predictedRating.toFixed(1)}/10
+                        </span>
+                    </div>
+                }
             </div>
             <ul className="list-group">
                 {scores}

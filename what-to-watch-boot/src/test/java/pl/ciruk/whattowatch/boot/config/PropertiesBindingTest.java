@@ -55,7 +55,7 @@ class PropertiesBindingTest {
         assertThat(w2w.cache().longExpiry()).isEqualTo(Duration.ofDays(10));
         assertThat(w2w.cache().shortExpiry()).isEqualTo(Duration.ofMinutes(20));
         assertThat(w2w.pool().size()).isEqualTo(16);
-        assertThat(w2w.suggestions().scoreThreshold()).isEqualTo(0.6);
+        assertThat(w2w.suggestions().ratingThreshold()).isEqualTo(5.3);
         assertThat(w2w.imdb().datasetsDirectory()).isEqualTo(Path.of("imdb"));
     }
 }

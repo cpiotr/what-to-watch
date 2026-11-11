@@ -38,6 +38,10 @@
                                     <span class="oi oi-star" aria-hidden="true"></span>
                                     <span class="badge badge-light">{{film.score * 100 | number: 1}}%   </span>
                                 </div>
+                                <div class="btn btn-success" role="button" ng-if="film.predictedRating" title="My predicted rating">
+                                    <span class="oi oi-heart" aria-hidden="true"></span>
+                                    <span class="badge badge-light">{{film.predictedRating | number: 1}}/10</span>
+                                </div>
                                 <ul class="list-group">
                                     <li class="list-group-item" ng-repeat="score in film.scores">
                                         <span class="border badge badge-light oi oi-person float-right mr-1">{{score.quantity}}</span>

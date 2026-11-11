@@ -28,11 +28,14 @@ import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
+import pl.ciruk.whattowatch.neural.PersonalRatings;
+import pl.ciruk.whattowatch.neural.RatedFilm;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -130,9 +133,21 @@ public class Beans {
         return new Bootstrap(filmSuggestionProvider, filmFilter);
     }
 
+    // IMDb's ratings aren't in the training data, so the rated films get them from the same index as suggestions
     @Bean
-    FilmByScoreFilter filmByScoreFilter() {
-        return new FilmByScoreFilter(properties.suggestions().scoreThreshold());
+    PersonalRatings personalRatings(ScoresProvider imdbScores) {
+        var ratedFilms = RatedFilm.readAll().stream()
+                .map(ratedFilm -> ratedFilm.withScoresFrom(imdbScores))
+                .toList();
+        LOGGER.info("Learning my ratings from {} rated films", ratedFilms.size());
+        return PersonalRatings.trainOn(ratedFilms);
+    }
+
+    @Bean
+    FilmByScoreFilter filmByScoreFilter(PersonalRatings personalRatings) {
+        return new FilmByScoreFilter(
+                film -> Objects.requireNonNullElse(personalRatings.predict(film), 0.0),
+                properties.suggestions().ratingThreshold());
     }
 
     @Bean

@@ -14,6 +14,7 @@ public record FilmResult(
         @JsonProperty String link,
         @JsonProperty String poster,
         @JsonProperty Double score,
+        @JsonProperty Double predictedRating,
         @JsonProperty Integer numberOfScores,
         @JsonProperty List<Score> scores,
         @JsonProperty List<String> genres) {
@@ -29,6 +30,7 @@ public record FilmResult(
         private String link;
         private String poster;
         private Double score;
+        private Double predictedRating;
         private Integer numberOfScores;
         private List<Score> scores;
         private List<String> genres;
@@ -68,6 +70,11 @@ public record FilmResult(
             return this;
         }
 
+        FilmResultBuilder predictedRating(Double predictedRating) {
+            this.predictedRating = predictedRating;
+            return this;
+        }
+
         FilmResultBuilder numberOfScores(Integer numberOfScores) {
             this.numberOfScores = numberOfScores;
             return this;
@@ -87,7 +94,7 @@ public record FilmResult(
             var id = this.id == null
                     ? String.valueOf(Objects.hash(title, year, link))
                     : this.id;
-            return new FilmResult(id, title, year, plot, link, poster, score, numberOfScores, scores, genres);
+            return new FilmResult(id, title, year, plot, link, poster, score, predictedRating, numberOfScores, scores, genres);
         }
     }
 }

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.neural.PersonalRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
@@ -44,6 +45,7 @@ public class Suggestions {
 
     private final FilmSuggestionProvider suggestionsProvider;
     private final FilmFilter filmFilter;
+    private final PersonalRatings personalRatings;
     private final Timer responseTimer;
     private final ExecutorService threadPool = new ForkJoinPool(
             Runtime.getRuntime().availableProcessors(),
@@ -52,9 +54,10 @@ public class Suggestions {
             true);
 
     @Inject
-    public Suggestions(FilmSuggestionProvider suggestionsProvider, FilmFilter filmFilter) {
+    public Suggestions(FilmSuggestionProvider suggestionsProvider, FilmFilter filmFilter, PersonalRatings personalRatings) {
         this.suggestionsProvider = suggestionsProvider;
         this.filmFilter = filmFilter;
+        this.personalRatings = personalRatings;
 
         responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
     }
@@ -130,6 +133,7 @@ public class Suggestions {
                 .plot(film.description().getPlot())
                 .poster(film.description().getPoster())
                 .score(film.normalizedScore())
+                .predictedRating(personalRatings.predict(film))
                 .numberOfScores(film.scores().size())
                 .scores(film.scores())
                 .genres(film.description().getGenres())

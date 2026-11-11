@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 class FilmByScoreFilterTest {
     @Test
     void shouldAcceptScoreAboveThreshold() {
-        FilmByScoreFilter filter = new FilmByScoreFilter(0.35);
+        FilmByScoreFilter filter = new FilmByScoreFilter(Film::normalizedScore, 0.35);
 
         List<Score> scores = List.of(
                 Score.amateur(0.4, 1000),
@@ -36,7 +36,7 @@ class FilmByScoreFilterTest {
         Appender<ILoggingEvent> appender = mock(Appender.class);
         logger.addAppender(appender);
 
-        FilmByScoreFilter filter = new FilmByScoreFilter(0.4);
+        FilmByScoreFilter filter = new FilmByScoreFilter(Film::normalizedScore, 0.4);
 
         List<Score> scores = List.of(
                 Score.amateur(0.4, 1000),
@@ -53,7 +53,7 @@ class FilmByScoreFilterTest {
 
     @Test
     void shouldRejectScoreWhenBelowThreshold() {
-        FilmByScoreFilter filter = new FilmByScoreFilter(0.4);
+        FilmByScoreFilter filter = new FilmByScoreFilter(Film::normalizedScore, 0.4);
 
         List<Score> scores = List.of(
                 Score.amateur(0.3, 1000),
