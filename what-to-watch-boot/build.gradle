@@ -31,6 +31,11 @@ configurations {
     benchmarkImplementation.extendsFrom testImplementation
 }
 
+bootRun {
+    dependsOn ':downloadImdbDatasets'
+    systemProperty 'w2w.imdb.datasets-directory', rootProject.file('imdb')
+}
+
 // The dependency-management plugin applies Boot's BOM to every configuration, which downgrades
 // SpotBugs' own libraries and breaks it. Keep the versions SpotBugs asks for.
 configurations.matching { it.name.startsWith('spotbugs') }.configureEach {

@@ -32,6 +32,9 @@ testing {
             targets.all {
                 testTask.configure {
                     mustRunAfter test
+                    mustRunAfter ':downloadImdbDatasets'
+                    systemProperty 'imdb.datasets-directory', rootProject.file('imdb')
+                    inputs.files(rootProject.fileTree('imdb')).withPropertyName('imdbDatasets')
                 }
             }
         }

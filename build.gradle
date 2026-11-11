@@ -35,6 +35,20 @@ allprojects {
     }
 }
 
+// IMDb's non-commercial datasets for local runs and the live IMDb test. The Docker image downloads its own.
+// Each file is downloaded again only when IMDb has a newer one, which it publishes daily.
+tasks.register('downloadImdbDatasets') {
+    def directory = layout.projectDirectory.dir('imdb').asFile
+    outputs.dir(directory)
+    outputs.upToDateWhen { false }
+    doLast {
+        directory.mkdirs()
+        ['title.ratings.tsv.gz', 'title.basics.tsv.gz'].each { name ->
+            ant.get(src: "https://datasets.imdbws.com/$name", dest: new File(directory, name), usetimestamp: true)
+        }
+    }
+}
+
 wrapper {
     gradleVersion = '9.7.1'
 }
