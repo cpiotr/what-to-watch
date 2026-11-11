@@ -1,71 +1,33 @@
 <!DOCTYPE HTML>
-<html ng-app="filmsApp">
+<html lang="en">
 <head>
     <title>What To Watch?</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="color-scheme" content="light"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Passion+One:wght@700&text=What%20To%20Watch%3F&display=swap"
+          rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css"
           rel="stylesheet" media="screen"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css"
           rel="stylesheet" media="screen"/>
     <link href="css/style.css" rel="stylesheet" media="screen"/>
 
-    <script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.1/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
-    <script src="js/ng-infinite-scroll.min.js"></script>
-    <script src="js/script.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
+    <script src="js/events.js" type="text/babel"></script>
 </head>
 <body>
 <div class="container">
-    <div role="main">
-        <div ng-controller="FilmListController">
-            <div class="row"
-                 infinite-scroll='filmList.nextPage()'
-                 infinite-scroll-disabled='filmList.busy'>
-                <div class="col-sm-4 mb-4 d-flex" ng-repeat-start="film in filmList.items">
-                    <div class="col-sm p-3 border rounded shadow-sm filmbox">
-                        <div class="text-center mb-2">
-                            <a class="btn btn-outline-primary p-1" href="{{film.link}}">
-                                <img class="poster" src="{{film.poster}}" alt="{{film.title}}"/>
-                            </a>
-                        </div>
-                        <div class="caption">
-                            <h3>
-                                <a href="{{film.link}}">{{film.title}} ({{film.year}})</a>
-                            </h3>
-                            <p>{{film.plot}}</p>
-                            <p>
-                                <div class="btn btn-primary" role="button">
-                                    <span class="oi oi-star" aria-hidden="true"></span>
-                                    <span class="badge badge-light">{{film.score * 100 | number: 1}}%   </span>
-                                </div>
-                                <div class="btn btn-success" role="button" ng-if="film.predictedRating" title="My predicted rating">
-                                    <span class="oi oi-heart" aria-hidden="true"></span>
-                                    <span class="badge badge-light">{{film.predictedRating | number: 1}}/10</span>
-                                </div>
-                                <ul class="list-group">
-                                    <li class="list-group-item" ng-repeat="score in film.scores">
-                                        <span class="border badge badge-light oi oi-person float-right mr-1">{{score.quantity}}</span>
-                                        <span class="border badge badge-light oi oi-star float-right mr-1">{{score.grade * 100 | number: 1}}%</span>
-                                        <a href="{{score.url}}">{{score.source}}</a>
-                                    </li>
-                                </ul>
-                            </p>
+    <header class="page-header">
+        <h1>What To Watch?</h1>
+    </header>
+    <div id="root" role="main">
 
-                            <p class="genres">
-                                <span class="badge badge-pill badge-info" style="margin-right: 2px;"
-                                      ng-repeat="genre in film.genres">{{genre}}</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="clearfix" ng-if="$index%3==2"></div>
-                <div ng-repeat-end=""></div>
-            </div>
-            <div class="row" ng-show='filmList.busy'>
-                <div class="mx-auto loader"></div>
-            </div>
-        </div>
     </div>
 </div>
 

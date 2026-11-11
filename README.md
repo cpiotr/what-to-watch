@@ -8,5 +8,5 @@
 ```
 docker-compose build
 docker-compose up
-xdg-open http://localhost:8080/events.html
+xdg-open http://localhost:8080/
 ```

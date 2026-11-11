@@ -26,6 +26,6 @@ public class WhatToWatchBoot implements ApplicationListener<ApplicationReadyEven
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        LOGGER.info("Open the application: http://{}:{}/events.html", "localhost", serverPort);
+        LOGGER.info("Open the application: http://{}:{}/", "localhost", serverPort);
     }
 }

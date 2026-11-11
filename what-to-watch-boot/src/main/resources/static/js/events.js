@@ -2,22 +2,22 @@ class Film extends React.Component {
   render() {
     let film = this.props.value;
     return (
-        <div className="col-sm-4 mb-4 d-flex">
-            <div className="col-sm p-3 border rounded shadow-sm filmbox">
-                <div className="text-center mb-2">
-                    <a className="btn btn-outline-primary p-1" href={film.link}>
-                        <img className="poster" src={film.poster} alt={film.title}/>
-                    </a>
-                </div>
-                <div className="caption">
-                    <h3>
-                        <a href={film.link}>{film.title} ({film.year})</a>
-                    </h3>
-                    <p>{film.plot}</p>
-                    <ScorePanel key={'score-panel'} totalScore={film.score} predictedRating={film.predictedRating} scores={film.scores} />
-                    <GenrePanel key={'genre-panel'} genres={film.genres} />
-                </div>
-            </div>
+        <div className="col-sm-6 col-lg-4 mb-4 d-flex">
+            <article className="film-card">
+                <a className="poster-link" href={film.link}>
+                    {film.poster
+                        ? <img className="poster" src={film.poster} alt={film.title}/>
+                        : <span className="poster poster-missing" role="img" aria-label={film.title}>
+                              <span className="oi oi-video" aria-hidden="true"></span>
+                          </span>}
+                </a>
+                <h3 className="film-title">
+                    <a href={film.link}>{film.title}</a> <span className="film-year">({film.year})</span>
+                </h3>
+                {film.plot && <p className="film-plot">{film.plot}</p>}
+                <ScorePanel key={'score-panel'} totalScore={film.score} predictedRating={film.predictedRating} scores={film.scores} />
+                <GenrePanel key={'genre-panel'} genres={film.genres} />
+            </article>
         </div>
       );
   }
@@ -31,27 +31,23 @@ class ScorePanel extends React.Component {
         )
     });
     return (
-        <p>
-            <div>
-                <div className="btn btn-primary" role="button">
+        <div>
+            <div className="ratings">
+                <span className="rating rating-score" title="Combined score">
                     <span className="oi oi-star" aria-hidden="true"></span>
-                    <span className="badge badge-light">
-                        {(this.props.totalScore * 100).toFixed(0)}%
-                    </span>
-                </div>
+                    {(this.props.totalScore * 100).toFixed(0)}%
+                </span>
                 {this.props.predictedRating &&
-                    <div className="btn btn-success" role="button" title="My predicted rating">
+                    <span className="rating rating-predicted" title="My predicted rating">
                         <span className="oi oi-heart" aria-hidden="true"></span>
-                        <span className="badge badge-light">
-                            {(this.props.predictedRating * 10).toFixed(0)}%
-                        </span>
-                    </div>
+                        {(this.props.predictedRating * 10).toFixed(0)}%
+                    </span>
                 }
             </div>
-            <ul className="list-group">
+            <ul className="score-list">
                 {scores}
             </ul>
-        </p>
+        </div>
       );
   }
 }
@@ -60,10 +56,14 @@ class Score extends React.Component {
   render() {
     let score = this.props.value;
     return (
-        <li className="list-group-item">
-            <span className="border badge badge-light oi oi-person float-right mr-1">{score.quantity}</span>
-            <span className="border badge badge-light oi oi-star float-right mr-1">{(score.grade * 100).toFixed(0)}%</span>
-            <a href={score.url}>{score.source}</a>
+        <li>
+            <a className="score-source" href={score.url}>{score.source}</a>
+            <span className="score-grade" title="Score">
+                <span className="oi oi-star" aria-hidden="true"></span>{(score.grade * 100).toFixed(0)}%
+            </span>
+            <span className="score-votes" title="Votes">
+                <span className="oi oi-person" aria-hidden="true"></span>{score.quantity.toLocaleString('pl-PL')}
+            </span>
         </li>
       );
   }
@@ -89,7 +89,7 @@ class Genre extends React.Component {
   render() {
     let name = this.props.name;
     return (
-        <span className="badge badge-pill badge-info" style={{marginRight: '2px'}}>
+        <span className="genre">
             {name}
         </span>
       );
@@ -98,13 +98,13 @@ class Genre extends React.Component {
 
 function Loader(props) {
     return (
-        <div class="mx-auto loader"></div>
+        <div className="loader"></div>
     );
 }
 
 function NextPage(props) {
     return (
-        <button onClick={props.onClick}>Next</button>
+        <button className="load-more" onClick={props.onClick}>Next</button>
     );
 }
 
