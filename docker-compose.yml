@@ -1,6 +1,8 @@
 services:
   cache:
     image: redis:6.2.24-alpine
+    volumes:
+      - redis-data:/data
     ports:
       - "127.0.0.1:6379:6379"
   w2w:
@@ -29,3 +31,6 @@ services:
       - "8080:8080"
     depends_on:
       - cache
+
+volumes:
+  redis-data:
