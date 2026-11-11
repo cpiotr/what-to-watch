@@ -12,7 +12,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.Cached;
 import pl.ciruk.whattowatch.boot.cache.LongExpiry;
+import pl.ciruk.whattowatch.boot.cache.NotCached;
 import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
+import pl.ciruk.whattowatch.boot.config.Connections.NoCookies;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
@@ -28,6 +30,7 @@ import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
+import pl.ciruk.whattowatch.core.title.justwatch.JustWatchTitleProvider;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
 import pl.ciruk.whattowatch.neural.RatedFilm;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
@@ -77,9 +80,16 @@ public class Beans {
         return Executors.newThreadPerTaskExecutor(factory);
     }
 
+    // JustWatch takes POST requests, which aren't cached
     @Bean
-    TitleProvider titleProvider(@Cached @ShortExpiry HttpConnection<Element> httpConnection) {
-        return new EkinoTitleProvider(httpConnection, properties.titles().pagesPerRequest());
+    TitleProvider titleProvider(
+            @Cached @ShortExpiry HttpConnection<Element> pageConnection,
+            @NotCached @NoCookies HttpConnection<String> apiConnection) {
+        var titles = properties.titles();
+        return switch (titles.source()) {
+            case JUSTWATCH -> new JustWatchTitleProvider(apiConnection, titles.streamingServices());
+            case EKINO -> new EkinoTitleProvider(pageConnection, titles.pagesPerRequest());
+        };
     }
 
     @Bean

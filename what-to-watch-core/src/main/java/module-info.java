@@ -4,6 +4,7 @@ module what.to.watch.core {
     exports pl.ciruk.whattowatch.core.title;
     exports pl.ciruk.whattowatch.utils.net;
     exports pl.ciruk.whattowatch.core.title.ekino;
+    exports pl.ciruk.whattowatch.core.title.justwatch;
     exports pl.ciruk.whattowatch.core.source;
     exports pl.ciruk.whattowatch.core.description.filmweb;
     exports pl.ciruk.whattowatch.core.description;

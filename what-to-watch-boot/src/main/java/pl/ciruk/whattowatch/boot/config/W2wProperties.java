@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 
 @ConfigurationProperties("w2w")
 public record W2wProperties(
@@ -18,7 +19,16 @@ public record W2wProperties(
     public record Pool(@DefaultValue("16") int size, @DefaultValue("false") boolean useVirtual) {
     }
 
-    public record Titles(@DefaultValue("10") int pagesPerRequest) {
+    // Streaming services are JustWatch's short names: nfx is Netflix, prv is Amazon Prime Video
+    public record Titles(
+            @DefaultValue("justwatch") TitleSource source,
+            @DefaultValue("10") int pagesPerRequest,
+            @DefaultValue({"nfx", "prv"}) List<String> streamingServices) {
+    }
+
+    public enum TitleSource {
+        JUSTWATCH,
+        EKINO
     }
 
     // My predicted rating, from 1 to 10, that a film needs to be suggested

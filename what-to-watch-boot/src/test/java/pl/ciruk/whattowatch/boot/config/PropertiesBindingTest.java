@@ -57,5 +57,19 @@ class PropertiesBindingTest {
         assertThat(w2w.pool().size()).isEqualTo(16);
         assertThat(w2w.suggestions().ratingThreshold()).isEqualTo(5.3);
         assertThat(w2w.imdb().datasetsDirectory()).isEqualTo(Path.of("imdb"));
+        assertThat(w2w.titles().source()).isEqualTo(W2wProperties.TitleSource.JUSTWATCH);
+        assertThat(w2w.titles().streamingServices()).containsExactly("nfx", "prv");
+    }
+
+    @Test
+    void shouldBindTitleSettings() {
+        var source = new MapConfigurationPropertySource(Map.of(
+                "w2w.titles.source", "ekino",
+                "w2w.titles.streaming-services", "nfx"));
+
+        var titles = new Binder(source).bind("w2w", W2wProperties.class).get().titles();
+
+        assertThat(titles.source()).isEqualTo(W2wProperties.TitleSource.EKINO);
+        assertThat(titles.streamingServices()).containsExactly("nfx");
     }
 }
