@@ -24,6 +24,7 @@ ENV W2W_THREAD_POOL_USE_VIRTUAL=false
 ENV W2W_FILM_RATING_THRESHOLD=4.9
 ENV W2W_LOGGING_LEVEL=INFO
 ENV W2W_HTTP_REQUESTS_PER_SECOND=2
+ENV W2W_FILMWEB_REQUESTS_PER_SECOND=4
 ENV LOGGING_LEVEL=INFO
 
 ENV REDIS_HOST=cache
@@ -55,6 +56,7 @@ CMD sh -c "java \
 		-Dw2w.pool.use-virtual=$W2W_THREAD_POOL_USE_VIRTUAL \
 		-Dw2w.suggestions.rating-threshold=$W2W_FILM_RATING_THRESHOLD \
 		-Dhttp.requests-per-second=$W2W_HTTP_REQUESTS_PER_SECOND \
+		-Dhttp.requests-per-second-by-domain.filmweb.pl=$W2W_FILMWEB_REQUESTS_PER_SECOND \
 		-Dredis.host=$REDIS_HOST \
 		-Dlogging.level.root=$LOGGING_LEVEL\
 		-Dlogging.level.pl.ciruk=$W2W_LOGGING_LEVEL\
