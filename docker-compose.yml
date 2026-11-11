@@ -1,35 +1,31 @@
 services:
   cache:
     image: redis:6.2.24-alpine
-    hostname: redis
     ports:
       - "127.0.0.1:6379:6379"
   w2w:
-      build:
-        context: .
-        args:
-          - W2W_VERSION=0.0.1
-      hostname: w2w-app
-      environment:
-        - W2W_TITLES_PAGES_PER_REQUEST=10
-        - W2W_THREAD_POOL_SIZE=32
-        - W2W_THREAD_POOL_USE_VIRTUAL=true
-        - REDIS_HOST=cache
-        - W2W_LOGGING_LEVEL=INFO
-        - W2W_HTTP_REQUESTS_PER_SECOND=2
-        - W2W_FILM_RATING_THRESHOLD=5.4
-        - JVM_OPTS=-Xmx2G
-          -Xms2G
-          -XX:+TieredCompilation
-          -XX:InitialCodeCacheSize=256m
-          -XX:ReservedCodeCacheSize=256m
-          -XX:+PreserveFramePointer
-          -XX:+UnlockExperimentalVMOptions
-          -XX:+UseZGC
-          -XX:+UseNUMA
-          -XX:+UseStringDeduplication
-          -Xlog:gc:stdout:time
-      ports:
-        - "8080:8080"
-      depends_on:
-        - cache
+    build:
+      context: .
+      args:
+        - W2W_VERSION=0.0.1
+    # Spring Boot binds these to the settings, e.g. W2W_POOL_SIZE to w2w.pool.size
+    environment:
+      - REDIS_HOST=cache
+      - W2W_POOL_SIZE=32
+      - W2W_POOL_USEVIRTUAL=true
+      - W2W_SUGGESTIONS_RATINGTHRESHOLD=5.4
+      - HTTP_REQUESTSPERSECONDBYDOMAIN_FILMWEB_PL=4
+      - LOGGING_LEVEL_PL_CIRUK=INFO
+      - JDK_JAVA_OPTIONS=-Xms2G
+        -Xmx2G
+        -XX:+UseZGC
+        -XX:+UseNUMA
+        -XX:+UseStringDeduplication
+        -XX:InitialCodeCacheSize=256m
+        -XX:ReservedCodeCacheSize=256m
+        -XX:+PreserveFramePointer
+        -Xlog:gc:stdout:time
+    ports:
+      - "8080:8080"
+    depends_on:
+      - cache
