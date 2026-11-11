@@ -15,9 +15,8 @@ public final class TestConnections {
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .retryOnConnectionFailure(true)
                 .cookieJar(new InMemoryCookieJar())
-                .addInterceptor(new BackoffInterceptor())
                 .build();
-        return new HtmlConnection(httpClient);
+        return new HtmlConnection(httpClient, new DomainRateLimiter(domain -> 2));
     }
 
     public static HttpConnection<String> cached() {

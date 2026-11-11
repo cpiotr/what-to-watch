@@ -16,8 +16,7 @@ services:
         - W2W_THREAD_POOL_USE_VIRTUAL=true
         - REDIS_HOST=cache
         - W2W_LOGGING_LEVEL=INFO
-        - W2W_HTTP_CLIENT_DEFAULT_DELAY_MILLIS=0
-        - 'SPRING_APPLICATION_JSON={"http":{"delay-millis-by-domain":{"metacritic.com":750,"filmweb.pl":500}}}'
+        - W2W_HTTP_REQUESTS_PER_SECOND=2
         - JVM_OPTS=-Xmx2G
           -Xms2G
           -XX:+TieredCompilation

@@ -21,10 +21,12 @@ public class HtmlConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final OkHttpClient okHttpClient;
+    private final DomainRateLimiter rateLimiter;
     private final Timer requestsTimer;
 
-    public HtmlConnection(OkHttpClient httpClient) {
+    public HtmlConnection(OkHttpClient httpClient, DomainRateLimiter rateLimiter) {
         this.okHttpClient = httpClient;
+        this.rateLimiter = rateLimiter;
 
         this.requestsTimer = Metrics.timer(Names.createName(HtmlConnection.class, "request"));
     }
@@ -116,17 +118,33 @@ public class HtmlConnection implements HttpConnection<String> {
     }
 
     private Response executeOrWait(Request request) {
+        awaitTurn(request.url());
         return Threads.manageBlocking(() -> {
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 LOGGER.trace("Got response {} from: {}", response.code(), request.url());
+                rateLimiter.recordResponse(request.url(), response);
                 return response;
             } catch (SocketTimeoutException e) {
+                rateLimiter.recordFailure(request.url());
                 throw new RetryableException(e);
+            } catch (IOException e) {
+                rateLimiter.recordFailure(request.url());
+                throw new NonRetryableException(e);
             } catch (Exception e) {
                 throw new NonRetryableException(e);
             }
         });
+    }
+
+    // Waits outside managedBlock: a thread blocked inside it makes a ForkJoinPool start another one
+    private void awaitTurn(HttpUrl url) {
+        try {
+            rateLimiter.awaitTurn(url);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new NonRetryableException(e);
+        }
     }
 
     private Request.Builder buildRequestTo(HttpUrl url) {

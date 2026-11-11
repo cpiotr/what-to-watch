@@ -23,9 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 @Configuration
 public class Connections {
@@ -38,32 +36,29 @@ public class Connections {
         LOGGER.info("{}", http);
     }
 
+    // Shared by both clients, so each domain has one limit
     @Bean
-    BackoffInterceptor backoffInterceptor() {
-        Function<String, Duration> durationByDomain = domain -> {
-            var delay = http.delayMillisByDomain().getOrDefault(domain, http.defaultDelayMillis());
-            return Duration.ofMillis(delay);
-        };
-
-        return new BackoffInterceptor(durationByDomain);
+    DomainRateLimiter rateLimiter() {
+        return new DomainRateLimiter(
+                domain -> http.requestsPerSecondByDomain().getOrDefault(domain, http.requestsPerSecond()));
     }
 
     @Bean
     @AllCookies
-    OkHttpClient httpClient(BackoffInterceptor backoffInterceptor) {
-        return createHttpClientBuilder("HttpClient", backoffInterceptor)
+    OkHttpClient httpClient() {
+        return createHttpClientBuilder("HttpClient")
                 .cookieJar(new InMemoryCookieJar())
                 .build();
     }
 
     @Bean
     @NoCookies
-    OkHttpClient noCookiesHttpClient(BackoffInterceptor backoffInterceptor) {
-        return createHttpClientBuilder("HttpClient-NoCookies", backoffInterceptor)
+    OkHttpClient noCookiesHttpClient() {
+        return createHttpClientBuilder("HttpClient-NoCookies")
                 .build();
     }
 
-    private OkHttpClient.Builder createHttpClientBuilder(String name, BackoffInterceptor backoffInterceptor) {
+    private OkHttpClient.Builder createHttpClientBuilder(String name) {
         var connectionPool = new ConnectionPool(http.maxIdleConnections(), 30, TimeUnit.SECONDS);
         var metricsEventListener = OkHttpMetricsEventListener.builder(Metrics.globalRegistry, name).build();
         return new OkHttpClient.Builder()
@@ -71,23 +66,23 @@ public class Connections {
                 .retryOnConnectionFailure(true)
                 .readTimeout(2_000, TimeUnit.MILLISECONDS)
                 .connectTimeout(500, TimeUnit.MILLISECONDS)
-                .eventListener(metricsEventListener)
-                .addInterceptor(backoffInterceptor);
+                .eventListener(metricsEventListener);
     }
 
     @Bean
     @NotCached
     @NoCookies
-    HttpConnection<String> notCachedNoCookiesConnection(@NoCookies OkHttpClient httpClient) {
-        return new HtmlConnection(httpClient);
+    HttpConnection<String> notCachedNoCookiesConnection(@NoCookies OkHttpClient httpClient, DomainRateLimiter rateLimiter) {
+        return new HtmlConnection(httpClient, rateLimiter);
     }
 
     @Bean
     @NotCached
     @AllCookies
     HttpConnection<String> notCachedAllCookiesConnection(
-            @AllCookies OkHttpClient httpClient) {
-        return new HtmlConnection(httpClient);
+            @AllCookies OkHttpClient httpClient,
+            DomainRateLimiter rateLimiter) {
+        return new HtmlConnection(httpClient, rateLimiter);
     }
 
     @Bean

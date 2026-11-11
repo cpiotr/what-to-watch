@@ -18,6 +18,7 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
+import pl.ciruk.whattowatch.utils.net.DomainRateLimiter;
 import pl.ciruk.whattowatch.utils.net.HtmlConnection;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
@@ -63,9 +64,11 @@ public class FilmSuggestionsBenchmark {
 
     @Setup(Level.Trial)
     public void initialize() {
-        HttpConnection<String> connection = new HtmlConnection(new OkHttpClient.Builder()
-                .connectionPool(new ConnectionPool(32, 12_000, TimeUnit.SECONDS))
-                .build());
+        HttpConnection<String> connection = new HtmlConnection(
+                new OkHttpClient.Builder()
+                        .connectionPool(new ConnectionPool(32, 12_000, TimeUnit.SECONDS))
+                        .build(),
+                new DomainRateLimiter(domain -> 2));
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
         suggestionsWorkStealing = new FilmSuggestionProvider(
