@@ -79,6 +79,20 @@ class FilmSuggestionProviderTest {
     }
 
     @Test
+    void shouldSearchOnceForFilmRequestedTwiceAtOnce() {
+        var pendingDescription = new CompletableFuture<Optional<Description>>();
+        when(descriptionProvider.findDescriptionByAsync(title)).thenReturn(pendingDescription);
+
+        var firstRequest = filmSuggestionProvider.suggestFilms(1).toList();
+        var secondRequest = filmSuggestionProvider.suggestFilms(1).toList();
+        pendingDescription.complete(Optional.of(description));
+
+        assertThat(CompletableFutures.getAllOf(secondRequest)).isEqualTo(CompletableFutures.getAllOf(firstRequest).toList());
+        verify(descriptionProvider).findDescriptionByAsync(title);
+        verify(scoreProvider).findScoresBy(description);
+    }
+
+    @Test
     void shouldCacheEmptyFilmIfDescriptionIsMissing() {
         when(descriptionProvider.findDescriptionByAsync(title))
                 .thenReturn(CompletableFuture.completedFuture(Optional.empty()));

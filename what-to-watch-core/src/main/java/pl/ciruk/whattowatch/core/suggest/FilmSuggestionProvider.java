@@ -12,8 +12,9 @@ import pl.ciruk.whattowatch.core.title.TitleProvider;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,6 +33,7 @@ public class FilmSuggestionProvider {
     private final ExecutorService executorService;
     private final AtomicLong suggestedFilms = new AtomicLong();
     private final Cache<Title, Film> cache;
+    private final Map<Title, CompletableFuture<Film>> filmsInProgress = new ConcurrentHashMap<>();
 
     public FilmSuggestionProvider(
             TitleProvider titles,
@@ -53,10 +55,15 @@ public class FilmSuggestionProvider {
                 .map(this::getOrFindFilmByTitle);
     }
 
+    // Overlapping requests, such as the startup crawl and a user's, share one search for each film
     private CompletableFuture<Film> getOrFindFilmByTitle(Title title) {
-        return Optional.ofNullable(cache.getIfPresent(title))
-                .map(CompletableFuture::completedFuture)
-                .orElseGet(() -> findFilmByTitle(title));
+        var cachedFilm = cache.getIfPresent(title);
+        if (cachedFilm != null) {
+            return completedFuture(cachedFilm);
+        }
+        var film = filmsInProgress.computeIfAbsent(title, this::findFilmByTitle);
+        film.whenComplete((ignored, error) -> filmsInProgress.remove(title, film));
+        return film;
     }
 
     private CompletableFuture<Film> findFilmByTitle(Title title) {
