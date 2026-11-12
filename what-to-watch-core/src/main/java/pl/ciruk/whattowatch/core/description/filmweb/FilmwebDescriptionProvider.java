@@ -48,13 +48,11 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
 
     @Override
     public CompletableFuture<Optional<Description>> findDescriptionByAsync(Title title) {
+        // A failure isn't turned into a missing description, which would be cached
         return CompletableFuture.supplyAsync(
                 () -> findDescriptionBy(title),
                 executorService
-        ).exceptionally(t -> {
-            LOGGER.error("Cannot get description of {}", title, t);
-            return Optional.empty();
-        });
+        );
     }
 
     @Override

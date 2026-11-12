@@ -19,6 +19,8 @@ import java.util.Optional;
 
 public class OkHttpConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final int NOT_FOUND = 404;
+    private static final int GONE = 410;
 
     private final OkHttpClient okHttpClient;
     private final DomainRateLimiter rateLimiter;
@@ -44,20 +46,22 @@ public class OkHttpConnection implements HttpConnection<String> {
     }
 
     private Optional<String> bodyOf(Request request) {
+        var url = request.url();
         try (var response = executeRequest(request); var responseBody = response.body()) {
-            var body = responseBody == null ? "" : responseBody.string();
-            // An empty page, such as IMDb's bot challenge (202 with no body), is useless and mustn't be cached
-            if (!response.isSuccessful() || body.isEmpty()) {
-                LOGGER.trace("Erroneous response {} from {}: {}", response.code(), request.url(), body);
+            if (response.code() == NOT_FOUND || response.code() == GONE) {
+                LOGGER.debug("No page at {}", url);
                 return Optional.empty();
             }
+            var body = responseBody == null ? "" : responseBody.string();
+            // An empty page, such as IMDb's bot challenge (202 with no body), is a failure too
+            if (!response.isSuccessful() || body.isEmpty()) {
+                LOGGER.trace("Erroneous response {} from {}: {}", response.code(), url, body);
+                throw new RequestException("Got " + response.code() + " from " + url);
+            }
             return Optional.of(body);
-        } catch (RetryableException | SocketTimeoutException e) {
-            LOGGER.warn("Could not get {} due to: {}", request.url(), e.getMessage());
-        } catch (RequestException | IOException e) {
-            LOGGER.warn("Could not get {}", request.url(), e);
+        } catch (IOException e) {
+            throw new RequestException("Could not read " + url, e);
         }
-        return Optional.empty();
     }
 
     private Response executeRequest(Request request) {
@@ -80,12 +84,12 @@ public class OkHttpConnection implements HttpConnection<String> {
                 return response;
             } catch (SocketTimeoutException e) {
                 rateLimiter.recordFailure(request.url());
-                throw new RetryableException(e);
+                throw new RetryableException("Timed out getting " + request.url(), e);
             } catch (IOException e) {
                 rateLimiter.recordFailure(request.url());
-                throw new RequestException(e);
+                throw new RequestException("Could not get " + request.url(), e);
             } catch (RuntimeException e) {
-                throw new RequestException(e);
+                throw new RequestException("Could not get " + request.url(), e);
             } finally {
                 sample.stop(requestsTimer);
             }
@@ -98,7 +102,7 @@ public class OkHttpConnection implements HttpConnection<String> {
             rateLimiter.awaitTurn(url);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RequestException(e);
+            throw new RequestException("Interrupted while waiting to get " + url, e);
         }
     }
 
@@ -123,15 +127,9 @@ public class OkHttpConnection implements HttpConnection<String> {
                 .addHeader("Cache-Control", "private");
     }
 
-    static class RequestException extends RuntimeException {
-        RequestException(Throwable cause) {
-            super(cause);
-        }
-    }
-
-    static class RetryableException extends RequestException {
-        RetryableException(Throwable cause) {
-            super(cause);
+    private static final class RetryableException extends RequestException {
+        RetryableException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

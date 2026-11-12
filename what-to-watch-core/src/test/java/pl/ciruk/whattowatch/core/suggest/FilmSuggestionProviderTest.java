@@ -91,6 +91,18 @@ class FilmSuggestionProviderTest {
     }
 
     @Test
+    void shouldNotCacheFilmWhenDescriptionFails() {
+        when(descriptionProvider.findDescriptionByAsync(title))
+                .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("Throttled")));
+
+        List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
+                .collect(toList());
+        assertThat(films).containsExactly(Film.empty());
+
+        assertThat(cache.asMap()).doesNotContainKey(title);
+    }
+
+    @Test
     void shouldKeepOtherScoresWhenOneProviderFails() {
         var failingScoreProvider = mock(ScoresProvider.class);
         when(failingScoreProvider.findScoresByAsync(description))

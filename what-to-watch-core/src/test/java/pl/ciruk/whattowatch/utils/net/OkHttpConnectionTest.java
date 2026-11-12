@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class OkHttpConnectionTest {
@@ -45,25 +46,34 @@ class OkHttpConnectionTest {
     }
 
     @Test
-    void shouldReturnNothingForEmptyPage() {
+    void shouldReturnNothingForMissingPage() {
+        server.enqueue(new MockResponse().setResponseCode(404).setBody("Not found"));
+
+        assertThat(connection.get(server.url(FILM_PATH))).isEmpty();
+    }
+
+    @Test
+    void shouldFailOnEmptyPage() {
         server.enqueue(new MockResponse().setResponseCode(202));
+        var url = server.url(FILM_PATH);
 
-        assertThat(connection.get(server.url(FILM_PATH))).isEmpty();
+        assertThatThrownBy(() -> connection.get(url)).isInstanceOf(RequestException.class);
     }
 
     @Test
-    void shouldReturnNothingForErrorPage() {
+    void shouldFailOnErrorPage() {
         server.enqueue(new MockResponse().setResponseCode(500).setBody("Internal error"));
+        var url = server.url(FILM_PATH);
 
-        assertThat(connection.get(server.url(FILM_PATH))).isEmpty();
+        assertThatThrownBy(() -> connection.get(url)).isInstanceOf(RequestException.class);
     }
 
     @Test
-    void shouldReportThrottledResponseToRateLimiter() {
+    void shouldFailOnThrottledResponseAndReportIt() {
         server.enqueue(new MockResponse().setResponseCode(429).setHeader("Retry-After", "1").setBody("Slow down"));
         var url = server.url(FILM_PATH);
 
-        assertThat(connection.get(url)).isEmpty();
+        assertThatThrownBy(() -> connection.get(url)).isInstanceOf(RequestException.class);
         verify(rateLimiter).recordResponse(eq(url), argThat((Response response) -> response.code() == 429));
     }
 
@@ -84,7 +94,7 @@ class OkHttpConnectionTest {
         server.enqueue(new MockResponse().setBody(PAGE));
         var url = server.url(FILM_PATH);
 
-        assertThat(connection.get(url)).isEmpty();
+        assertThatThrownBy(() -> connection.get(url)).isInstanceOf(RequestException.class);
         assertThat(server.getRequestCount()).isEqualTo(2);
         verify(rateLimiter, times(2)).recordFailure(url);
     }
