@@ -1,35 +1,45 @@
-<!DOCTYPE HTML>
+<!doctype html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="Films on your streaming services, ranked by IMDb, Filmweb and Metacritic.">
     <title>What To Watch?</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="color-scheme" content="light"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Passion+One:wght@700&text=What%20To%20Watch%3F&display=swap"
-          rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css"
-          rel="stylesheet" media="screen"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css"
-          rel="stylesheet" media="screen"/>
-    <link href="css/style.css" rel="stylesheet" media="screen"/>
-
-    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
-    <script src="js/events.js" type="text/babel"></script>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238c3b2e'/%3E%3Cpath d='M12 9v14l11-7z' fill='%23fff'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/app.js"></script>
 </head>
 <body>
-<div class="container">
-    <header class="page-header">
-        <h1>What To Watch?</h1>
-    </header>
-    <div id="root" role="main">
-
+<header class="masthead">
+    <div class="masthead-top">
+        <h1 class="brand">
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M12 9v14l11-7z"/></svg>
+            What To Watch?
+        </h1>
+        <fieldset class="sort">
+            <legend class="visually-hidden">Sort films by</legend>
+            <label><input type="radio" name="sort" value="score" checked><span>Score</span></label>
+            <label><input type="radio" name="sort" value="mine"><span>For you</span></label>
+        </fieldset>
     </div>
-</div>
+    <div class="masthead-bottom">
+        <p class="tagline">Films on your streaming services, ranked by IMDb, Filmweb and Metacritic.</p>
+        <div class="masthead-info">
+            <dl class="legend" aria-label="How to read a card">
+                <div><dt><span class="legend-badge">80%</span></dt><dd>combined score</dd></div>
+                <div><dt><svg class="icon heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 5.3 3 1.8-1.9 3.2-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg><span class="visually-hidden">Heart</span></dt><dd>predicted for you</dd></div>
+            </dl>
+            <p class="status" id="status"></p>
+        </div>
+    </div>
+</header>
 
+<main>
+    <ol class="grid" id="films" tabindex="-1" aria-label="Suggested films, best first"></ol>
+    <div class="more" id="more" role="status"></div>
+</main>
+
+<dialog class="details" id="details" aria-labelledby="details-title"></dialog>
 </body>
 </html>
