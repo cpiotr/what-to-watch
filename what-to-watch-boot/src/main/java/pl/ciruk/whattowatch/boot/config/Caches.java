@@ -35,7 +35,6 @@ public class Caches {
         var poolConfig = new ConnectionPoolConfig();
         poolConfig.setMaxTotal(redis.maxConnections());
         poolConfig.setMaxWait(Duration.ofMillis(500));
-        poolConfig.setMinEvictableIdleDuration(Duration.ofMillis(100));
         return RedisClient.builder()
                 .hostAndPort(redis.host(), Protocol.DEFAULT_PORT)
                 .poolConfig(poolConfig)
