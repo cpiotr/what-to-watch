@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class InMemoryCookieJarTest {
     private static final HttpUrl URL = HttpUrl.get("https://www.example.com/");
     private static final String SESSION = "session";
+    private static final String VALUE = "value";
 
     private final InMemoryCookieJar cookieJar = new InMemoryCookieJar();
 
@@ -30,7 +31,7 @@ class InMemoryCookieJarTest {
 
     @Test
     void shouldDeleteCookieWhenServerExpiresIt() {
-        cookieJar.saveFromResponse(URL, List.of(cookie(SESSION, "value"), cookie("other", "value")));
+        cookieJar.saveFromResponse(URL, List.of(cookie(SESSION, VALUE), cookie("other", VALUE)));
 
         cookieJar.saveFromResponse(URL, List.of(expiredCookie(SESSION)));
 
@@ -40,11 +41,29 @@ class InMemoryCookieJarTest {
     }
 
     @Test
+    void shouldSendDomainCookieToOtherHostsOfDomain() {
+        var domainCookie = new Cookie.Builder().domain("example.com").name(SESSION).value(VALUE).build();
+
+        cookieJar.saveFromResponse(URL, List.of(domainCookie));
+
+        assertThat(cookieJar.loadForRequest(HttpUrl.get("https://api.example.com/"))).containsExactly(domainCookie);
+    }
+
+    @Test
+    void shouldNotSendCookieOutsideItsPath() {
+        var accountCookie = new Cookie.Builder().domain(URL.host()).path("/account").name(SESSION).value(VALUE).build();
+
+        cookieJar.saveFromResponse(URL, List.of(accountCookie));
+
+        assertThat(cookieJar.loadForRequest(URL.resolve("/movies"))).isEmpty();
+    }
+
+    @Test
     void shouldKeepAllCookiesSavedConcurrently() {
         try (var pool = Executors.newFixedThreadPool(8)) {
             var saves = IntStream.range(0, 1_000)
                     .mapToObj(i -> CompletableFuture.runAsync(
-                            () -> cookieJar.saveFromResponse(URL, List.of(cookie("cookie" + i, "value"))),
+                            () -> cookieJar.saveFromResponse(URL, List.of(cookie("cookie" + i, VALUE))),
                             pool))
                     .toArray(CompletableFuture[]::new);
             CompletableFuture.allOf(saves).join();

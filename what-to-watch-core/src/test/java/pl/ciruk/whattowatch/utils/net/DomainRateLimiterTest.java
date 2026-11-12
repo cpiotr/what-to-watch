@@ -10,11 +10,12 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 class DomainRateLimiterTest {
     private static final long INTERVAL = Duration.ofMillis(500).toNanos();
     private static final long SECOND = Duration.ofSeconds(1).toNanos();
+    private static final Duration OTHER_DOMAIN_TIMEOUT = Duration.ofSeconds(5);
 
     @Test
     void shouldSpaceTurnsInArrivalOrder() {
@@ -98,25 +99,45 @@ class DomainRateLimiterTest {
     void shouldPauseDomainForRetryAfter() throws InterruptedException {
         var limiter = new DomainRateLimiter(domain -> 1_000);
         var url = HttpUrl.get("https://www.metacritic.com/movie/x");
-        var otherDomain = HttpUrl.get("https://www.filmweb.pl/film");
 
         limiter.recordResponse(url, response(url, 429, "1"));
 
         long start = System.nanoTime();
-        limiter.awaitTurn(otherDomain);
-        assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofMillis(500));
         limiter.awaitTurn(url);
         assertThat(Duration.ofNanos(System.nanoTime() - start)).isGreaterThanOrEqualTo(Duration.ofMillis(900));
     }
 
     @Test
-    void shouldKeyHostWithoutPrivateDomain() {
-        var limiter = new DomainRateLimiter(domain -> 1_000);
+    void shouldMakeNextRequestWaitForRedirect() throws InterruptedException {
+        var limiter = new DomainRateLimiter(domain -> 1);
+        var url = HttpUrl.get("https://ekino.ws/movie");
 
-        assertThatCode(() -> {
-            limiter.awaitTurn(HttpUrl.get("http://localhost:8080/"));
-            limiter.awaitTurn(HttpUrl.get("http://127.0.0.1:8080/"));
-        }).doesNotThrowAnyException();
+        limiter.recordRedirect(url);
+
+        long start = System.nanoTime();
+        limiter.awaitTurn(url);
+        assertThat(Duration.ofNanos(System.nanoTime() - start)).isGreaterThanOrEqualTo(Duration.ofMillis(900));
+    }
+
+    // A wrongly shared pause would wait a minute, far past the timeout
+    @Test
+    void shouldNotPauseOtherDomains() {
+        var limiter = new DomainRateLimiter(domain -> 1_000);
+        var url = HttpUrl.get("https://www.metacritic.com/movie/x");
+
+        limiter.recordResponse(url, response(url, 429, "60"));
+
+        assertTimeoutPreemptively(OTHER_DOMAIN_TIMEOUT, () -> limiter.awaitTurn(HttpUrl.get("https://www.filmweb.pl/film")));
+    }
+
+    @Test
+    void shouldKeepHostsWithoutPrivateDomainApart() {
+        var limiter = new DomainRateLimiter(domain -> 1_000);
+        var localhost = HttpUrl.get("http://localhost:8080/");
+
+        limiter.recordResponse(localhost, response(localhost, 429, "60"));
+
+        assertTimeoutPreemptively(OTHER_DOMAIN_TIMEOUT, () -> limiter.awaitTurn(HttpUrl.get("http://127.0.0.1:8080/")));
     }
 
     private static Response response(HttpUrl url, int code, String retryAfter) {

@@ -1,15 +1,13 @@
 package pl.ciruk.whattowatch.utils.net;
 
 import okhttp3.HttpUrl;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class CachedConnection implements HttpConnection<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -23,13 +21,13 @@ public class CachedConnection implements HttpConnection<String> {
     }
 
     @Override
-    public Optional<String> connectToAndGet(HttpUrl url) {
+    public Optional<String> get(HttpUrl url) {
         LOGGER.trace("Url: {}", url);
 
         var optionalDocument = cache.get(url.toString());
         if (optionalDocument.isEmpty()) {
             LOGGER.trace("Cache miss for: {}", url);
-            optionalDocument = connection.connectToAndGet(url);
+            optionalDocument = connection.get(url);
             optionalDocument.ifPresent(content -> addToCache(url, content));
         }
         return optionalDocument;
@@ -39,19 +37,9 @@ public class CachedConnection implements HttpConnection<String> {
         cache.put(url.toString(), content);
     }
 
+    // The URL alone doesn't identify a POST's answer, so it isn't cached
     @Override
-    public Optional<String> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
-        LOGGER.trace("Url: {}", url);
-        LOGGER.trace("Method currently does not rely on cache");
-
-        return connection.connectToAndConsume(url, action);
-    }
-
-    @Override
-    public Optional<String> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action, Consumer<Response> responseConsumer) {
-        LOGGER.trace("Url: {}", url);
-        LOGGER.trace("Method currently does not rely on cache");
-
-        return connection.connectToAndConsume(url, action, responseConsumer);
+    public Optional<String> post(HttpUrl url, RequestBody body) {
+        return connection.post(url, body);
     }
 }

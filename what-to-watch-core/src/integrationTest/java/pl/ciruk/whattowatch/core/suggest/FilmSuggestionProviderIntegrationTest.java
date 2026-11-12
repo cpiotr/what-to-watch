@@ -35,12 +35,12 @@ class FilmSuggestionProviderIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        HttpConnection<String> htmlConnection = TestConnections.cached();
+        HttpConnection<String> connection = TestConnections.cached();
         pool = Executors.newWorkStealingPool(32);
         suggestions = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
-                sampleDescriptionProvider(htmlConnection, pool),
-                sampleScoreProviders(htmlConnection, pool),
+                sampleDescriptionProvider(connection, pool),
+                sampleScoreProviders(connection, pool),
                 pool,
                 Caffeine.newBuilder().build()
         );
@@ -71,15 +71,15 @@ class FilmSuggestionProviderIntegrationTest {
         pool.awaitTermination(1, TimeUnit.SECONDS);
     }
 
-    private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
-        FilmwebProxy filmwebProxy = new FilmwebProxy(new JsoupConnection(htmlConnection), htmlConnection);
+    private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> connection, ExecutorService pool) {
+        FilmwebProxy filmwebProxy = new FilmwebProxy(connection);
         return new FilmwebDescriptionProvider(filmwebProxy, pool);
     }
 
     private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection, ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection, connection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(connection), executorService),
                 new MetacriticScoresProvider(jsoupConnection, executorService)
         );
     }

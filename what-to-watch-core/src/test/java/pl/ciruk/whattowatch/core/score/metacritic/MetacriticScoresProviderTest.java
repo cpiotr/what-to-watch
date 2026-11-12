@@ -28,7 +28,7 @@ class MetacriticScoresProviderTest {
     @SuppressWarnings("unchecked")
     void setUp() {
         connection = mock(HttpConnection.class);
-        when(connection.connectToAndGet(any(HttpUrl.class))).thenReturn(Optional.empty());
+        when(connection.get(any(HttpUrl.class))).thenReturn(Optional.empty());
         provider = new MetacriticScoresProvider(connection, Executors.newSingleThreadExecutor());
     }
 
@@ -82,7 +82,7 @@ class MetacriticScoresProviderTest {
     }
 
     private void givenPage(String path, Element page) {
-        when(connection.connectToAndGet(argThat((HttpUrl url) -> url != null && path.equals(url.encodedPath()))))
+        when(connection.get(argThat((HttpUrl url) -> url != null && path.equals(url.encodedPath()))))
                 .thenReturn(Optional.of(page));
     }
 

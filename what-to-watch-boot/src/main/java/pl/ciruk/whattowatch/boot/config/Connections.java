@@ -73,7 +73,7 @@ public class Connections {
     @NotCached
     @NoCookies
     HttpConnection<String> notCachedNoCookiesConnection(@NoCookies OkHttpClient httpClient, DomainRateLimiter rateLimiter) {
-        return new HtmlConnection(httpClient, rateLimiter);
+        return new OkHttpConnection(httpClient, rateLimiter);
     }
 
     @Bean
@@ -82,7 +82,7 @@ public class Connections {
     HttpConnection<String> notCachedAllCookiesConnection(
             @AllCookies OkHttpClient httpClient,
             DomainRateLimiter rateLimiter) {
-        return new HtmlConnection(httpClient, rateLimiter);
+        return new OkHttpConnection(httpClient, rateLimiter);
     }
 
     @Bean

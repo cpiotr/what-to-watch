@@ -1,14 +1,12 @@
 package pl.ciruk.whattowatch.utils.net.html;
 
 import okhttp3.HttpUrl;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.RequestBody;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class JsoupConnection implements HttpConnection<Element> {
     private final HttpConnection<String> connection;
@@ -18,38 +16,14 @@ public class JsoupConnection implements HttpConnection<Element> {
     }
 
     @Override
-    public Optional<Element> connectToAndGet(HttpUrl url) {
-        return connection.connectToAndGet(url)
+    public Optional<Element> get(HttpUrl url) {
+        return connection.get(url)
                 .map(Jsoup::parse);
     }
 
     @Override
-    public Optional<Element> connectToAndGet(HttpUrl url, String from, String to) {
-        return connection.connectToAndGet(url)
-                .map(contents -> getSubstring(contents, from, to))
-                .map(Jsoup::parse);
-    }
-
-    private String getSubstring(String contents, String from, String to) {
-        var beginIndex = contents.indexOf(from);
-        if (beginIndex < 0) {
-            return contents;
-        }
-        var endIndex = contents.indexOf(to, beginIndex);
-        return (endIndex >= 0)
-                ? contents.substring(beginIndex, endIndex + to.length())
-                : contents.substring(beginIndex);
-    }
-
-    @Override
-    public Optional<Element> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action) {
-        return connection.connectToAndConsume(url, action)
-                .map(Jsoup::parse);
-    }
-
-    @Override
-    public Optional<Element> connectToAndConsume(HttpUrl url, Consumer<Request.Builder> action, Consumer<Response> responseConsumer) {
-        return connection.connectToAndConsume(url, action, responseConsumer)
+    public Optional<Element> post(HttpUrl url, RequestBody body) {
+        return connection.post(url, body)
                 .map(Jsoup::parse);
     }
 }

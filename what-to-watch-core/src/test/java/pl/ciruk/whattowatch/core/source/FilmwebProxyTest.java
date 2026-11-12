@@ -17,14 +17,14 @@ class FilmwebProxyTest {
     private static final String TITLE = "Incepcja";
     private static final long FILM_ID = 500_891;
 
-    private HttpConnection<String> apiConnection;
+    private HttpConnection<String> connection;
     private FilmwebProxy filmwebProxy;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
-        apiConnection = mock(HttpConnection.class);
-        filmwebProxy = new FilmwebProxy(mock(HttpConnection.class), apiConnection);
+        connection = mock(HttpConnection.class);
+        filmwebProxy = new FilmwebProxy(connection);
     }
 
     @Test
@@ -49,7 +49,7 @@ class FilmwebProxyTest {
 
         assertThat(filmwebProxy.searchBy(TITLE, 2010)).isEmpty();
 
-        verify(apiConnection).connectToAndGet(argThat((HttpUrl url) ->
+        verify(connection).get(argThat((HttpUrl url) ->
                 TITLE.equals(url.queryParameter("query"))
                         && "2009".equals(url.queryParameter("startYear"))
                         && "2011".equals(url.queryParameter("endYear"))));
@@ -63,6 +63,20 @@ class FilmwebProxyTest {
     }
 
     @Test
+    void shouldParseOnlyFilmDetailsFromPage() {
+        givenResponse("/film/Incepcja-2010-500891", """
+                <html><body>
+                <div class="page__group" data-group="g0">header</div>
+                <div class="page__group" data-group="g1">details</div>
+                <div class="page__group" data-group="g3">reviews</div>
+                </body></html>""");
+
+        var page = filmwebProxy.getPageWithFilmDetailsFor(new FilmwebFilm(FILM_ID, TITLE, "Inception", 2010));
+
+        assertThat(page).map(Element::text).contains("details");
+    }
+
+    @Test
     void shouldLinkToFilmPage() {
         var film = new FilmwebFilm(FILM_ID, TITLE, "Inception", 2010);
 
@@ -70,8 +84,8 @@ class FilmwebProxyTest {
                 .isEqualTo("https://www.filmweb.pl/film/Incepcja-2010-500891");
     }
 
-    private void givenResponse(String path, String json) {
-        when(apiConnection.connectToAndGet(argThat((HttpUrl url) -> url != null && path.equals(url.encodedPath()))))
-                .thenReturn(Optional.of(json));
+    private void givenResponse(String path, String body) {
+        when(connection.get(argThat((HttpUrl url) -> url != null && path.equals(url.encodedPath()))))
+                .thenReturn(Optional.of(body));
     }
 }

@@ -40,19 +40,19 @@ class ImdbScoresProviderTest {
 
     @Test
     void shouldGiveUpWhenPageNeverHasSearchData() {
-        when(connection.connectToAndGet(any(HttpUrl.class)))
+        when(connection.get(any(HttpUrl.class)))
                 .thenReturn(Optional.<Element>of(Jsoup.parse("<html><body>Bot challenge</body></html>")));
 
         assertThat(provider.findScoresBy(description)).isEmpty();
-        verify(connection, times(3)).connectToAndGet(any(HttpUrl.class));
+        verify(connection, times(3)).get(any(HttpUrl.class));
     }
 
     @Test
     void shouldNotRetryWhenConnectionFails() {
-        when(connection.connectToAndGet(any(HttpUrl.class)))
+        when(connection.get(any(HttpUrl.class)))
                 .thenReturn(Optional.empty());
 
         assertThat(provider.findScoresBy(description)).isEmpty();
-        verify(connection).connectToAndGet(any(HttpUrl.class));
+        verify(connection).get(any(HttpUrl.class));
     }
 }

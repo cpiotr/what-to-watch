@@ -54,6 +54,11 @@ public class DomainRateLimiter {
         pause(url, Optional.empty());
     }
 
+    // A redirect was sent without waiting, so the domain's next request waits for it instead
+    public void recordRedirect(HttpUrl url) {
+        scheduleFor(url).reserveTurn(System.nanoTime());
+    }
+
     private void pause(HttpUrl url, Optional<Duration> requested) {
         scheduleFor(url).pause(System.nanoTime(), requested)
                 .ifPresent(duration -> LOGGER.info("Pausing requests to {} for {}", domainOf(url), duration));

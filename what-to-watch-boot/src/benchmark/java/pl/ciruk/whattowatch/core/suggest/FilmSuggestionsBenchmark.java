@@ -19,7 +19,7 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.net.DomainRateLimiter;
-import pl.ciruk.whattowatch.utils.net.HtmlConnection;
+import pl.ciruk.whattowatch.utils.net.OkHttpConnection;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
@@ -64,7 +64,7 @@ public class FilmSuggestionsBenchmark {
 
     @Setup(Level.Trial)
     public void initialize() {
-        HttpConnection<String> connection = new HtmlConnection(
+        HttpConnection<String> connection = new OkHttpConnection(
                 new OkHttpClient.Builder()
                         .connectionPool(new ConnectionPool(32, 12_000, TimeUnit.SECONDS))
                         .build(),
@@ -122,9 +122,9 @@ public class FilmSuggestionsBenchmark {
         bh.consume(numberOfFilms);
     }
 
-    private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> htmlConnection, ExecutorService pool) {
+    private FilmwebDescriptionProvider sampleDescriptionProvider(HttpConnection<String> connection, ExecutorService pool) {
         return new FilmwebDescriptionProvider(
-                new FilmwebProxy(new JsoupConnection(htmlConnection), htmlConnection),
+                new FilmwebProxy(connection),
                 pool);
     }
 
@@ -133,7 +133,7 @@ public class FilmSuggestionsBenchmark {
             ExecutorService executorService) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(jsoupConnection, connection), executorService),
+                new FilmwebScoresProvider(new FilmwebProxy(connection), executorService),
                 new MetacriticScoresProvider(jsoupConnection, executorService),
                 new ImdbScoresProvider(jsoupConnection, executorService)
         );

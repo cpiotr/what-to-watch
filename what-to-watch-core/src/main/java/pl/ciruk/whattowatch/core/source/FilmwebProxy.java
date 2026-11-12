@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.HttpUrl;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +19,14 @@ import java.util.stream.StreamSupport;
 public class FilmwebProxy {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private final HttpConnection<Element> pageConnection;
-    private final HttpConnection<String> apiConnection;
+    // The film's details are between these groups, so jsoup doesn't parse the rest of the page
+    private static final String DETAILS_START = "<div class=\"page__group\" data-group=\"g1\">";
+    private static final String DETAILS_END = "<div class=\"page__group\" data-group=\"g3\">";
 
-    public FilmwebProxy(HttpConnection<Element> pageConnection, HttpConnection<String> apiConnection) {
-        this.pageConnection = pageConnection;
-        this.apiConnection = apiConnection;
+    private final HttpConnection<String> connection;
+
+    public FilmwebProxy(HttpConnection<String> connection) {
+        this.connection = connection;
     }
 
     // The search page renders its results in the browser, so search through the API it uses
@@ -35,7 +38,7 @@ public class FilmwebProxy {
                 .addQueryParameter("endYear", next(year))
                 .build();
 
-        return apiConnection.connectToAndGet(url)
+        return connection.get(url)
                 .flatMap(json -> readJson(json, url))
                 .stream()
                 .flatMap(searchResults -> StreamSupport.stream(searchResults.path("searchHits").spliterator(), false))
@@ -52,7 +55,7 @@ public class FilmwebProxy {
                 .addPathSegment("info")
                 .build();
 
-        return apiConnection.connectToAndGet(url)
+        return connection.get(url)
                 .flatMap(json -> readJson(json, url))
                 .map(info -> new FilmwebFilm(
                         id,
@@ -71,7 +74,19 @@ public class FilmwebProxy {
     }
 
     public Optional<Element> getPageWithFilmDetailsFor(FilmwebFilm film) {
-        return pageConnection.connectToAndGet(linkTo(film), "<div class=\"page__group\" data-group=\"g1\">", "<div class=\"page__group\" data-group=\"g3\">");
+        return connection.get(linkTo(film))
+                .map(page -> Jsoup.parse(detailsOf(page)));
+    }
+
+    private static String detailsOf(String page) {
+        var start = page.indexOf(DETAILS_START);
+        if (start < 0) {
+            return page;
+        }
+        var end = page.indexOf(DETAILS_END, start);
+        return end < 0
+                ? page.substring(start)
+                : page.substring(start, end + DETAILS_END.length());
     }
 
     // Filmweb finds a film by the id at the end of the link and redirects any other title or year to the right one

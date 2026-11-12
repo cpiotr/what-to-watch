@@ -80,7 +80,7 @@ public class JustWatchTitleProvider implements TitleProvider {
         LOGGER.debug("Page number: {}", pageNumber);
 
         var body = RequestBody.create(createQueryFor(pageNumber), JSON);
-        return connection.connectToAndConsume(API_URL, request -> request.post(body))
+        return connection.post(API_URL, body)
                 .flatMap(JustWatchTitleProvider::readJson)
                 .stream()
                 .flatMap(response -> StreamSupport.stream(response.path("data").path("popularTitles").path("edges").spliterator(), false))

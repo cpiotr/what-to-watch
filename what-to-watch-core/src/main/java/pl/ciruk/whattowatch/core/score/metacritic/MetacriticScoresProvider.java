@@ -93,7 +93,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .addPathSegment("")
                 .build();
 
-        return connection.connectToAndGet(url)
+        return connection.get(url)
                 .flatMap(MetacriticScoresProvider::findFilmData)
                 .filter(film -> titleOf(film).matches(title))
                 .flatMap(film -> scoreOf(film, url));

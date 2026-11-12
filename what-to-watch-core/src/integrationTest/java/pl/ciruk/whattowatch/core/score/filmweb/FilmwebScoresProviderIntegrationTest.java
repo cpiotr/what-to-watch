@@ -8,7 +8,6 @@ import pl.ciruk.whattowatch.core.score.ScoreAssert;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
-import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -20,10 +19,8 @@ class FilmwebScoresProviderIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        JsoupConnection connection = TestConnections.jsoup();
-
         scores = new FilmwebScoresProvider(
-                new FilmwebProxy(connection, TestConnections.html()),
+                new FilmwebProxy(TestConnections.okHttp()),
                 Executors.newSingleThreadExecutor());
     }
 

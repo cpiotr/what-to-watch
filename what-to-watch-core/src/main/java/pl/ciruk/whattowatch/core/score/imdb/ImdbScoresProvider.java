@@ -95,7 +95,7 @@ public class ImdbScoresProvider implements ScoresProvider {
         // IMDb sometimes serves a page without search data, such as a bot challenge.
         // Another URL (createUrl varies it) usually gets a real one.
         for (int attempt = 1; attempt <= MAX_PAGE_ATTEMPTS; attempt++) {
-            var page = httpConnection.connectToAndGet(createUrl(description));
+            var page = httpConnection.get(createUrl(description));
             if (page.isEmpty() || hasSearchData(page.get())) {
                 return page;
             }

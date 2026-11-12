@@ -11,21 +11,21 @@ public final class TestConnections {
         throw new AssertionError();
     }
 
-    public static HttpConnection<String> html() {
+    public static HttpConnection<String> okHttp() {
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .retryOnConnectionFailure(true)
                 .cookieJar(new InMemoryCookieJar())
                 .build();
-        return new HtmlConnection(httpClient, new DomainRateLimiter(domain -> 2));
+        return new OkHttpConnection(httpClient, new DomainRateLimiter(domain -> 2));
     }
 
     public static HttpConnection<String> cached() {
         return new CachedConnection(
                 CacheProvider.empty(),
-                html());
+                okHttp());
     }
 
     public static JsoupConnection jsoup() {
-        return new JsoupConnection(html());
+        return new JsoupConnection(okHttp());
     }
 }

@@ -6,7 +6,6 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
-import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
 
 import java.util.concurrent.Executors;
 
@@ -17,9 +16,8 @@ class FilmwebDescriptionProviderIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        JsoupConnection connection = TestConnections.jsoup();
         descriptions = new FilmwebDescriptionProvider(
-                new FilmwebProxy(connection, TestConnections.html()),
+                new FilmwebProxy(TestConnections.okHttp()),
                 Executors.newSingleThreadExecutor());
     }
 

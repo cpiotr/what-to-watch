@@ -15,7 +15,7 @@ class JustWatchTitleProviderIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        provider = new JustWatchTitleProvider(TestConnections.html(), List.of("nfx", "prv"));
+        provider = new JustWatchTitleProvider(TestConnections.okHttp(), List.of("nfx", "prv"));
     }
 
     @Test

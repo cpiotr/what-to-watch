@@ -93,10 +93,8 @@ public class Beans {
     }
 
     @Bean
-    FilmwebProxy filmwebProxy(
-            @Cached @LongExpiry HttpConnection<Element> pageConnection,
-            @Cached @LongExpiry HttpConnection<String> apiConnection) {
-        return new FilmwebProxy(pageConnection, apiConnection);
+    FilmwebProxy filmwebProxy(@Cached @LongExpiry HttpConnection<String> connection) {
+        return new FilmwebProxy(connection);
     }
 
     @Bean

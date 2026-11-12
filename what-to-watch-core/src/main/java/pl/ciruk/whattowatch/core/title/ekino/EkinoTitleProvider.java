@@ -46,7 +46,7 @@ public class EkinoTitleProvider implements TitleProvider {
 
         return generatePageUrlsForRequest(pageNumber)
                 .peek(url -> LOGGER.debug("Loading films from: {}", url))
-                .map(connection::connectToAndGet)
+                .map(connection::get)
                 .flatMap(Optional::stream)
                 .flatMap(EkinoStreamSelectors.TITLE_LINKS::extractFrom)
                 .map(this::parseToTitle)

@@ -3,7 +3,7 @@ package pl.ciruk.whattowatch.core.title.justwatch;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.HttpUrl;
-import okhttp3.Request;
+import okhttp3.RequestBody;
 import okio.Buffer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +13,7 @@ import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -98,18 +96,15 @@ class JustWatchTitleProviderTest {
     }
 
     private void givenResponse(String json) {
-        when(connection.connectToAndConsume(eq(API_URL), any())).thenReturn(Optional.of(json));
+        when(connection.post(eq(API_URL), any())).thenReturn(Optional.of(json));
     }
 
-    @SuppressWarnings("unchecked")
     private JsonNode sentRequestBody() throws IOException {
-        ArgumentCaptor<Consumer<Request.Builder>> action = ArgumentCaptor.forClass(Consumer.class);
-        verify(connection).connectToAndConsume(eq(API_URL), action.capture());
+        var body = ArgumentCaptor.forClass(RequestBody.class);
+        verify(connection).post(eq(API_URL), body.capture());
 
-        var request = new Request.Builder().url(API_URL);
-        action.getValue().accept(request);
         try (var buffer = new Buffer()) {
-            Objects.requireNonNull(request.build().body()).writeTo(buffer);
+            body.getValue().writeTo(buffer);
             return new ObjectMapper().readTree(buffer.readUtf8());
         }
     }
