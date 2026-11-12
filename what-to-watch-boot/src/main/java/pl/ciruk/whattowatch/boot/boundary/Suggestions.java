@@ -10,7 +10,6 @@ import pl.ciruk.whattowatch.core.suggest.Film;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
-import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import jakarta.inject.Inject;
@@ -20,7 +19,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.AsyncResponse;
-import jakarta.ws.rs.container.ConnectionCallback;
 import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -32,11 +30,11 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
-import static pl.ciruk.whattowatch.utils.concurrent.Threads.manageBlocking;
 
 @Named
 @Path("/suggestions")
@@ -47,11 +45,6 @@ public class Suggestions {
     private final FilmFilter filmFilter;
     private final PersonalRatings personalRatings;
     private final Timer responseTimer;
-    private final ExecutorService threadPool = new ForkJoinPool(
-            Runtime.getRuntime().availableProcessors(),
-            Threads.createForkJoinThreadFactory("Suggestions"),
-            Threads.createUncaughtExceptionHandler(),
-            true);
 
     @Inject
     public Suggestions(FilmSuggestionProvider suggestionsProvider, FilmFilter filmFilter, PersonalRatings personalRatings) {
@@ -72,19 +65,12 @@ public class Suggestions {
         asyncResponse.setTimeout(90, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
 
-        var future = CompletableFuture.supplyAsync(
-                () -> manageBlocking(() -> findSuggestions(pageNumber)),
-                threadPool);
-        asyncResponse.register((ConnectionCallback) disconnected -> {
-            LOGGER.info("Disconnected");
-            future.cancel(true);
-        });
         try {
-            var films = responseTimer.record(future::join);
+            var films = responseTimer.record(() -> findSuggestions(pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
             LOGGER.info("Finished getting suggestions for page {}", pageNumber);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.error("Error while getting suggestions", e);
             asyncResponse.resume(Responses.internalError());
         }
@@ -131,18 +117,17 @@ public class Suggestions {
     }
 
     private FilmResult toFilmResult(Film film) {
-        return FilmResult.builder()
-                .title(film.description().titleAsText())
-                .year(film.description().getYear())
-                .plot(film.description().getPlot())
-                .poster(film.description().getPoster())
-                .score(film.normalizedScore())
-                .predictedRating(personalRatings.predict(film))
-                .numberOfScores(film.scores().size())
-                .scores(film.scores())
-                .genres(film.description().getGenres())
-                .link(film.description().getFoundFor().url())
-                .build();
+        var description = film.description();
+        return new FilmResult(
+                description.titleAsText(),
+                description.getYear(),
+                description.getPlot(),
+                description.getFoundFor().url(),
+                description.getPoster(),
+                film.normalizedScore(),
+                personalRatings.predict(film),
+                film.scores(),
+                description.getGenres());
     }
 
     static class EventsSink implements AutoCloseable {

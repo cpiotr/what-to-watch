@@ -18,8 +18,6 @@ import jakarta.ws.rs.core.Response;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.stream.Collectors.toList;
-
 @Component
 @Path("/titles")
 public class Titles {
@@ -41,11 +39,13 @@ public class Titles {
             @PathParam("pageNumber") int pageNumber) {
         LOGGER.info("Page number: {}", pageNumber);
 
-        asyncResponse.resume(
-                Response.ok(titleProvider.streamOfTitles(pageNumber).collect(toList())).build()
-        );
-
         asyncResponse.setTimeout(20, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
+        try {
+            asyncResponse.resume(Response.ok(titleProvider.streamOfTitles(pageNumber).toList()).build());
+        } catch (RuntimeException e) {
+            LOGGER.error("Error while getting titles", e);
+            asyncResponse.resume(Responses.internalError());
+        }
     }
 }

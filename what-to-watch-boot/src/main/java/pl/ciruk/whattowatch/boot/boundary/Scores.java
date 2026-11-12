@@ -67,8 +67,14 @@ public class Scores {
                 .title(titleObj)
                 .build();
 
-        Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-                scoresProvider -> CompletableFuture.supplyAsync(() -> scoresProvider.findScoresBy(description), executorService);
+        Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync = scoresProvider -> CompletableFuture
+                .supplyAsync(() -> scoresProvider.findScoresBy(description).toList(), executorService)
+                // A site that fails, such as a throttled one, leaves the other sites' scores
+                .exceptionally(e -> {
+                    LOGGER.warn("Cannot get scores from {} for {}", scoresProvider.getClass().getSimpleName(), titleObj, e);
+                    return List.of();
+                })
+                .thenApply(List::stream);
 
         scoresProviders.stream()
                 .map(toScoresOfAsync)

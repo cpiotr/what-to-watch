@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
+import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
@@ -68,6 +69,46 @@ class EndpointsTest {
         var events = get("/resources/suggestions/1/stream").body();
 
         assertThat(events).contains("\"title\":\"First\"", "\"title\":\"Second\"", "poisonPill");
+    }
+
+    @Test
+    void shouldListSuggestedFilms() throws Exception {
+        var title = title("Listed");
+        when(titleProvider.streamOfTitles(2)).thenAnswer(ignored -> Stream.of(title));
+        when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.of(descriptionOf(title)));
+
+        var response = get("/resources/suggestions/2");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("\"title\":\"Listed\"");
+    }
+
+    @Test
+    void shouldAnswerNotFoundForFilmWithoutDescription() throws Exception {
+        var response = get("/resources/descriptions?title=Unknown&year=2020");
+
+        assertThat(response.statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void shouldKeepErrorDetailsInLog() throws Exception {
+        when(titleProvider.streamOfTitles(3)).thenThrow(new IllegalStateException("Could not get https://internal.example"));
+
+        var response = get("/resources/titles/3");
+
+        assertThat(response.statusCode()).isEqualTo(500);
+        assertThat(response.body()).isEqualTo("{\"error\":\"Internal error\"}");
+    }
+
+    @Test
+    void shouldGiveScoresOfSitesThatAnswered() throws Exception {
+        when(metacriticScores.findScoresBy(any())).thenAnswer(ignored -> Stream.of(Score.critic(0.81, 44)));
+        when(filmwebScores.findScoresBy(any())).thenThrow(new IllegalStateException("Throttled"));
+
+        var response = get("/resources/scores?title=Moana&year=2016");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("\"grade\":0.81");
     }
 
     private HttpResponse<String> get(String path) throws IOException, InterruptedException {
