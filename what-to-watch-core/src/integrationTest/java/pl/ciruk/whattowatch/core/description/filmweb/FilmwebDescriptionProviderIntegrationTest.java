@@ -87,6 +87,16 @@ class FilmwebDescriptionProviderIntegrationTest {
     }
 
     @Test
+    void shouldFindDescriptionWhenLotOfSimilarTitlesExist() {
+        Title title = Title.builder().originalTitle("Casino Royale").year(2006).build();
+
+        Description description = descriptions.findDescriptionBy(title)
+                .orElseThrow(AssertionError::new);
+
+        assertThat(description).hasTitle("Casino Royale");
+    }
+
+    @Test
     void shouldNotFindDescriptionForUnknownFilm() {
         Title title = Title.builder().originalTitle("NoWaySuchTitleExistsPC").year(2019).build();
 
