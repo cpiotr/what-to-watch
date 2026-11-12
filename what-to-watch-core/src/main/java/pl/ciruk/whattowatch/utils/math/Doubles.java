@@ -14,6 +14,6 @@ public final class Doubles {
     }
 
     public static double normalizeScore(double percentage, long totalQuantity) {
-        return WilsonScore.confidenceIntervalLowerBound(percentage, totalQuantity, 0.1);
+        return WilsonScore.confidenceIntervalLowerBound(percentage, totalQuantity);
     }
 }

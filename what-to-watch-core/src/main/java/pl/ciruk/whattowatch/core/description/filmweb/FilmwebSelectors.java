@@ -1,17 +1,18 @@
 package pl.ciruk.whattowatch.core.description.filmweb;
 
 import org.jsoup.nodes.Element;
-import pl.ciruk.whattowatch.utils.text.Patterns;
-
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 class FilmwebSelectors {
+    private static final Pattern NON_DIGIT = Pattern.compile("\\D");
+
     Optional<Integer> findYear(Element details) {
         var yearElement = details.selectFirst(".filmCoverSection__year");
         return Optional.ofNullable(yearElement)
                 .map(Element::text)
-                .map(text -> Patterns.nonDigit().matcher(text).replaceAll(""))
+                .map(text -> NON_DIGIT.matcher(text).replaceAll(""))
                 .map(Integer::valueOf);
     }
 

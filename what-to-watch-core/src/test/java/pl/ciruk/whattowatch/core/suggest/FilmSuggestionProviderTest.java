@@ -14,7 +14,7 @@ import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
@@ -40,8 +40,7 @@ class FilmSuggestionProviderTest {
 
         descriptionProvider = mock(DescriptionProvider.class);
         description = createDescription(title);
-        when(descriptionProvider.findDescriptionByAsync(title))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of(description)));
+        when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.of(description));
 
         scoreProvider = mock(ScoresProvider.class);
         when(scoreProvider.findScoresBy(description))
@@ -74,28 +73,30 @@ class FilmSuggestionProviderTest {
                 .collect(toList());
         assertThat(films).isNotEmpty();
 
-        verify(descriptionProvider).findDescriptionByAsync(title);
+        verify(descriptionProvider).findDescriptionBy(title);
         verify(scoreProvider).findScoresBy(description);
     }
 
     @Test
     void shouldSearchOnceForFilmRequestedTwiceAtOnce() {
-        var pendingDescription = new CompletableFuture<Optional<Description>>();
-        when(descriptionProvider.findDescriptionByAsync(title)).thenReturn(pendingDescription);
+        var descriptionFound = new CountDownLatch(1);
+        when(descriptionProvider.findDescriptionBy(title)).thenAnswer(ignored -> {
+            descriptionFound.await();
+            return Optional.of(description);
+        });
 
         var firstRequest = filmSuggestionProvider.suggestFilms(1).toList();
         var secondRequest = filmSuggestionProvider.suggestFilms(1).toList();
-        pendingDescription.complete(Optional.of(description));
+        descriptionFound.countDown();
 
         assertThat(CompletableFutures.getAllOf(secondRequest)).isEqualTo(CompletableFutures.getAllOf(firstRequest).toList());
-        verify(descriptionProvider).findDescriptionByAsync(title);
+        verify(descriptionProvider).findDescriptionBy(title);
         verify(scoreProvider).findScoresBy(description);
     }
 
     @Test
     void shouldCacheEmptyFilmIfDescriptionIsMissing() {
-        when(descriptionProvider.findDescriptionByAsync(title))
-                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.empty());
 
         List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());
@@ -106,8 +107,7 @@ class FilmSuggestionProviderTest {
 
     @Test
     void shouldNotCacheFilmWhenDescriptionFails() {
-        when(descriptionProvider.findDescriptionByAsync(title))
-                .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("Throttled")));
+        when(descriptionProvider.findDescriptionBy(title)).thenThrow(new IllegalStateException("Throttled"));
 
         List<Film> films = CompletableFutures.getAllOf(filmSuggestionProvider.suggestFilms(1))
                 .collect(toList());

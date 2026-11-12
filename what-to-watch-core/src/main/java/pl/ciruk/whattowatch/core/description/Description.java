@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 public final class Description {
-    private static final Description EMPTY = Description.builder().build();
-
     private final Title title;
     private final String poster;
     private final String plot;
@@ -32,14 +30,6 @@ public final class Description {
 
     public int getYear() {
         return title.year();
-    }
-
-    public boolean isEmpty() {
-        return this == EMPTY;
-    }
-
-    public static Description empty() {
-        return Description.EMPTY;
     }
 
     @Override

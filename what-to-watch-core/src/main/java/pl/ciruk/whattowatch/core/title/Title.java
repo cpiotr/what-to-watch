@@ -4,7 +4,7 @@ import pl.ciruk.whattowatch.utils.text.Texts;
 
 import java.util.Optional;
 
-import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
+import static java.util.function.Predicate.not;
 
 public record Title(
         String originalTitle,

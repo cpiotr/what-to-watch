@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.description.filmweb;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
-import pl.ciruk.whattowatch.utils.text.MissingValueException;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -19,40 +19,23 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-import static pl.ciruk.whattowatch.utils.stream.Predicates.not;
+import static java.util.function.Predicate.not;
 
 public class FilmwebDescriptionProvider implements DescriptionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ExecutorService executorService;
     private final FilmwebProxy filmwebProxy;
-    private final AtomicLong missingDescriptions = new AtomicLong();
+    private final Counter missingDescriptions = Metrics.counter(
+            Names.createName(DescriptionProvider.class, List.of("missing", "count")),
+            List.of(Tags.getProviderTag("filmweb")));
     private final FilmwebSelectors selector = new FilmwebSelectors();
 
     public FilmwebDescriptionProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
         this.filmwebProxy = filmwebProxy;
         this.executorService = executorService;
-
-        Metrics.gauge(
-                Names.createName(DescriptionProvider.class, List.of("missing", "count")),
-                List.of(Tags.getProviderTag("filmweb")),
-                missingDescriptions,
-                AtomicLong::get
-        );
-    }
-
-    @Override
-    public CompletableFuture<Optional<Description>> findDescriptionByAsync(Title title) {
-        // A failure isn't turned into a missing description, which would be cached
-        return CompletableFuture.supplyAsync(
-                () -> findDescriptionBy(title),
-                executorService
-        );
     }
 
     @Override
@@ -67,7 +50,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .findAny();
         if (foundDescription.isEmpty()) {
             LOGGER.warn("Missing description for: {}", title);
-            missingDescriptions.incrementAndGet();
+            missingDescriptions.increment();
         }
 
         return foundDescription;
@@ -82,44 +65,30 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .toList();
         return CompletableFutures.getAllOf(futures)
                 .flatMap(Optional::stream)
-                .map(extractDescriptionOrElse(requestedTitle, () -> LOGGER.warn("Could not get description for {} ({})", titleText, requestedTitle.year())))
-                .filter(not(Description::isEmpty));
+                .map(page -> descriptionFrom(page, requestedTitle))
+                .flatMap(Optional::stream);
     }
 
-    private Function<Element, Description> extractDescriptionOrElse(Title requestedTitle, Runnable actionIfMissing) {
-        return pageWithDetails -> {
-            try {
-                return extractDescriptionFrom(pageWithDetails, requestedTitle);
-            } catch (MissingValueException e) {
-                actionIfMissing.run();
-                return Description.empty();
-            }
-        };
-    }
+    private Optional<Description> descriptionFrom(Element page, Title requestedTitle) {
+        var details = page.selectFirst(".filmCoverSection__titleDetails");
+        var localTitle = Optional.ofNullable(details).flatMap(selector::findLocalTitle);
+        var year = Optional.ofNullable(details).flatMap(selector::findYear);
+        if (localTitle.isEmpty() || year.isEmpty()) {
+            LOGGER.warn("Could not read the title and year of a film found for {}", requestedTitle);
+            return Optional.empty();
+        }
 
-    private Description extractDescriptionFrom(Element pageWithDetails, Title requestedTitle) {
-        Element mainElement = Optional.ofNullable(pageWithDetails.selectFirst(".filmCoverSection__titleDetails"))
-                .orElseThrow(MissingValueException::new);
-        var localTitle = selector.findLocalTitle(mainElement)
-                .orElseThrow(MissingValueException::new);
-        var originalTitle = selector.findOriginalTitle(mainElement)
-                .orElse("");
-        var extractedYear = selector.findYear(mainElement)
-                .orElseThrow(MissingValueException::new);
-
-        var retrievedTitle = Title.builder()
-                .title(localTitle)
-                .originalTitle(originalTitle)
-                .year(extractedYear)
+        var foundTitle = Title.builder()
+                .title(localTitle.get())
+                .originalTitle(selector.findOriginalTitle(details).orElse(""))
+                .year(year.get())
                 .build();
-
-        return Description.builder()
-                .title(retrievedTitle)
+        return Optional.of(Description.builder()
+                .title(foundTitle)
                 .foundFor(requestedTitle)
-                .poster(selector.findPoster(pageWithDetails).orElse(""))
-                .plot(selector.findPlot(pageWithDetails).orElse(""))
-                .genres(selector.findGenres(pageWithDetails).collect(toList()))
-                .build();
+                .poster(selector.findPoster(page).orElse(""))
+                .plot(selector.findPlot(page).orElse(""))
+                .genres(selector.findGenres(page).toList())
+                .build());
     }
 }
-

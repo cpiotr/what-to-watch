@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 public final class Texts {
     private static final String[] ARTICLES = {"a ", "an ", "the "};
     private static final Pattern DIACRITICS = Pattern.compile("\\p{M}");
+    private static final Pattern NOT_ALPHANUMERIC_OR_SPACE = Pattern.compile("[^\\w ]");
 
     private Texts() {
         throw new AssertionError();
@@ -26,7 +27,7 @@ public final class Texts {
      */
     public static String unify(String text) {
         var folded = withoutDiacritics(text.toLowerCase(Locale.ROOT)).replace("&", "and");
-        return Patterns.nonAlphaNumSpace()
+        return NOT_ALPHANUMERIC_OR_SPACE
                 .matcher(stripArticle(folded))
                 .replaceAll("");
     }

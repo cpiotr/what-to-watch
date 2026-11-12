@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.title.justwatch;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -20,8 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -59,18 +58,14 @@ public class JustWatchTitleProvider implements TitleProvider {
 
     private final HttpConnection<String> connection;
     private final List<String> packages;
-    private final AtomicLong numberOfTitles = new AtomicLong();
+    private final Counter numberOfTitles = Metrics.counter(
+            Names.createName(TitleProvider.class, List.of("count")),
+            List.of(Tags.getProviderTag("justwatch")));
 
     // The packages are JustWatch's short names of streaming services, such as nfx for Netflix
     public JustWatchTitleProvider(HttpConnection<String> connection, List<String> packages) {
         this.connection = connection;
         this.packages = List.copyOf(packages);
-
-        Metrics.gauge(
-                Names.createName(TitleProvider.class, List.of("count")),
-                List.of(Tags.getProviderTag("justwatch")),
-                numberOfTitles,
-                AtomicLong::get);
 
         LOGGER.info("Streaming services: {}", packages);
     }
@@ -81,11 +76,10 @@ public class JustWatchTitleProvider implements TitleProvider {
 
         var body = RequestBody.create(createQueryFor(pageNumber), JSON);
         return connection.post(API_URL, body)
-                .flatMap(JustWatchTitleProvider::readJson)
+                .map(JustWatchTitleProvider::titlesIn)
                 .stream()
-                .flatMap(response -> StreamSupport.stream(response.path("data").path("popularTitles").path("edges").spliterator(), false))
-                .map(edge -> parseToTitle(edge.path("node")))
-                .peek(ignored -> numberOfTitles.incrementAndGet());
+                .flatMap(titles -> StreamSupport.stream(titles.spliterator(), false))
+                .map(edge -> parseToTitle(edge.path("node")));
     }
 
     private String createQueryFor(int pageNumber) {
@@ -105,21 +99,27 @@ public class JustWatchTitleProvider implements TitleProvider {
         return Base64.getEncoder().encodeToString(String.valueOf(numberOfTitles).getBytes(StandardCharsets.UTF_8));
     }
 
-    private static Optional<JsonNode> readJson(String json) {
+    // A broken answer throws, so it isn't shown as a page without films
+    private static JsonNode titlesIn(String json) {
+        JsonNode response;
         try {
-            var response = OBJECT_MAPPER.readTree(json);
-            if (response.has("errors")) {
-                LOGGER.warn("JustWatch answered with errors: {}", response.path("errors"));
-            }
-            return Optional.of(response);
+            response = OBJECT_MAPPER.readTree(json);
         } catch (JsonProcessingException e) {
-            LOGGER.warn("Could not parse JSON from {}", API_URL, e);
-            return Optional.empty();
+            throw new IllegalStateException("JustWatch answered with something other than JSON", e);
         }
+        var titles = response.path("data").path("popularTitles").path("edges");
+        if (!titles.isArray()) {
+            throw new IllegalStateException("JustWatch answered without titles: " + response.path("errors"));
+        }
+        if (response.has("errors")) {
+            LOGGER.warn("JustWatch answered with errors: {}", response.path("errors"));
+        }
+        return titles;
     }
 
     // Links to the film on a streaming service, or to JustWatch's page of it when no service offers it anymore
-    private static Title parseToTitle(JsonNode film) {
+    private Title parseToTitle(JsonNode film) {
+        numberOfTitles.increment();
         var content = film.path("content");
         var url = StreamSupport.stream(film.path("offers").spliterator(), false)
                 .map(offer -> offer.path("standardWebURL").asText())

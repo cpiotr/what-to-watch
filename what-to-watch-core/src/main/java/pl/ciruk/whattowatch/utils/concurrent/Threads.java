@@ -4,12 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 public final class Threads {
@@ -17,21 +14,6 @@ public final class Threads {
 
     private Threads() {
         throw new AssertionError();
-    }
-
-    public static ThreadFactory createThreadFactory(String threadNamePrefix) {
-        return new ThreadFactory() {
-            private final AtomicLong counter = new AtomicLong();
-
-            @Override
-            public Thread newThread(Runnable runnable) {
-                Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                thread.setName(threadNamePrefix + "-" + counter.incrementAndGet());
-                thread.setDaemon(true);
-                thread.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
-                return thread;
-            }
-        };
     }
 
     public static ForkJoinPool.ForkJoinWorkerThreadFactory createForkJoinThreadFactory(String threadNamePrefix) {

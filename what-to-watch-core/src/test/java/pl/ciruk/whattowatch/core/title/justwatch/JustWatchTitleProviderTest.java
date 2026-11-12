@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -58,18 +59,20 @@ class JustWatchTitleProviderTest {
     }
 
     @Test
-    void shouldFindNoTitlesWhenResponseHasErrors() {
+    void shouldFailWhenResponseHasErrorsInsteadOfTitles() {
         givenResponse("""
                 {"errors":[{"message":"transport not supported"}],"data":null}""");
 
-        assertThat(provider.streamOfTitles(1)).isEmpty();
+        assertThatThrownBy(() -> provider.streamOfTitles(1).toList())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("transport not supported");
     }
 
     @Test
-    void shouldFindNoTitlesWhenResponseIsNotJson() {
+    void shouldFailWhenResponseIsNotJson() {
         givenResponse("<html>Service unavailable</html>");
 
-        assertThat(provider.streamOfTitles(1)).isEmpty();
+        assertThatThrownBy(() -> provider.streamOfTitles(1).toList()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test

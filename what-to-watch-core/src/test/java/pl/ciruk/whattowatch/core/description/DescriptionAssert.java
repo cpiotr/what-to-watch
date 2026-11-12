@@ -15,10 +15,11 @@ public final class DescriptionAssert extends AbstractAssert<DescriptionAssert, D
     }
 
     public static DescriptionAssert assertThat(Optional<Description> description) {
-        return new DescriptionAssert(description.orElse(Description.empty()), DescriptionAssert.class);
+        return new DescriptionAssert(description.orElse(null), DescriptionAssert.class);
     }
 
     public DescriptionAssert hasTitle(String title) {
+        isNotNull();
         var itemTitle = actual.getTitle();
 
         var descriptionHasTitle = itemTitle.originalTitle().equalsIgnoreCase(title)
@@ -42,9 +43,9 @@ public final class DescriptionAssert extends AbstractAssert<DescriptionAssert, D
     }
 
     public DescriptionAssert isEmpty() {
-        Assertions.assertThat(actual.isEmpty())
-                .as("Expected description to be empty. Actual: <%s>", actual)
-                .isTrue();
+        Assertions.assertThat(actual)
+                .as("Expected no description. Actual: <%s>", actual)
+                .isNull();
         return this;
     }
 

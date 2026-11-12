@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -31,7 +30,6 @@ public class FilmSuggestionProvider {
     private final DescriptionProvider descriptions;
     private final List<ScoresProvider> scoresProviders;
     private final ExecutorService executorService;
-    private final AtomicLong suggestedFilms = new AtomicLong();
     private final Cache<Title, Film> cache;
     private final Map<Title, CompletableFuture<Film>> filmsInProgress = new ConcurrentHashMap<>();
 
@@ -67,10 +65,8 @@ public class FilmSuggestionProvider {
     }
 
     private CompletableFuture<Film> findFilmByTitle(Title title) {
-        return descriptions.findDescriptionByAsync(title)
-                .thenComposeAsync(
-                        description -> description.map(this::descriptionToFilm).orElseGet(() -> getEmptyFilm(title)),
-                        executorService)
+        return CompletableFuture.supplyAsync(() -> descriptions.findDescriptionBy(title), executorService)
+                .thenCompose(description -> description.map(this::descriptionToFilm).orElseGet(() -> getEmptyFilm(title)))
                 .exceptionally(t -> {
                     LOGGER.error("Cannot get film for title {}", title, t);
                     return Film.empty();
@@ -90,9 +86,8 @@ public class FilmSuggestionProvider {
                 .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService));
         return scoresFuture
                 .thenApply(stream -> stream.collect(toList()))
-                .thenApply(scores -> createFilm(description, scores))
+                .thenApply(scores -> new Film(description, scores))
                 .thenApply(film -> {
-                    suggestedFilms.incrementAndGet();
                     // A film with missing scores isn't cached, so the next request retries the failed providers
                     if (!anyProviderFailed.get()) {
                         cache.put(film.description().getFoundFor(), film);
@@ -113,9 +108,5 @@ public class FilmSuggestionProvider {
                     return List.of();
                 })
                 .thenApply(List::stream);
-    }
-
-    private Film createFilm(Description description, List<Score> scores) {
-        return new Film(description, scores);
     }
 }
