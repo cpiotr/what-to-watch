@@ -33,6 +33,7 @@ import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.core.title.justwatch.JustWatchTitleProvider;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
 import pl.ciruk.whattowatch.neural.RatedFilm;
+import pl.ciruk.whattowatch.neural.WatchedFilms;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -149,6 +150,11 @@ public class Beans {
                 .toList();
         LOGGER.info("Learning my ratings from {} rated films", ratedFilms.size());
         return PersonalRatings.trainOn(ratedFilms);
+    }
+
+    @Bean
+    WatchedFilms watchedFilms() {
+        return WatchedFilms.of(RatedFilm.readAll());
     }
 
     @Bean

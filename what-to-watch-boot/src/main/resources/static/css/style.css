@@ -303,12 +303,20 @@ main {
 
 .badge small { margin-left: 1px; font-size: .75em; font-weight: 700; }
 
-.new-tag {
-	display: none;
+/* "New" and "Watched" stack in the corner, so a card can show both */
+.tags {
 	position: absolute;
 	top: 6px;
 	right: 6px;
 	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.tag {
+	display: none;
 	padding: 1px 6px;
 	border-radius: 5px;
 	background: var(--surface);
@@ -321,7 +329,8 @@ main {
 	box-shadow: 0 0 0 1px rgb(0 0 0 / .12), 0 2px 6px rgb(0 0 0 / .4);
 }
 
-.is-new .new-tag { display: block; }
+.is-new .new-tag,
+.is-watched .watched-tag { display: block; }
 
 /* The preview over the poster on hover or focus: on artwork, so dark in both themes. */
 .peek {

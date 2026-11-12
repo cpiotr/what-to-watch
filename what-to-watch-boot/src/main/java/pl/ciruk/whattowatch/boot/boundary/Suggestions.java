@@ -10,6 +10,7 @@ import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
+import pl.ciruk.whattowatch.neural.WatchedFilms;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
@@ -47,13 +48,19 @@ public class Suggestions {
     private final SuggestionProvider suggestionsProvider;
     private final SuggestionFilter suggestionFilter;
     private final PersonalRatings personalRatings;
+    private final WatchedFilms watchedFilms;
     private final Timer responseTimer;
 
     @Inject
-    public Suggestions(SuggestionProvider suggestionsProvider, SuggestionFilter suggestionFilter, PersonalRatings personalRatings) {
+    public Suggestions(
+            SuggestionProvider suggestionsProvider,
+            SuggestionFilter suggestionFilter,
+            PersonalRatings personalRatings,
+            WatchedFilms watchedFilms) {
         this.suggestionsProvider = suggestionsProvider;
         this.suggestionFilter = suggestionFilter;
         this.personalRatings = personalRatings;
+        this.watchedFilms = watchedFilms;
 
         responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
     }
@@ -137,7 +144,8 @@ public class Suggestions {
                 scored.normalizedScore(),
                 personalRatings.predict(scored),
                 scored.scores(),
-                description.getGenres());
+                description.getGenres(),
+                watchedFilms.contains(description.getTitle()));
     }
 
     static class EventsSink implements AutoCloseable {

@@ -13,5 +13,6 @@ public record SuggestionResult(
         Double score,
         Double predictedRating,
         List<Score> scores,
-        List<String> genres) {
+        List<String> genres,
+        boolean watched) {
 }

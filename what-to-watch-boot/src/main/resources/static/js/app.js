@@ -17,6 +17,15 @@ let shown = null;         // the entry open in the dialog
 let refocusMore = false;  // whether the footer button had focus before it was replaced
 let anchor = null;        // the card kept still while films are inserted, see keepingViewStill
 let anchoredAt = 0;       // the scroll position after the last correction
+let hideWatched = false;  // whether films I rated are left out of the grid, the counts and the dialog
+let footerFor = null;     // redraws the footer, so its counts follow hiding or showing watched films
+
+// The choice is remembered in this browser, but the page works the same when storage is blocked.
+try {
+    hideWatched = localStorage.getItem('hideWatched') === 'true';
+} catch {
+    // Keep showing them
+}
 
 const SERVICES = {
     'primevideo.com': 'Prime Video', 'netflix.com': 'Netflix', 'max.com': 'Max', 'hbomax.com': 'Max',
@@ -34,6 +43,9 @@ const COMPARE = {
 // already on screen. Merging puts every film into one batch, which makes the whole list one ranking again.
 const compare = (a, b) => a.batch - b.batch || COMPARE[sortBy](a, b);
 
+// `ranked` keeps hidden films too, so showing them again puts them back in place.
+const visible = () => ranked.filter(entry => !(hideWatched && entry.film.watched));
+
 const ICON = {
     heart: '<path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 5.3 3 1.8-1.9 3.2-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="currentColor"/>',
     close: '<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>',
@@ -46,6 +58,12 @@ const percent = fraction => Math.round(fraction * 100);
 const count = n => n.toLocaleString('pl-PL');
 const NOUNS = {FILM: {one: 'film', many: 'films'}, SERIES: {one: 'series', many: 'series'}};
 const titleCount = n => `${n} ${n === 1 ? NOUNS[kind].one : NOUNS[kind].many}`;
+
+function shownCount() {
+    const onScreen = visible().length;
+    const hidden = ranked.length - onScreen;
+    return hidden === 0 ? titleCount(onScreen) : `${titleCount(onScreen)} · ${hidden} watched hidden`;
+}
 
 // h('p', {class: 'x'}, 'text', child) builds an element; null and false children are skipped.
 function h(tag, props = {}, ...children) {
@@ -118,11 +136,13 @@ function predicted(film) {
 function card(entry) {
     const {film} = entry;
     const sources = film.scores.map(score => h('span', {}, score.source, ' ', h('b', {}, percent(score.grade))));
-    return h('li', {class: 'film'},
+    return h('li', {class: film.watched ? 'film is-watched' : 'film'},
         h('div', {class: 'poster'},
             poster(film),
             scoreBadge(film),
-            h('span', {class: 'new-tag'}, 'New'),
+            h('div', {class: 'tags'},
+                h('span', {class: 'tag new-tag'}, 'New'),
+                h('span', {class: 'tag watched-tag'}, 'Watched')),
             h('div', {class: 'peek', 'aria-hidden': 'true'},
                 film.plot && h('p', {class: 'peek-plot'}, film.plot),
                 h('p', {class: 'peek-sources'}, sources))),
@@ -146,7 +166,7 @@ function keepingViewStill(change) {
     if (window.scrollY === 0) {
         anchor = null;
     } else if (!anchor || window.scrollY !== anchoredAt) {
-        anchor = ranked.find(entry => entry.card.offsetTop >= window.scrollY)?.card;
+        anchor = visible().find(entry => entry.card.offsetTop >= window.scrollY)?.card;
     }
     const before = anchor?.offsetTop;
     change();
@@ -167,11 +187,15 @@ function divider(batch) {
     return dividers.get(batch);
 }
 
-// Puts the cards, and a divider before each later batch, in the order of `ranked`. Only nodes that are out of
-// place move, so loaded posters and focus survive.
+// Puts the visible cards, and a divider before each later batch, in the order of `ranked`. Only nodes that are
+// out of place move, so loaded posters and focus survive. Hidden cards, and dividers of batches with nothing
+// left to show, come out of the grid.
 function arrange() {
-    const nodes = ranked.flatMap((entry, index) =>
-        index > 0 && entry.batch !== ranked[index - 1].batch ? [divider(entry.batch), entry.card] : [entry.card]);
+    const entries = visible();
+    const nodes = entries.flatMap((entry, index) =>
+        index > 0 && entry.batch !== entries[index - 1].batch ? [divider(entry.batch), entry.card] : [entry.card]);
+    const kept = new Set(nodes);
+    grid.querySelectorAll('.film:not(.skeleton), .batch').forEach(node => kept.has(node) || node.remove());
     nodes.forEach((node, index) => {
         if (grid.children[index] !== node) grid.insertBefore(node, grid.children[index] ?? null);
     });
@@ -209,7 +233,8 @@ function mergePages() {
     arrange();
     window.scrollTo(0, 0);
     grid.focus({preventScroll: true});
-    showFooter(`All ${titleCount(ranked.length)} in one ranking.`, moreButton());
+    footerFor = () => showFooter(`All ${titleCount(visible().length)} in one ranking.`, moreButton());
+    footerFor();
 }
 
 function setStatus(text, busy) {
@@ -234,6 +259,7 @@ function showFooter(text, ...actions) {
 
 function showLoading(page) {
     refocusMore = more.contains(document.activeElement);
+    footerFor = null;
     more.replaceChildren();
     grid.querySelectorAll('.skeleton').forEach(node => node.remove());
     grid.append(...skeletons(ranked.length === 0 ? 16 : 4));
@@ -242,30 +268,37 @@ function showLoading(page) {
 
 // How many of the page's films would be in the top 10 if every page were one ranking.
 function topTenFrom(page) {
-    return ranked.toSorted(COMPARE[sortBy]).slice(0, 10).filter(entry => entry.page === page).length;
+    return visible().toSorted(COMPARE[sortBy]).slice(0, 10).filter(entry => entry.page === page).length;
 }
 
 function showPageDone(page) {
-    const added = ranked.filter(entry => entry.page === page).length;   // counts a retried page as a whole
     grid.querySelectorAll('.skeleton').forEach(node => node.remove());
-    setStatus(titleCount(ranked.length), false);
+    setStatus(shownCount(), false);
+    footerFor = () => showPageFooter(page);
+    footerFor();
+}
+
+function showPageFooter(page) {
+    const added = ranked.filter(entry => entry.page === page).length;   // counts a retried page as a whole
+    const shownAdded = visible().filter(entry => entry.page === page).length;
     if (added === 0) {
         showFooter(ranked.length ? 'That’s everything for now.' : 'No suggestions right now.');
         return;
     }
     lastPage = page;
     if (!ranked.some(entry => entry.batch !== ranked[0].batch)) {
-        showFooter(`Page ${page} added ${titleCount(added)}.`, moreButton());
+        showFooter(`Page ${page} added ${titleCount(shownAdded)}.`, moreButton());
         return;
     }
     const top = topTenFrom(page);
-    showFooter(`Page ${page} added ${titleCount(added)} below. ${top === 0 ? 'None' : top} of them would make your top 10.`,
+    showFooter(`Page ${page} added ${titleCount(shownAdded)} below. ${top === 0 ? 'None' : top} of them would make your top 10.`,
         button('Merge into one ranking', mergePages, 'button secondary'), moreButton());
 }
 
 function showInterrupted(page) {
     grid.querySelectorAll('.skeleton').forEach(node => node.remove());
-    setStatus(`${titleCount(ranked.length)} · connection lost`, false);
+    footerFor = null;
+    setStatus(`${shownCount()} · connection lost`, false);
     showFooter(`Loading page ${page} stopped before it finished.`, button(`Retry page ${page}`, () => loadPage(page)));
 }
 
@@ -278,7 +311,7 @@ function loadPage(page) {
         if (seen.has(event.lastEventId)) return;
         seen.add(event.lastEventId);
         addTitle(JSON.parse(event.data), page);
-        setStatus(`Loading page ${page}… ${titleCount(ranked.length)}`, true);
+        setStatus(`Loading page ${page}… ${shownCount()}`, true);
     });
     source.addEventListener('poisonPill', () => {
         source.close();
@@ -303,8 +336,9 @@ function sourceRow(score) {
 function showDetails(entry) {
     shown = entry;
     const {film} = entry;
-    const index = ranked.indexOf(entry);
-    const step = delta => ranked[index + delta] && showDetails(ranked[index + delta]);
+    const entries = visible();
+    const index = entries.indexOf(entry);
+    const step = delta => entries[index + delta] && showDetails(entries[index + delta]);
     const service = serviceName(film.link);
 
     dialog.replaceChildren(
@@ -325,8 +359,8 @@ function showDetails(entry) {
         h('div', {class: 'details-nav'},
             h('button', {type: 'button', class: 'icon-button', 'aria-label': 'Previous film', disabled: index === 0,
                 onclick: () => step(-1)}, svg(ICON.prev)),
-            h('span', {}, `${index + 1} / ${ranked.length}`),
-            h('button', {type: 'button', class: 'icon-button', 'aria-label': 'Next film', disabled: index === ranked.length - 1,
+            h('span', {}, `${index + 1} / ${entries.length}`),
+            h('button', {type: 'button', class: 'icon-button', 'aria-label': 'Next film', disabled: index === entries.length - 1,
                 onclick: () => step(1)}, svg(ICON.next))),
         h('button', {type: 'button', class: 'icon-button close', 'aria-label': 'Close', onclick: () => dialog.close()}, svg(ICON.close)));
     dialog.onkeydown = event => {
@@ -349,6 +383,23 @@ dialog.addEventListener('close', () => shown?.card.querySelector('.title button'
 document.querySelector('.sort').addEventListener('change', event => {
     sortBy = event.target.value;
     resort();
+});
+
+// Hiding only takes cards out of the grid, so no page loads again.
+const hideWatchedSwitch = document.querySelector('.hide-watched input');
+hideWatchedSwitch.checked = hideWatched;
+hideWatchedSwitch.addEventListener('change', event => {
+    hideWatched = event.target.checked;
+    try {
+        localStorage.setItem('hideWatched', String(hideWatched));
+    } catch {
+        // Remembered only until the page reloads
+    }
+    // The card held still so far may be one that is hidden now, so pick it again from the cards that stay.
+    anchor = null;
+    keepingViewStill(arrange);
+    if (!status.classList.contains('busy')) setStatus(shownCount(), false);
+    footerFor?.();
 });
 
 // Films and series are never ranked together, so the other kind starts again from its first page.

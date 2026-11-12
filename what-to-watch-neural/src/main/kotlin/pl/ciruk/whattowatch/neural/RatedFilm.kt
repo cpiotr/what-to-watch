@@ -6,6 +6,7 @@ import pl.ciruk.whattowatch.core.score.ScoreType
 import pl.ciruk.whattowatch.core.score.ScoresProvider
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle
 import pl.ciruk.whattowatch.core.title.Title
+import pl.ciruk.whattowatch.core.title.TitleKind
 
 /**
  * A film I rated from 1 to 10, with the scores it has on other sites.
@@ -43,6 +44,7 @@ data class RatedFilm(val film: ScoredTitle, val rating: Int) {
                     .title(columns[0])
                     .originalTitle(columns[1].ifEmpty { null })
                     .year(columns[2].toInt())
+                    .kind(TitleKind.FILM)
                     .build()
             val scores = listOfNotNull(
                     score(columns[4], columns[5], 10.0, "Filmweb", ScoreType.AMATEUR),

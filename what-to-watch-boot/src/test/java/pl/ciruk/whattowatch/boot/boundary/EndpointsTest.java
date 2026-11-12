@@ -81,7 +81,19 @@ class EndpointsTest {
         var response = get("/resources/suggestions/2");
 
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("\"title\":\"Listed\"");
+        assertThat(response.body()).contains("\"title\":\"Listed\"", "\"watched\":false");
+    }
+
+    // Air (2023) is one of the films I rated
+    @Test
+    void shouldMarkFilmsIWatched() throws Exception {
+        var title = Title.builder().title("Air").year(2023).build();
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 5)).thenAnswer(ignored -> Stream.of(title));
+        when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.of(descriptionOf(title)));
+
+        var response = get("/resources/suggestions/5");
+
+        assertThat(response.body()).contains("\"title\":\"Air\"", "\"watched\":true");
     }
 
     @Test
