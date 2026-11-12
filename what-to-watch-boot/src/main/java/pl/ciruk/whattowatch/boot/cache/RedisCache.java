@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.boot.cache;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import jakarta.annotation.PostConstruct;
 import net.jodah.failsafe.CircuitBreaker;
@@ -22,15 +23,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class RedisCache implements CacheProvider<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_COMPRESSION_RATIO = 255;
 
     private final RedisClient redisClient;
-    private final AtomicLong missCounter = new AtomicLong();
-    private final AtomicLong requestCounter = new AtomicLong();
+    private final Counter missCounter;
+    private final Counter requestCounter;
     private final CircuitBreaker<Optional<String>> circuitBreaker;
     private final Duration expiry;
     // Pure Java: the native library needs extra JVM flags on JDK 25, and the cache doesn't need its speed
@@ -45,14 +45,8 @@ public class RedisCache implements CacheProvider<String> {
         this.expiry = expiry;
         this.circuitBreaker = circuitBreaker;
 
-        Metrics.gauge(
-                Names.createName(RedisCache.class, List.of(name, "miss", "count")),
-                missCounter,
-                AtomicLong::get);
-        Metrics.gauge(
-                Names.createName(RedisCache.class, List.of(name, "request", "count")),
-                requestCounter,
-                AtomicLong::get);
+        this.missCounter = Metrics.counter(Names.createName(RedisCache.class, List.of(name, "miss", "count")));
+        this.requestCounter = Metrics.counter(Names.createName(RedisCache.class, List.of(name, "request", "count")));
     }
 
     @PostConstruct
@@ -63,7 +57,7 @@ public class RedisCache implements CacheProvider<String> {
 
     @Override
     public Optional<String> get(String key) {
-        requestCounter.incrementAndGet();
+        requestCounter.increment();
 
         var optionalValue = Failsafe.with(circuitBreaker, Fallback.of(Optional.empty()))
                 .onComplete(event -> {
@@ -74,7 +68,7 @@ public class RedisCache implements CacheProvider<String> {
                 .get(() -> getValueFromCache(key));
         if (optionalValue.isEmpty()) {
             LOGGER.debug("Missing key: {}", key);
-            missCounter.incrementAndGet();
+            missCounter.increment();
         }
         return optionalValue;
     }
