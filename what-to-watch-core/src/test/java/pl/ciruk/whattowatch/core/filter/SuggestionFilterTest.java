@@ -2,7 +2,7 @@ package pl.ciruk.whattowatch.core.filter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.ciruk.whattowatch.core.suggest.Film;
+import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -12,16 +12,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class FilmFilterTest {
-    private FilmFilter filmFilter;
-    private Predicate<Film> firstFilter;
-    private Predicate<Film> secondFilter;
+class SuggestionFilterTest {
+    private SuggestionFilter suggestionFilter;
+    private Predicate<ScoredTitle> firstFilter;
+    private Predicate<ScoredTitle> secondFilter;
 
     @BeforeEach
     void setUp() {
         firstFilter = mockPredicate();
         secondFilter = mockPredicate();
-        filmFilter = new FilmFilter(List.of(firstFilter, secondFilter));
+        suggestionFilter = new SuggestionFilter(List.of(firstFilter, secondFilter));
     }
 
     @Test
@@ -29,7 +29,7 @@ class FilmFilterTest {
         when(firstFilter.test(any())).thenReturn(true);
         when(secondFilter.test(any())).thenReturn(true);
 
-        boolean worthWatching = filmFilter.isWorthWatching(new Film(null, null));
+        boolean worthWatching = suggestionFilter.isWorthWatching(new ScoredTitle(null, null));
 
         assertThat(worthWatching).isTrue();
     }
@@ -39,7 +39,7 @@ class FilmFilterTest {
         when(firstFilter.test(any())).thenReturn(true);
         when(secondFilter.test(any())).thenReturn(false);
 
-        boolean worthWatching = filmFilter.isWorthWatching(new Film(null, null));
+        boolean worthWatching = suggestionFilter.isWorthWatching(new ScoredTitle(null, null));
 
         assertThat(worthWatching).isFalse();
     }
@@ -49,13 +49,13 @@ class FilmFilterTest {
         when(firstFilter.test(any())).thenReturn(true);
         when(secondFilter.test(any())).thenReturn(true);
 
-        boolean worthWatching = filmFilter.isWorthWatching(Film.empty());
+        boolean worthWatching = suggestionFilter.isWorthWatching(ScoredTitle.empty());
 
         assertThat(worthWatching).isFalse();
     }
 
     @SuppressWarnings("unchecked")
-    private Predicate<Film> mockPredicate() {
+    private Predicate<ScoredTitle> mockPredicate() {
         return mock(Predicate.class);
     }
 }

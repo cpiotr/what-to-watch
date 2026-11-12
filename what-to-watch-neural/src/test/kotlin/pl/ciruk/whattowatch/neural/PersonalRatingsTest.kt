@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import pl.ciruk.whattowatch.core.description.Description
 import pl.ciruk.whattowatch.core.score.Score
 import pl.ciruk.whattowatch.core.score.ScoreType
-import pl.ciruk.whattowatch.core.suggest.Film
+import pl.ciruk.whattowatch.core.suggest.ScoredTitle
 import pl.ciruk.whattowatch.core.title.Title
 
 class PersonalRatingsTest {
@@ -55,13 +55,13 @@ class PersonalRatingsTest {
         assertThat(personalRatings.predict(withFewVotes)).isNull()
     }
 
-    private fun film(filmweb: Double? = null, imdb: Double? = null, metacritic: Double? = null, votes: Long = 10_000): Film {
+    private fun film(filmweb: Double? = null, imdb: Double? = null, metacritic: Double? = null, votes: Long = 10_000): ScoredTitle {
         val scores = listOfNotNull(
                 filmweb?.let { score(it, votes, "Filmweb", ScoreType.AMATEUR) },
                 imdb?.let { score(it, votes, "IMDb", ScoreType.AMATEUR) },
                 metacritic?.let { score(it, 40, "Metacritic", ScoreType.CRITIC) })
         val title = Title.builder().title("Film").year(2026).build()
-        return Film(Description.builder().title(title).build(), scores)
+        return ScoredTitle(Description.builder().title(title).build(), scores)
     }
 
     private fun score(grade: Double, quantity: Long, source: String, type: ScoreType): Score {

@@ -5,8 +5,8 @@ import io.micrometer.core.instrument.Timer;
 import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.core.filter.FilmFilter;
-import pl.ciruk.whattowatch.core.suggest.Film;
+import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
+import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
@@ -45,14 +45,14 @@ public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final SuggestionProvider suggestionsProvider;
-    private final FilmFilter filmFilter;
+    private final SuggestionFilter suggestionFilter;
     private final PersonalRatings personalRatings;
     private final Timer responseTimer;
 
     @Inject
-    public Suggestions(SuggestionProvider suggestionsProvider, FilmFilter filmFilter, PersonalRatings personalRatings) {
+    public Suggestions(SuggestionProvider suggestionsProvider, SuggestionFilter suggestionFilter, PersonalRatings personalRatings) {
         this.suggestionsProvider = suggestionsProvider;
-        this.filmFilter = filmFilter;
+        this.suggestionFilter = suggestionFilter;
         this.personalRatings = personalRatings;
 
         responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
@@ -72,9 +72,9 @@ public class Suggestions {
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
 
         try {
-            var films = responseTimer.record(() -> findSuggestions(kind, pageNumber));
+            var suggestions = responseTimer.record(() -> findSuggestions(kind, pageNumber));
 
-            asyncResponse.resume(Response.ok(films).build());
+            asyncResponse.resume(Response.ok(suggestions).build());
             LOGGER.info("Finished getting suggestions for page {}", pageNumber);
         } catch (RuntimeException e) {
             LOGGER.error("Error while getting suggestions", e);
@@ -96,10 +96,10 @@ public class Suggestions {
         try (EventsSink sink = new EventsSink(sse, sseEventSink)) {
             responseTimer.record(() -> {
                 // Every search starts before any is awaited, so the rate-limited sites work at the same time
-                var sentFilms = suggestionsProvider.suggest(kind, pageNumber)
+                var sent = suggestionsProvider.suggest(kind, pageNumber)
                         .map(sendToSinkIfWorthWatching(sink))
                         .toList();
-                sentFilms.forEach(CompletableFuture::join);
+                sent.forEach(CompletableFuture::join);
             });
             LOGGER.info("Finished streaming suggestions for page {}", pageNumber);
         } catch (Exception e) {
@@ -107,36 +107,36 @@ public class Suggestions {
         }
     }
 
-    private Function<CompletableFuture<Film>, CompletableFuture<Void>> sendToSinkIfWorthWatching(EventsSink sink) {
-        return futureFilm -> futureFilm.thenAccept(
-                film -> {
-                    if (filmFilter.isWorthWatching(film)) {
-                        FilmResult filmResult = toFilmResult(film);
-                        sink.send(filmResult);
+    private Function<CompletableFuture<ScoredTitle>, CompletableFuture<Void>> sendToSinkIfWorthWatching(EventsSink sink) {
+        return futureTitle -> futureTitle.thenAccept(
+                scored -> {
+                    if (suggestionFilter.isWorthWatching(scored)) {
+                        SuggestionResult result = toSuggestionResult(scored);
+                        sink.send(result);
                     }
                 }
         );
     }
 
-    private List<FilmResult> findSuggestions(TitleKind kind, int pageNumber) {
+    private List<SuggestionResult> findSuggestions(TitleKind kind, int pageNumber) {
         return CompletableFutures.getAllOf(suggestionsProvider.suggest(kind, pageNumber))
                 .distinct()
-                .filter(filmFilter::isWorthWatching)
-                .map(this::toFilmResult)
+                .filter(suggestionFilter::isWorthWatching)
+                .map(this::toSuggestionResult)
                 .collect(toList());
     }
 
-    private FilmResult toFilmResult(Film film) {
-        var description = film.description();
-        return new FilmResult(
+    private SuggestionResult toSuggestionResult(ScoredTitle scored) {
+        var description = scored.description();
+        return new SuggestionResult(
                 description.titleAsText(),
                 description.getYear(),
                 description.getPlot(),
                 description.getFoundFor().url(),
                 description.getPoster(),
-                film.normalizedScore(),
-                personalRatings.predict(film),
-                film.scores(),
+                scored.normalizedScore(),
+                personalRatings.predict(scored),
+                scored.scores(),
                 description.getGenres());
     }
 
@@ -149,12 +149,12 @@ public class Suggestions {
             this.eventSink = eventSink;
         }
 
-        void send(FilmResult filmResult) {
+        void send(SuggestionResult result) {
             OutboundSseEvent event = this.sse.newEventBuilder()
-                    .name("film")
-                    .id(String.valueOf(filmResult.hashCode()))
+                    .name("title")
+                    .id(String.valueOf(result.hashCode()))
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
-                    .data(FilmResult.class, filmResult)
+                    .data(SuggestionResult.class, result)
                     .build();
             this.eventSink.send(event);
         }

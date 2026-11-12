@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FilmTest {
+class ScoredTitleTest {
     @Test
     void shouldBeWorthWatchingIfReceivedLotsOfPositiveScores() {
         long totalQuantity = 2000;
@@ -18,7 +18,7 @@ class FilmTest {
                 Score.critic(0.7, 10L)
         );
 
-        var film = new Film(null, scores);
+        var film = new ScoredTitle(null, scores);
 
         assertThat(film.normalizedScore())
                 .isGreaterThan(0.65);
@@ -35,7 +35,7 @@ class FilmTest {
                 Score.critic(0.7, 3L)
         );
 
-        var film = new Film(null, scores);
+        var film = new ScoredTitle(null, scores);
 
         assertThat(film.normalizedScore())
                 .isLessThan(0.65);
@@ -49,7 +49,7 @@ class FilmTest {
                 Score.critic(0.74, 6L)
         );
 
-        var film = new Film(null, scores);
+        var film = new ScoredTitle(null, scores);
 
         assertThat(film.normalizedScore())
                 .isGreaterThan(0.65);
@@ -62,7 +62,7 @@ class FilmTest {
                 Score.critic(0.6, 7L)
         );
 
-        var film = new Film(null, scores);
+        var film = new ScoredTitle(null, scores);
 
         assertThat(film.normalizedScore())
                 .isGreaterThan(0.6);

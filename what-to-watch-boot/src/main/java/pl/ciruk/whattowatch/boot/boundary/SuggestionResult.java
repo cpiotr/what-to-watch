@@ -4,7 +4,7 @@ import pl.ciruk.whattowatch.core.score.Score;
 
 import java.util.List;
 
-public record FilmResult(
+public record SuggestionResult(
         String title,
         int year,
         String plot,

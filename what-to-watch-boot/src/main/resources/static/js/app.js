@@ -274,7 +274,7 @@ function loadPage(page) {
     loading = source;
     showLoading(page);
 
-    source.addEventListener('film', event => {
+    source.addEventListener('title', event => {
         if (seen.has(event.lastEventId)) return;
         seen.add(event.lastEventId);
         addTitle(JSON.parse(event.data), page);

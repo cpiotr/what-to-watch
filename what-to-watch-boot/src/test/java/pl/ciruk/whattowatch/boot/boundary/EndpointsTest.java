@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
-import pl.ciruk.whattowatch.core.filter.FilmFilter;
+import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
@@ -46,12 +46,12 @@ class EndpointsTest {
     private ScoresProvider filmwebScores;
     @MockitoBean(name = "metacriticScores")
     private ScoresProvider metacriticScores;
-    @MockitoBean(name = "filmFilter")
-    private FilmFilter filmFilter;
+    @MockitoBean(name = "suggestionFilter")
+    private SuggestionFilter suggestionFilter;
 
     @BeforeEach
     void setUp() {
-        when(filmFilter.isWorthWatching(any())).thenReturn(true);
+        when(suggestionFilter.isWorthWatching(any())).thenReturn(true);
     }
 
     @Test

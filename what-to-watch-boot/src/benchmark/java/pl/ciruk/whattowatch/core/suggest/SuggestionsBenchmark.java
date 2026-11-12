@@ -101,11 +101,11 @@ public class SuggestionsBenchmark {
 
     @Benchmark
     public void workStealing(Blackhole bh) {
-        Stream<Film> films = CompletableFutures.getAllOf(
+        Stream<ScoredTitle> films = CompletableFutures.getAllOf(
                 suggestionsWorkStealing.suggest(TitleKind.FILM, 1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
-                .filter(Film::isNotEmpty)
+                .filter(ScoredTitle::isNotEmpty)
                 .count();
 
         bh.consume(numberOfFilms);
@@ -113,11 +113,11 @@ public class SuggestionsBenchmark {
 
     @Benchmark
     public void fixed(Blackhole bh) {
-        Stream<Film> films = CompletableFutures.getAllOf(
+        Stream<ScoredTitle> films = CompletableFutures.getAllOf(
                 suggestionsFixedPool.suggest(TitleKind.FILM, 1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
-                .filter(Film::isNotEmpty)
+                .filter(ScoredTitle::isNotEmpty)
                 .count();
 
         bh.consume(numberOfFilms);

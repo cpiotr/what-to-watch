@@ -4,20 +4,20 @@ import pl.ciruk.whattowatch.core.description.Description
 import pl.ciruk.whattowatch.core.score.Score
 import pl.ciruk.whattowatch.core.score.ScoreType
 import pl.ciruk.whattowatch.core.score.ScoresProvider
-import pl.ciruk.whattowatch.core.suggest.Film
+import pl.ciruk.whattowatch.core.suggest.ScoredTitle
 import pl.ciruk.whattowatch.core.title.Title
 
 /**
  * A film I rated from 1 to 10, with the scores it has on other sites.
  */
-data class RatedFilm(val film: Film, val rating: Int) {
+data class RatedFilm(val film: ScoredTitle, val rating: Int) {
 
     /**
      * Adds the scores [provider] finds for this film, such as IMDb's, which the training data can't include.
      */
     fun withScoresFrom(provider: ScoresProvider): RatedFilm {
         val scores = film.scores() + provider.findScoresBy(film.description()).toList()
-        return copy(film = Film(film.description(), scores))
+        return copy(film = ScoredTitle(film.description(), scores))
     }
 
     companion object {
@@ -47,7 +47,7 @@ data class RatedFilm(val film: Film, val rating: Int) {
             val scores = listOfNotNull(
                     score(columns[4], columns[5], 10.0, "Filmweb", ScoreType.AMATEUR),
                     score(columns[6], columns[7], 100.0, "Metacritic", ScoreType.CRITIC))
-            return RatedFilm(Film(Description.builder().title(title).build(), scores), columns[3].toInt())
+            return RatedFilm(ScoredTitle(Description.builder().title(title).build(), scores), columns[3].toInt())
         }
 
         private fun score(grade: String, quantity: String, scale: Double, source: String, type: ScoreType): Score? {

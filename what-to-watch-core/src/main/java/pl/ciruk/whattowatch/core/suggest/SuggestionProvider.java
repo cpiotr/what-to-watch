@@ -31,15 +31,15 @@ public class SuggestionProvider {
     private final DescriptionProvider descriptions;
     private final List<ScoresProvider> scoresProviders;
     private final ExecutorService executorService;
-    private final Cache<Title, Film> cache;
-    private final Map<Title, CompletableFuture<Film>> filmsInProgress = new ConcurrentHashMap<>();
+    private final Cache<Title, ScoredTitle> cache;
+    private final Map<Title, CompletableFuture<ScoredTitle>> titlesInProgress = new ConcurrentHashMap<>();
 
     public SuggestionProvider(
             TitleProvider titles,
             DescriptionProvider descriptions,
             List<ScoresProvider> scoresProviders,
             ExecutorService executorService,
-            Cache<Title, Film> cache) {
+            Cache<Title, ScoredTitle> cache) {
         this.titles = titles;
         this.descriptions = descriptions;
         this.scoresProviders = scoresProviders;
@@ -47,54 +47,54 @@ public class SuggestionProvider {
         this.cache = cache;
     }
 
-    public Stream<CompletableFuture<Film>> suggest(TitleKind kind, int pageNumber) {
+    public Stream<CompletableFuture<ScoredTitle>> suggest(TitleKind kind, int pageNumber) {
         LOGGER.info("Kind: {}, page number: {}", kind, pageNumber);
 
         return titles.streamOfTitles(kind, pageNumber)
-                .map(this::getOrFindFilmByTitle);
+                .map(this::getOrScore);
     }
 
-    // Overlapping requests, such as the startup crawl and a user's, share one search for each film
+    // Overlapping requests, such as the startup crawl and a user's, share one search for each title
     // A title knows its kind, so a series and a film with the same name and year are cached apart
-    private CompletableFuture<Film> getOrFindFilmByTitle(Title title) {
-        var cachedFilm = cache.getIfPresent(title);
-        if (cachedFilm != null) {
-            return completedFuture(cachedFilm);
+    private CompletableFuture<ScoredTitle> getOrScore(Title title) {
+        var cached = cache.getIfPresent(title);
+        if (cached != null) {
+            return completedFuture(cached);
         }
-        var film = filmsInProgress.computeIfAbsent(title, this::findFilmByTitle);
-        film.whenComplete((ignored, error) -> filmsInProgress.remove(title, film));
-        return film;
+        var scored = titlesInProgress.computeIfAbsent(title, this::score);
+        scored.whenComplete((ignored, error) -> titlesInProgress.remove(title, scored));
+        return scored;
     }
 
-    private CompletableFuture<Film> findFilmByTitle(Title title) {
+    private CompletableFuture<ScoredTitle> score(Title title) {
         return CompletableFuture.supplyAsync(() -> descriptions.findDescriptionBy(title), executorService)
-                .thenCompose(description -> description.map(this::descriptionToFilm).orElseGet(() -> getEmptyFilm(title)))
+                .thenCompose(description -> description.map(this::scoresOf).orElseGet(() -> getEmpty(title)))
                 .exceptionally(t -> {
-                    LOGGER.error("Cannot get film for title {}", title, t);
-                    return Film.empty();
+                    LOGGER.error("Cannot score title {}", title, t);
+                    return ScoredTitle.empty();
                 });
     }
 
-    private CompletableFuture<Film> getEmptyFilm(Title title) {
-        var emptyFilm = Film.empty();
-        cache.put(title, emptyFilm);
-        return completedFuture(emptyFilm);
+    private CompletableFuture<ScoredTitle> getEmpty(Title title) {
+        var empty = ScoredTitle.empty();
+        cache.put(title, empty);
+        return completedFuture(empty);
     }
 
-    private CompletableFuture<Film> descriptionToFilm(Description description) {
+    private CompletableFuture<ScoredTitle> scoresOf(Description description) {
         var anyProviderFailed = new AtomicBoolean();
         var scoresFuture = scoresProviders.stream()
                 .map(scoresProvider -> findScoresOrNone(scoresProvider, description, anyProviderFailed))
                 .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat, executorService));
         return scoresFuture
                 .thenApply(stream -> stream.collect(toList()))
-                .thenApply(scores -> new Film(description, scores))
-                .thenApply(film -> {
-                    // A film with missing scores isn't cached, so the next request retries the failed providers
+                .thenApply(scores -> new ScoredTitle(description, scores))
+                .thenApply(scored -> {
+                    // A title with missing scores isn't cached, so the next request retries the failed providers
                     if (!anyProviderFailed.get()) {
-                        cache.put(film.description().getFoundFor(), film);
+                        cache.put(scored.description().getFoundFor(), scored);
                     }
-                    return film;
+                    return scored;
                 });
     }
 

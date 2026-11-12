@@ -18,14 +18,14 @@ import pl.ciruk.whattowatch.boot.config.Connections.NoCookies;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
-import pl.ciruk.whattowatch.core.filter.FilmFilter;
+import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbDatasetScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
-import pl.ciruk.whattowatch.core.suggest.Film;
+import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
@@ -118,7 +118,7 @@ public class Beans {
     }
 
     @Bean
-    Cache<Title, Film> cache() {
+    Cache<Title, ScoredTitle> cache() {
         return Caffeine.newBuilder()
                 .maximumSize(properties.films().cacheSize())
                 .recordStats()
@@ -131,14 +131,14 @@ public class Beans {
             DescriptionProvider descriptionProvider,
             List<ScoresProvider> scoreProviders,
             ExecutorService executorService,
-            Cache<Title, Film> cache) {
+            Cache<Title, ScoredTitle> cache) {
         return new SuggestionProvider(titleProvider, descriptionProvider, scoreProviders, executorService, cache);
     }
 
     @Bean
     @ConditionalOnProperty(name = "w2w.bootstrap.enabled", matchIfMissing = true)
-    Bootstrap bootstrap(SuggestionProvider suggestionProvider, FilmFilter filmFilter) {
-        return new Bootstrap(suggestionProvider, filmFilter);
+    Bootstrap bootstrap(SuggestionProvider suggestionProvider, SuggestionFilter suggestionFilter) {
+        return new Bootstrap(suggestionProvider, suggestionFilter);
     }
 
     // IMDb's ratings aren't in the training data, so the rated films get them from the same index as suggestions
@@ -154,18 +154,18 @@ public class Beans {
     @Bean
     FilmByScoreFilter filmByScoreFilter(PersonalRatings personalRatings) {
         return new FilmByScoreFilter(
-                film -> Objects.requireNonNullElse(personalRatings.predict(film), 0.0),
+                scored -> Objects.requireNonNullElse(personalRatings.predict(scored), 0.0),
                 properties.suggestions().ratingThreshold());
     }
 
     @Bean
-    Predicate<Film> atLeastOneCriticScore() {
-        return film -> film.scores().stream().anyMatch(score -> score.type() == ScoreType.CRITIC);
+    Predicate<ScoredTitle> atLeastOneCriticScore() {
+        return scored -> scored.scores().stream().anyMatch(score -> score.type() == ScoreType.CRITIC);
     }
 
     @Bean
-    FilmFilter filmFilter(List<Predicate<Film>> filters) {
-        return new FilmFilter(filters);
+    SuggestionFilter suggestionFilter(List<Predicate<ScoredTitle>> filters) {
+        return new SuggestionFilter(filters);
     }
 
 }

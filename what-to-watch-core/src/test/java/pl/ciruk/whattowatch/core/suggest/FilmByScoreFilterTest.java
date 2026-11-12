@@ -19,12 +19,12 @@ import static org.mockito.Mockito.verify;
 class FilmByScoreFilterTest {
     @Test
     void shouldAcceptScoreAboveThreshold() {
-        FilmByScoreFilter filter = new FilmByScoreFilter(Film::normalizedScore, 0.35);
+        FilmByScoreFilter filter = new FilmByScoreFilter(ScoredTitle::normalizedScore, 0.35);
 
         List<Score> scores = List.of(
                 Score.amateur(0.4, 1000),
                 Score.critic(0.4, 20));
-        boolean accepted = filter.test(new Film(null, scores));
+        boolean accepted = filter.test(new ScoredTitle(null, scores));
 
         assertThat(accepted).isTrue();
     }
@@ -36,12 +36,12 @@ class FilmByScoreFilterTest {
         Appender<ILoggingEvent> appender = mock(Appender.class);
         logger.addAppender(appender);
 
-        FilmByScoreFilter filter = new FilmByScoreFilter(Film::normalizedScore, 0.4);
+        FilmByScoreFilter filter = new FilmByScoreFilter(ScoredTitle::normalizedScore, 0.4);
 
         List<Score> scores = List.of(
                 Score.amateur(0.4, 1000),
                 Score.critic(0.4, 20));
-        Film film = new Film(DataModel.description(), scores);
+        ScoredTitle film = new ScoredTitle(DataModel.description(), scores);
 
         filter.test(film);
 
@@ -53,12 +53,12 @@ class FilmByScoreFilterTest {
 
     @Test
     void shouldRejectScoreWhenBelowThreshold() {
-        FilmByScoreFilter filter = new FilmByScoreFilter(Film::normalizedScore, 0.4);
+        FilmByScoreFilter filter = new FilmByScoreFilter(ScoredTitle::normalizedScore, 0.4);
 
         List<Score> scores = List.of(
                 Score.amateur(0.3, 1000),
                 Score.critic(0.3, 20));
-        Film film = new Film(DataModel.description(), scores);
+        ScoredTitle film = new ScoredTitle(DataModel.description(), scores);
 
         boolean accepted = filter.test(film);
 

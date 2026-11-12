@@ -56,8 +56,8 @@ class SuggestionProviderIntegrationTest {
 
         List<String> titles = CompletableFutures.getAllOf(suggestions.suggest(TitleKind.FILM, 1))
                 .filter(Objects::nonNull)
-                .filter(Film::isNotEmpty)
-                .map(Film::description)
+                .filter(ScoredTitle::isNotEmpty)
+                .map(ScoredTitle::description)
                 .map(Description::getTitle)
                 .map(Title::asText)
                 .map(String::toLowerCase)

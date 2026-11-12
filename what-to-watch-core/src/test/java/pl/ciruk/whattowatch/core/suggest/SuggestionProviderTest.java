@@ -27,7 +27,7 @@ class SuggestionProviderTest {
 
     private DescriptionProvider descriptionProvider;
     private ScoresProvider scoreProvider;
-    private Cache<Title, Film> cache;
+    private Cache<Title, ScoredTitle> cache;
     private SuggestionProvider suggestionProvider;
     private Title title;
     private Description description;
@@ -58,9 +58,9 @@ class SuggestionProviderTest {
 
     @Test
     void shouldNotSearchForFilmWhenCached() {
-        cache.put(title, new Film(null, null));
+        cache.put(title, new ScoredTitle(null, null));
 
-        List<Film> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
         assertThat(films).isNotEmpty();
 
@@ -70,7 +70,7 @@ class SuggestionProviderTest {
 
     @Test
     void shouldSearchForSeriesWhenFilmWithSameTitleIsCached() {
-        cache.put(title, new Film(null, null));
+        cache.put(title, new ScoredTitle(null, null));
         var series = Title.builder()
                 .year(title.year())
                 .title(title.localTitle())
@@ -86,14 +86,14 @@ class SuggestionProviderTest {
                 Executors.newSingleThreadExecutor(),
                 cache);
 
-        assertThat(CompletableFutures.getAllOf(provider.suggest(TitleKind.SERIES, 1))).containsExactly(Film.empty());
+        assertThat(CompletableFutures.getAllOf(provider.suggest(TitleKind.SERIES, 1))).containsExactly(ScoredTitle.empty());
 
         verify(descriptionProvider).findDescriptionBy(series);
     }
 
     @Test
     void shouldSearchForFilm() {
-        List<Film> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
         assertThat(films).isNotEmpty();
 
@@ -122,20 +122,20 @@ class SuggestionProviderTest {
     void shouldCacheEmptyFilmIfDescriptionIsMissing() {
         when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.empty());
 
-        List<Film> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
-        assertThat(films).containsExactly(Film.empty());
+        assertThat(films).containsExactly(ScoredTitle.empty());
 
-        assertThat(cache.asMap()).containsEntry(title, Film.empty());
+        assertThat(cache.asMap()).containsEntry(title, ScoredTitle.empty());
     }
 
     @Test
     void shouldNotCacheFilmWhenDescriptionFails() {
         when(descriptionProvider.findDescriptionBy(title)).thenThrow(new IllegalStateException("Throttled"));
 
-        List<Film> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
-        assertThat(films).containsExactly(Film.empty());
+        assertThat(films).containsExactly(ScoredTitle.empty());
 
         assertThat(cache.asMap()).doesNotContainKey(title);
     }
@@ -147,7 +147,7 @@ class SuggestionProviderTest {
                 .thenThrow(new IllegalStateException("Unexpected page"));
         var provider = createProviderWith(List.of(scoreProvider, failingScoreProvider));
 
-        List<Film> films = CompletableFutures.getAllOf(provider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(provider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
 
         assertThat(films).hasSize(1);
@@ -164,7 +164,7 @@ class SuggestionProviderTest {
                 }));
         var provider = createProviderWith(List.of(scoreProvider, lazilyFailingScoreProvider));
 
-        List<Film> films = CompletableFutures.getAllOf(provider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(provider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
 
         assertThat(films.get(0).scores()).containsExactly(Score.critic(1.0, 100));
@@ -172,7 +172,7 @@ class SuggestionProviderTest {
 
     @Test
     void shouldCacheFilmWhenAllProvidersSucceed() {
-        List<Film> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
+        List<ScoredTitle> films = CompletableFutures.getAllOf(suggestionProvider.suggest(TitleKind.FILM, 1))
                 .collect(toList());
 
         assertThat(cache.asMap()).containsEntry(title, films.get(0));

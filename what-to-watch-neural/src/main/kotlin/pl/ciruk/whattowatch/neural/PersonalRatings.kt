@@ -1,7 +1,7 @@
 package pl.ciruk.whattowatch.neural
 
 import pl.ciruk.whattowatch.core.score.Score
-import pl.ciruk.whattowatch.core.suggest.Film
+import pl.ciruk.whattowatch.core.suggest.ScoredTitle
 
 /**
  * Predicts how I'd rate a film, from 1 to 10, with weights for its Filmweb, IMDb and Metacritic scores
@@ -17,7 +17,7 @@ class PersonalRatings private constructor(
     /**
      * Returns null for a film with neither a Filmweb nor an IMDb score.
      */
-    fun predict(film: Film): Double? {
+    fun predict(film: ScoredTitle): Double? {
         return features(film, meanMetacriticGrade)
                 ?.let { model.predict(it).coerceIn(MIN_RATING, MAX_RATING) }
     }
@@ -46,7 +46,7 @@ class PersonalRatings private constructor(
         }
 
         // Filmweb and IMDb agree closely, so each stands in for the other when one is missing
-        private fun features(film: Film, meanMetacriticGrade: Double): DoubleArray? {
+        private fun features(film: ScoredTitle, meanMetacriticGrade: Double): DoubleArray? {
             val filmweb = grade(film, FILMWEB)
             val imdb = grade(film, IMDB)
             val metacritic = grade(film, METACRITIC)
@@ -60,7 +60,7 @@ class PersonalRatings private constructor(
         }
 
         // Same rule as the suggestions' own score: too few votes or reviews don't count
-        private fun grade(film: Film, source: String): Double? {
+        private fun grade(film: ScoredTitle, source: String): Double? {
             return film.scores()
                     .firstOrNull { it.isSignificant && it.source().equals(source, ignoreCase = true) }
                     ?.let(Score::grade)

@@ -10,12 +10,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record Film(
+public record ScoredTitle(
         Description description,
         List<Score> scores) {
-    private static final Film EMPTY = new Film(null, null);
+    private static final ScoredTitle EMPTY = new ScoredTitle(null, null);
 
-    public static Film empty() {
+    public static ScoredTitle empty() {
         return EMPTY;
     }
 
