@@ -10,7 +10,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
-import pl.ciruk.whattowatch.core.source.FilmwebFilm;
+import pl.ciruk.whattowatch.core.source.FilmwebTitle;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
@@ -39,7 +39,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
         LOGGER.debug("Description: {}", description);
 
         var title = description.getTitle();
-        var scores = filmwebProxy.searchBy(title.asText(), title.year())
+        var scores = filmwebProxy.searchBy(title.asText(), title.year(), title.kind())
                 .filter(film -> film.toTitle().matches(title))
                 .map(this::findScore)
                 .flatMap(Optional::stream)
@@ -54,8 +54,8 @@ public class FilmwebScoresProvider implements ScoresProvider {
         return scores.stream();
     }
 
-    private Optional<Score> findScore(FilmwebFilm film) {
-        return filmwebProxy.getPageWithFilmDetailsFor(film)
+    private Optional<Score> findScore(FilmwebTitle film) {
+        return filmwebProxy.getDetailsPageFor(film)
                 .flatMap(details -> scoreFrom(details, filmwebProxy.linkTo(film)));
     }
 

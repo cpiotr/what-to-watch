@@ -15,6 +15,7 @@ import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.imdb.ImdbSearchScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
@@ -43,19 +44,19 @@ import static java.util.stream.Collectors.toList;
 @Measurement(iterations = 10, time = 5)
 @Fork(1)
 @State(Scope.Thread)
-public class FilmSuggestionsBenchmark {
+public class SuggestionsBenchmark {
     private static final int NUMBER_OF_TITLES = 200;
     private static final int NUMBER_OF_THREADS = 16;
 
-    private FilmSuggestionProvider suggestionsWorkStealing;
+    private SuggestionProvider suggestionsWorkStealing;
 
-    private FilmSuggestionProvider suggestionsFixedPool;
+    private SuggestionProvider suggestionsFixedPool;
     private ExecutorService workStealingPool;
     private ExecutorService fixedPool;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(FilmSuggestionsBenchmark.class.getSimpleName())
+                .include(SuggestionsBenchmark.class.getSimpleName())
                 .shouldDoGC(false)
                 .build();
 
@@ -71,7 +72,7 @@ public class FilmSuggestionsBenchmark {
                 new DomainRateLimiter(domain -> 2));
 
         workStealingPool = Executors.newWorkStealingPool(NUMBER_OF_THREADS);
-        suggestionsWorkStealing = new FilmSuggestionProvider(
+        suggestionsWorkStealing = new SuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, workStealingPool),
                 sampleScoreProviders(connection),
@@ -80,7 +81,7 @@ public class FilmSuggestionsBenchmark {
         );
 
         fixedPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-        suggestionsFixedPool = new FilmSuggestionProvider(
+        suggestionsFixedPool = new SuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, fixedPool),
                 sampleScoreProviders(connection),
@@ -101,7 +102,7 @@ public class FilmSuggestionsBenchmark {
     @Benchmark
     public void workStealing(Blackhole bh) {
         Stream<Film> films = CompletableFutures.getAllOf(
-                suggestionsWorkStealing.suggestFilms(1));
+                suggestionsWorkStealing.suggest(TitleKind.FILM, 1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
@@ -113,7 +114,7 @@ public class FilmSuggestionsBenchmark {
     @Benchmark
     public void fixed(Blackhole bh) {
         Stream<Film> films = CompletableFutures.getAllOf(
-                suggestionsFixedPool.suggestFilms(1));
+                suggestionsFixedPool.suggest(TitleKind.FILM, 1));
         int numberOfFilms = (int) films
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
@@ -147,7 +148,7 @@ public class FilmSuggestionsBenchmark {
                     .map(line -> line.split(";"))
                     .map(array -> Title.builder().title(array[0]).originalTitle(array[1]).year(Integer.parseInt(array[2])).build())
                     .collect(toList());
-            return (int pageNumber) -> titles.stream();
+            return (kind, pageNumber) -> titles.stream();
         } catch (IOException e) {
             throw new AssertionError(e);
         }

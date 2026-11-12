@@ -26,7 +26,7 @@ import pl.ciruk.whattowatch.core.score.imdb.ImdbDatasetScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.Film;
-import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
@@ -126,19 +126,19 @@ public class Beans {
     }
 
     @Bean
-    FilmSuggestionProvider filmSuggestions(
+    SuggestionProvider suggestionProvider(
             TitleProvider titleProvider,
             DescriptionProvider descriptionProvider,
             List<ScoresProvider> scoreProviders,
             ExecutorService executorService,
             Cache<Title, Film> cache) {
-        return new FilmSuggestionProvider(titleProvider, descriptionProvider, scoreProviders, executorService, cache);
+        return new SuggestionProvider(titleProvider, descriptionProvider, scoreProviders, executorService, cache);
     }
 
     @Bean
     @ConditionalOnProperty(name = "w2w.bootstrap.enabled", matchIfMissing = true)
-    Bootstrap bootstrap(FilmSuggestionProvider filmSuggestionProvider, FilmFilter filmFilter) {
-        return new Bootstrap(filmSuggestionProvider, filmFilter);
+    Bootstrap bootstrap(SuggestionProvider suggestionProvider, FilmFilter filmFilter) {
+        return new Bootstrap(suggestionProvider, filmFilter);
     }
 
     // IMDb's ratings aren't in the training data, so the rated films get them from the same index as suggestions

@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
 import java.lang.invoke.MethodHandles;
@@ -30,9 +31,11 @@ public class FilmwebProxy {
     }
 
     // The search page renders its results in the browser, so search through the API it uses
-    public Stream<FilmwebFilm> searchBy(String title, int year) {
+    public Stream<FilmwebTitle> searchBy(String title, int year, TitleKind kind) {
         var url = createHttpBuilder()
-                .addPathSegments("api/v1/films/search")
+                .addPathSegments("api/v1")
+                .addPathSegment(typeOf(kind) + "s")
+                .addPathSegment("search")
                 .addQueryParameter("query", title)
                 .addQueryParameter("startYear", previous(year))
                 .addQueryParameter("endYear", next(year))
@@ -42,13 +45,21 @@ public class FilmwebProxy {
                 .flatMap(json -> readJson(json, url))
                 .stream()
                 .flatMap(searchResults -> StreamSupport.stream(searchResults.path("searchHits").spliterator(), false))
-                .filter(hit -> "film".equals(hit.path("type").asText()))
+                .filter(hit -> typeOf(kind).equals(hit.path("type").asText()))
                 .map(hit -> hit.path("id").asLong())
-                .map(this::findFilmBy)
+                .map(id -> findTitleBy(id, kind))
                 .flatMap(Optional::stream);
     }
 
-    private Optional<FilmwebFilm> findFilmBy(long id) {
+    // Filmweb calls a series a serial, in its search API, search results and links
+    private static String typeOf(TitleKind kind) {
+        return switch (kind) {
+            case FILM -> "film";
+            case SERIES -> "serial";
+        };
+    }
+
+    private Optional<FilmwebTitle> findTitleBy(long id, TitleKind kind) {
         var url = createHttpBuilder()
                 .addPathSegments("api/v1/title")
                 .addPathSegment(String.valueOf(id))
@@ -57,11 +68,12 @@ public class FilmwebProxy {
 
         return connection.get(url)
                 .flatMap(json -> readJson(json, url))
-                .map(info -> new FilmwebFilm(
+                .map(info -> new FilmwebTitle(
                         id,
                         info.path("title").asText(),
                         info.path("originalTitle").asText(""),
-                        info.path("year").asInt()));
+                        info.path("year").asInt(),
+                        kind));
     }
 
     private static Optional<JsonNode> readJson(String json, HttpUrl url) {
@@ -73,7 +85,7 @@ public class FilmwebProxy {
         }
     }
 
-    public Optional<Element> getPageWithFilmDetailsFor(FilmwebFilm film) {
+    public Optional<Element> getDetailsPageFor(FilmwebTitle film) {
         return connection.get(linkTo(film))
                 .map(page -> Jsoup.parse(detailsOf(page)));
     }
@@ -90,9 +102,9 @@ public class FilmwebProxy {
     }
 
     // Filmweb finds a film by the id at the end of the link and redirects any other title or year to the right one
-    public HttpUrl linkTo(FilmwebFilm film) {
+    public HttpUrl linkTo(FilmwebTitle film) {
         return createHttpBuilder()
-                .addPathSegment("film")
+                .addPathSegment(typeOf(film.kind()))
                 .addPathSegment(film.title().replace(' ', '+') + "-" + film.year() + "-" + film.id())
                 .build();
     }

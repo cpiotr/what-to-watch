@@ -6,6 +6,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreAssert;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 
@@ -50,6 +51,22 @@ class FilmwebScoresProviderIntegrationTest {
         Title title = Title.builder()
                 .originalTitle("How to Train Your Dragon: The Hidden World")
                 .year(2019)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
+    }
+
+    @Test
+    void shouldRetrieveMeaningfulScoreOfSeries() {
+        Title title = Title.builder()
+                .originalTitle("Stranger Things")
+                .year(2016)
+                .kind(TitleKind.SERIES)
                 .build();
         Description description = Description.builder()
                 .title(title)

@@ -6,6 +6,7 @@ import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.metrics.Names;
@@ -40,9 +41,13 @@ public class EkinoTitleProvider implements TitleProvider {
     }
 
     @Override
-    public Stream<Title> streamOfTitles(int pageNumber) {
-        LOGGER.debug("Page number: {}", pageNumber);
+    public Stream<Title> streamOfTitles(TitleKind kind, int pageNumber) {
+        LOGGER.debug("Kind: {}, page number: {}", kind, pageNumber);
 
+        // Ekino's list has films only, so it has no series to suggest
+        if (kind != TitleKind.FILM) {
+            return Stream.empty();
+        }
         return pageUrlsFor(pageNumber)
                 .peek(url -> LOGGER.debug("Loading films from: {}", url))
                 .map(connection::get)
@@ -60,7 +65,7 @@ public class EkinoTitleProvider implements TitleProvider {
 
     private Title parseToTitle(Element film) {
         numberOfTitles.increment();
-        var builder = Title.builder();
+        var builder = Title.builder().kind(TitleKind.FILM);
 
         var link = film.selectFirst(".title a");
         if (link != null) {

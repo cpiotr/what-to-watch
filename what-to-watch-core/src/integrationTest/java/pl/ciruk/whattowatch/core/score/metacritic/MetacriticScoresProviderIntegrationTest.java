@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreAssert;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
@@ -132,6 +133,24 @@ class MetacriticScoresProviderIntegrationTest {
         assertThat(scores)
                 .extracting(Score::url)
                 .containsExactly("https://www.metacritic.com/movie/little-women-2019/");
+    }
+
+    @Test
+    void shouldRetrieveMeaningfulScoreOfSeries() {
+        Title title = Title.builder()
+                .title("Stranger Things")
+                .year(2016)
+                .kind(TitleKind.SERIES)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        List<Score> scores = scoresProvider.findScoresBy(description).toList();
+
+        assertThat(scores)
+                .extracting(Score::url)
+                .containsExactly("https://www.metacritic.com/tv/stranger-things/");
     }
 
     private Title titleOfRespectfulFilm() {

@@ -13,6 +13,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
@@ -103,8 +104,15 @@ public class ImdbSearchScoresProvider implements ScoresProvider {
                 .addQueryParameter("title", description.titleAsText())
                 .addQueryParameter("release_date", String.format("%d,%d", year - 1, year))
                 .addQueryParameter("num_votes", String.format("%d,", NUMBER_OF_VOTES_LOWER_BOUND + offset))
-                .addQueryParameter("title_type", "feature,tv_movie,video,short")
+                .addQueryParameter("title_type", titleTypesOf(description.getTitle().kind()))
                 .build();
+    }
+
+    private static String titleTypesOf(TitleKind kind) {
+        return switch (kind) {
+            case FILM -> "feature,tv_movie,video,short";
+            case SERIES -> "tv_series,tv_miniseries";
+        };
     }
 
     private Optional<TitleItem> findFirstResult(Element searchResults, Description description) {
@@ -130,6 +138,7 @@ public class ImdbSearchScoresProvider implements ScoresProvider {
                 .year(searchResult.getReleaseYear())
                 .originalTitle(searchResult.getOriginalTitleText())
                 .title(searchResult.getTitleText())
+                .kind(descriptionTitle.kind())
                 .build();
         return title.matches(descriptionTitle);
     }

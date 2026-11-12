@@ -129,21 +129,21 @@ button { font: inherit; color: inherit; }
 	animation: pulse 1.2s ease-in-out infinite;
 }
 
-.sort {
+.toggle {
 	display: flex;
-	margin: 0 0 0 auto;
+	margin: 0;
 	padding: 3px;
 	border: 1px solid var(--line);
 	border-radius: 999px;
 	background: var(--surface-2);
 }
 
-.sort input {
+.toggle input {
 	position: absolute;
 	opacity: 0;
 }
 
-.sort span {
+.toggle span {
 	display: block;
 	padding: 5px 14px;
 	border-radius: 999px;
@@ -154,9 +154,12 @@ button { font: inherit; color: inherit; }
 	white-space: nowrap;
 }
 
-.sort span:hover { color: var(--text); }
-.sort input:checked + span { background: var(--chip); color: var(--text); box-shadow: 0 1px 3px rgb(0 0 0 / .15); }
-.sort input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 1px; }
+.toggle span:hover { color: var(--text); }
+.toggle input:checked + span { background: var(--chip); color: var(--text); box-shadow: 0 1px 3px rgb(0 0 0 / .15); }
+.toggle input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 1px; }
+
+/* The toggles sit together at the end of the row */
+.kind { margin-left: auto; }
 
 .masthead-bottom {
 	display: flex;
@@ -200,10 +203,10 @@ button { font: inherit; color: inherit; }
 
 @media (max-width: 560px) {
 	.masthead { padding-top: 16px; }
-	.masthead-top { flex-wrap: nowrap; gap: 12px; }
+	.masthead-top { gap: 8px 12px; }
 	.brand { font-size: 18px; gap: 8px; }
 	.brand-mark { width: 26px; height: 26px; }
-	.sort span { padding: 4px 10px; font-size: 13px; }
+	.toggle span { padding: 4px 10px; font-size: 13px; }
 	.tagline { display: none; }
 	.masthead-bottom { font-size: 13px; margin-top: 8px; }
 }

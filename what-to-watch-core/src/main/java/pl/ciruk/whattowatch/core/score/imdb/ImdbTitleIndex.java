@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.core.score.imdb;
 
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.text.Texts;
 
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
@@ -23,10 +23,16 @@ import java.util.zip.GZIPInputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Films from IMDb's non-commercial datasets, looked up by title and year.
+ * Films and series from IMDb's non-commercial datasets, looked up by title, year and kind.
  */
 final class ImdbTitleIndex {
-    private static final Set<String> TITLE_TYPES = Set.of("movie", "tvMovie", "video", "short");
+    private static final Map<String, TitleKind> KINDS_BY_TITLE_TYPE = Map.of(
+            "movie", TitleKind.FILM,
+            "tvMovie", TitleKind.FILM,
+            "video", TitleKind.FILM,
+            "short", TitleKind.FILM,
+            "tvSeries", TitleKind.SERIES,
+            "tvMiniSeries", TitleKind.SERIES);
     private static final String MISSING = "\\N";
     private static final int BUFFER_SIZE = 1 << 16;
 
@@ -37,7 +43,7 @@ final class ImdbTitleIndex {
     }
 
     /**
-     * Reads films with at least {@code minVotes} votes, under their primary and original titles.
+     * Reads films and series with at least {@code minVotes} votes, under their primary and original titles.
      */
     static ImdbTitleIndex load(Path ratings, Path basics, int minVotes) throws IOException {
         var ratingsById = new HashMap<String, Rating>();
@@ -51,8 +57,9 @@ final class ImdbTitleIndex {
         var titlesByName = new HashMap<String, List<ImdbTitle>>();
         forEachRow(basics, row -> {
             var rating = ratingsById.get(row[0]);
-            if (rating != null && TITLE_TYPES.contains(row[1]) && !MISSING.equals(row[5])) {
-                var title = new ImdbTitle(row[0], Integer.parseInt(row[5]), rating.average(), rating.votes());
+            var kind = KINDS_BY_TITLE_TYPE.get(row[1]);
+            if (rating != null && kind != null && !MISSING.equals(row[5])) {
+                var title = new ImdbTitle(row[0], Integer.parseInt(row[5]), rating.average(), rating.votes(), kind);
                 add(titlesByName, row[2], title);
                 add(titlesByName, row[3], title);
             }
@@ -67,6 +74,8 @@ final class ImdbTitleIndex {
                 .filter(name -> !name.isBlank())
                 .distinct()
                 .flatMap(name -> titlesByName.getOrDefault(name, List.of()).stream())
+                // A film and a series can share a name and year, such as Star Wars: The Clone Wars in 2008
+                .filter(candidate -> candidate.kind() == title.kind())
                 .filter(candidate -> Math.abs(candidate.year() - title.year()) <= 1)
                 .max(Comparator.comparingInt(ImdbTitle::votes));
     }
@@ -93,7 +102,7 @@ final class ImdbTitleIndex {
         }
     }
 
-    record ImdbTitle(String id, int year, double rating, int votes) {
+    record ImdbTitle(String id, int year, double rating, int votes, TitleKind kind) {
     }
 
     private record Rating(double average, int votes) {

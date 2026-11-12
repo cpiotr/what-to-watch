@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 
@@ -94,6 +95,16 @@ class FilmwebDescriptionProviderIntegrationTest {
                 .orElseThrow(AssertionError::new);
 
         assertThat(description).hasTitle("Casino Royale");
+    }
+
+    @Test
+    void shouldResolveSeriesByItsFirstYear() {
+        Title title = Title.builder().originalTitle("Stranger Things").year(2016).kind(TitleKind.SERIES).build();
+
+        Description description = descriptions.findDescriptionBy(title)
+                .orElseThrow(AssertionError::new);
+
+        assertThat(description).hasTitle("Stranger Things").hasPlot();
     }
 
     @Test

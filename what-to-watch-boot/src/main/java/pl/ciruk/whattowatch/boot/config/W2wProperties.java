@@ -28,6 +28,7 @@ public record W2wProperties(
 
     public enum TitleSource {
         JUSTWATCH,
+        // Films only, so there are no series to suggest
         EKINO
     }
 

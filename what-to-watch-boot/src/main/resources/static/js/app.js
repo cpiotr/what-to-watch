@@ -9,6 +9,8 @@ const ranked = [];        // {film, page, batch, arrival, card}: batches in load
 const seen = new Set();   // lastEventId of every film received
 const dividers = new Map(); // batch -> the row that starts it
 let sortBy = 'score';
+let kind = 'FILM';        // films or series, as the server calls them
+let loading = null;       // the stream of the page being loaded
 let arrivals = 0;
 let lastPage = 0;         // the last page that finished loading
 let shown = null;         // the entry open in the dialog
@@ -42,7 +44,8 @@ const ICON = {
 
 const percent = fraction => Math.round(fraction * 100);
 const count = n => n.toLocaleString('pl-PL');
-const filmCount = n => `${n} ${n === 1 ? 'film' : 'films'}`;
+const NOUNS = {FILM: {one: 'film', many: 'films'}, SERIES: {one: 'series', many: 'series'}};
+const titleCount = n => `${n} ${n === 1 ? NOUNS[kind].one : NOUNS[kind].many}`;
 
 // h('p', {class: 'x'}, 'text', child) builds an element; null and false children are skipped.
 function h(tag, props = {}, ...children) {
@@ -174,7 +177,7 @@ function arrange() {
     });
 }
 
-function addFilm(film, page) {
+function addTitle(film, page) {
     // The first film of a new page takes the "New" tags off the last merge.
     if (!ranked.some(entry => entry.page === page)) {
         grid.querySelectorAll('.is-new').forEach(node => node.classList.remove('is-new'));
@@ -206,7 +209,7 @@ function mergePages() {
     arrange();
     window.scrollTo(0, 0);
     grid.focus({preventScroll: true});
-    showFooter(`All ${filmCount(ranked.length)} in one ranking.`, moreButton());
+    showFooter(`All ${titleCount(ranked.length)} in one ranking.`, moreButton());
 }
 
 function setStatus(text, busy) {
@@ -219,7 +222,7 @@ function button(label, onclick, style = 'button') {
 }
 
 function moreButton() {
-    return button('More films', () => loadPage(lastPage + 1));
+    return button(`More ${NOUNS[kind].many}`, () => loadPage(lastPage + 1));
 }
 
 // The last action is the one that loads more, so it gets the focus back after a page loads.
@@ -245,36 +248,37 @@ function topTenFrom(page) {
 function showPageDone(page) {
     const added = ranked.filter(entry => entry.page === page).length;   // counts a retried page as a whole
     grid.querySelectorAll('.skeleton').forEach(node => node.remove());
-    setStatus(filmCount(ranked.length), false);
+    setStatus(titleCount(ranked.length), false);
     if (added === 0) {
         showFooter(ranked.length ? 'That’s everything for now.' : 'No suggestions right now.');
         return;
     }
     lastPage = page;
     if (!ranked.some(entry => entry.batch !== ranked[0].batch)) {
-        showFooter(`Page ${page} added ${filmCount(added)}.`, moreButton());
+        showFooter(`Page ${page} added ${titleCount(added)}.`, moreButton());
         return;
     }
     const top = topTenFrom(page);
-    showFooter(`Page ${page} added ${filmCount(added)} below. ${top === 0 ? 'None' : top} of them would make your top 10.`,
+    showFooter(`Page ${page} added ${titleCount(added)} below. ${top === 0 ? 'None' : top} of them would make your top 10.`,
         button('Merge into one ranking', mergePages, 'button secondary'), moreButton());
 }
 
 function showInterrupted(page) {
     grid.querySelectorAll('.skeleton').forEach(node => node.remove());
-    setStatus(`${filmCount(ranked.length)} · connection lost`, false);
+    setStatus(`${titleCount(ranked.length)} · connection lost`, false);
     showFooter(`Loading page ${page} stopped before it finished.`, button(`Retry page ${page}`, () => loadPage(page)));
 }
 
 function loadPage(page) {
-    const source = new EventSource(`/resources/suggestions/${page}/stream`);
+    const source = new EventSource(`/resources/suggestions/${page}/stream?kind=${kind}`);
+    loading = source;
     showLoading(page);
 
     source.addEventListener('film', event => {
         if (seen.has(event.lastEventId)) return;
         seen.add(event.lastEventId);
-        addFilm(JSON.parse(event.data), page);
-        setStatus(`Loading page ${page}… ${filmCount(ranked.length)}`, true);
+        addTitle(JSON.parse(event.data), page);
+        setStatus(`Loading page ${page}… ${titleCount(ranked.length)}`, true);
     });
     source.addEventListener('poisonPill', () => {
         source.close();
@@ -345,6 +349,23 @@ dialog.addEventListener('close', () => shown?.card.querySelector('.title button'
 document.querySelector('.sort').addEventListener('change', event => {
     sortBy = event.target.value;
     resort();
+});
+
+// Films and series are never ranked together, so the other kind starts again from its first page.
+document.querySelector('.kind').addEventListener('change', event => {
+    kind = event.target.value;
+    loading?.close();
+    shown = null;
+    if (dialog.open) dialog.close();
+    ranked.length = 0;
+    seen.clear();
+    dividers.clear();
+    grid.replaceChildren();
+    arrivals = 0;
+    lastPage = 0;
+    anchor = null;
+    window.scrollTo(0, 0);
+    loadPage(1);
 });
 
 loadPage(1);

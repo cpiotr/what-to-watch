@@ -2,9 +2,11 @@ package pl.ciruk.whattowatch.boot.boundary;
 
 import org.springframework.stereotype.Component;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -26,11 +28,13 @@ public class Descriptions {
     public Response find(
             @QueryParam("title") String title,
             @QueryParam("originalTitle") String originalTitle,
-            @QueryParam("year") int year) {
+            @QueryParam("year") int year,
+            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
         var titleObject = Title.builder()
                 .title(title)
                 .originalTitle(originalTitle)
                 .year(year)
+                .kind(kind)
                 .build();
         var optionalDescription = filmwebDescriptions.findDescriptionBy(titleObject);
 

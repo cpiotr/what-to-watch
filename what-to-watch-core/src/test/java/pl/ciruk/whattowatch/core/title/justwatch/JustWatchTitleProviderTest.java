@@ -8,6 +8,7 @@ import okio.Buffer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -40,10 +41,10 @@ class JustWatchTitleProviderTest {
                   "content":{"title":"Projekt Hail Mary","originalTitle":"Project Hail Mary","originalReleaseYear":2026,"fullPath":"/pl/film/projekt-hail-mary"},
                   "offers":[{"standardWebURL":"https://app.primevideo.com/detail?gti=1"},{"standardWebURL":"https://app.primevideo.com/detail?gti=1"}]}}]}}}""");
 
-        var titles = provider.streamOfTitles(1).toList();
+        var titles = provider.streamOfTitles(TitleKind.FILM, 1).toList();
 
         assertThat(titles).containsExactly(
-                new Title("Project Hail Mary", "Projekt Hail Mary", 2026, "https://app.primevideo.com/detail?gti=1"));
+                new Title("Project Hail Mary", "Projekt Hail Mary", 2026, "https://app.primevideo.com/detail?gti=1", TitleKind.FILM));
     }
 
     @Test
@@ -53,9 +54,22 @@ class JustWatchTitleProviderTest {
                   "content":{"title":"Doktor Sen","originalTitle":"Doctor Sleep","originalReleaseYear":2019,"fullPath":"/pl/film/doktor-sen"},
                   "offers":[]}}]}}}""");
 
-        var titles = provider.streamOfTitles(1).toList();
+        var titles = provider.streamOfTitles(TitleKind.FILM, 1).toList();
 
         assertThat(titles).extracting(Title::url).containsExactly("https://www.justwatch.com/pl/film/doktor-sen");
+    }
+
+    @Test
+    void shouldAskForSeriesAndKeepTheirKind() throws IOException {
+        givenResponse("""
+                {"data":{"popularTitles":{"edges":[{"node":{
+                  "content":{"title":"Below","originalTitle":"Below","originalReleaseYear":2026,"fullPath":"/pl/serial/below-2026"},
+                  "offers":[]}}]}}}""");
+
+        var titles = provider.streamOfTitles(TitleKind.SERIES, 1).toList();
+
+        assertThat(titles).extracting(Title::kind).containsExactly(TitleKind.SERIES);
+        assertThat(sentRequestBody().path("variables").path("objectTypes")).extracting(JsonNode::asText).containsExactly("SHOW");
     }
 
     @Test
@@ -63,7 +77,7 @@ class JustWatchTitleProviderTest {
         givenResponse("""
                 {"errors":[{"message":"transport not supported"}],"data":null}""");
 
-        assertThatThrownBy(() -> provider.streamOfTitles(1).toList())
+        assertThatThrownBy(() -> provider.streamOfTitles(TitleKind.FILM, 1).toList())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("transport not supported");
     }
@@ -72,7 +86,7 @@ class JustWatchTitleProviderTest {
     void shouldFailWhenResponseIsNotJson() {
         givenResponse("<html>Service unavailable</html>");
 
-        assertThatThrownBy(() -> provider.streamOfTitles(1).toList()).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> provider.streamOfTitles(TitleKind.FILM, 1).toList()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -80,12 +94,13 @@ class JustWatchTitleProviderTest {
         givenResponse("""
                 {"data":{"popularTitles":{"edges":[]}}}""");
 
-        assertThat(provider.streamOfTitles(3)).isEmpty();
+        assertThat(provider.streamOfTitles(TitleKind.FILM, 3)).isEmpty();
 
         var variables = sentRequestBody().path("variables");
         assertThat(variables.path("after").asText()).isEqualTo("MjAw");
         assertThat(variables.path("first").asInt()).isEqualTo(100);
         assertThat(variables.path("packages")).extracting(JsonNode::asText).containsExactly("nfx", "prv");
+        assertThat(variables.path("objectTypes")).extracting(JsonNode::asText).containsExactly("MOVIE");
     }
 
     @Test
@@ -93,7 +108,7 @@ class JustWatchTitleProviderTest {
         givenResponse("""
                 {"data":{"popularTitles":{"edges":[]}}}""");
 
-        assertThat(provider.streamOfTitles(1)).isEmpty();
+        assertThat(provider.streamOfTitles(TitleKind.FILM, 1)).isEmpty();
 
         assertThat(sentRequestBody().path("variables").path("after").asText()).isEqualTo("MA==");
     }

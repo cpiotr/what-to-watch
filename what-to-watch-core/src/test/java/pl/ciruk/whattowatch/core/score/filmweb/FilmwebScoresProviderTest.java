@@ -9,8 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
-import pl.ciruk.whattowatch.core.source.FilmwebFilm;
+import pl.ciruk.whattowatch.core.source.FilmwebTitle;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.*;
 
 class FilmwebScoresProviderTest {
     private static final String TITLE = "Inception";
-    private static final FilmwebFilm INCEPTION = new FilmwebFilm(500_891, "Incepcja", TITLE, 2010);
+    private static final FilmwebTitle INCEPTION = new FilmwebTitle(500_891, "Incepcja", TITLE, 2010, TitleKind.FILM);
 
     private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
     private FilmwebScoresProvider provider;
@@ -34,9 +35,9 @@ class FilmwebScoresProviderTest {
     void setUp() {
         Metrics.addRegistry(registry);
         var filmwebProxy = mock(FilmwebProxy.class);
-        when(filmwebProxy.searchBy(anyString(), anyInt())).thenAnswer(ignored -> Stream.empty());
-        when(filmwebProxy.searchBy(TITLE, 2010)).thenAnswer(ignored -> Stream.of(INCEPTION));
-        when(filmwebProxy.getPageWithFilmDetailsFor(any())).thenReturn(Optional.of(Jsoup.parse(
+        when(filmwebProxy.searchBy(anyString(), anyInt(), any())).thenAnswer(ignored -> Stream.empty());
+        when(filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM)).thenAnswer(ignored -> Stream.of(INCEPTION));
+        when(filmwebProxy.getDetailsPageFor(any())).thenReturn(Optional.of(Jsoup.parse(
                 "<span itemprop=\"ratingValue\">8,2</span><span itemprop=\"ratingCount\">667030</span>")));
         when(filmwebProxy.linkTo(any())).thenReturn(HttpUrl.get("https://www.filmweb.pl/film/Incepcja-2010-500891"));
         provider = new FilmwebScoresProvider(filmwebProxy);

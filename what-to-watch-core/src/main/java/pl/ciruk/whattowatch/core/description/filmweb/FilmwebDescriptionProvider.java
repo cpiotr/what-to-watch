@@ -58,10 +58,10 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
 
     private Stream<Description> filmsForTitle(String titleText, Title requestedTitle) {
         // Filmweb can rank similarly named films first, such as "The Real Casino Royale"
-        var futures = filmwebProxy.searchBy(titleText, requestedTitle.year())
+        var futures = filmwebProxy.searchBy(titleText, requestedTitle.year(), requestedTitle.kind())
                 .filter(film -> film.toTitle().matches(requestedTitle))
                 .limit(3)
-                .map(film -> CompletableFuture.supplyAsync(() -> filmwebProxy.getPageWithFilmDetailsFor(film), executorService))
+                .map(film -> CompletableFuture.supplyAsync(() -> filmwebProxy.getDetailsPageFor(film), executorService))
                 .toList();
         return CompletableFutures.getAllOf(futures)
                 .flatMap(Optional::stream)
@@ -82,6 +82,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .title(localTitle.get())
                 .originalTitle(selector.findOriginalTitle(details).orElse(""))
                 .year(year.get())
+                .kind(requestedTitle.kind())
                 .build();
         return Optional.of(Description.builder()
                 .title(foundTitle)

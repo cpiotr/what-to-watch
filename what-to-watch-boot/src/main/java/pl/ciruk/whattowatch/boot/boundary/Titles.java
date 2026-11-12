@@ -4,13 +4,16 @@ import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.AsyncResponse;
 import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.MediaType;
@@ -36,13 +39,14 @@ public class Titles {
     @Produces(MediaType.APPLICATION_JSON)
     public void findAll(
             @Suspended AsyncResponse asyncResponse,
-            @PathParam("pageNumber") int pageNumber) {
-        LOGGER.info("Page number: {}", pageNumber);
+            @PathParam("pageNumber") int pageNumber,
+            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+        LOGGER.info("Kind: {}, page number: {}", kind, pageNumber);
 
         asyncResponse.setTimeout(20, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
         try {
-            asyncResponse.resume(Response.ok(titleProvider.streamOfTitles(pageNumber).toList()).build());
+            asyncResponse.resume(Response.ok(titleProvider.streamOfTitles(kind, pageNumber).toList()).build());
         } catch (RuntimeException e) {
             LOGGER.error("Error while getting titles", e);
             asyncResponse.resume(Responses.internalError());

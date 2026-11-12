@@ -6,6 +6,7 @@ import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -30,7 +31,7 @@ class EkinoTitleProviderTest {
     void shouldReadTitleWithoutQualityLabel() {
         givenPage(film("Pojednanie - HD", "Atonement", "2026 | Dramat"));
 
-        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(1)).containsExactly(Title.builder()
+        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(TitleKind.FILM, 1)).containsExactly(Title.builder()
                 .title("Pojednanie")
                 .originalTitle("Atonement")
                 .year(2026)
@@ -42,7 +43,7 @@ class EkinoTitleProviderTest {
     void shouldKeepHyphenInTitle() {
         givenPage(film("Spider-Man - HD", "Spider-Man", "2002 | Akcja"));
 
-        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(1))
+        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(TitleKind.FILM, 1))
                 .extracting(Title::localTitle)
                 .containsExactly("Spider-Man");
     }
@@ -51,7 +52,7 @@ class EkinoTitleProviderTest {
     void shouldReadTitleWithoutLabelAndYearWithoutCategories() {
         givenPage(film(MIS, MIS, "1981"));
 
-        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(1))
+        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(TitleKind.FILM, 1))
                 .extracting(Title::localTitle, Title::year)
                 .containsExactly(tuple(MIS, 1981));
     }
@@ -60,7 +61,7 @@ class EkinoTitleProviderTest {
     void shouldKeepTitleWithoutYear() {
         givenPage(film(MIS, MIS, "brak | Komedia"));
 
-        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(1))
+        assertThat(new EkinoTitleProvider(connection, 1).streamOfTitles(TitleKind.FILM, 1))
                 .extracting(Title::year)
                 .containsExactly(Title.MISSING_YEAR);
     }
@@ -69,7 +70,7 @@ class EkinoTitleProviderTest {
     void shouldStartRequestsAtFirstPage() {
         when(connection.get(any())).thenReturn(Optional.empty());
 
-        assertThat(new EkinoTitleProvider(connection, 2).streamOfTitles(2)).isEmpty();
+        assertThat(new EkinoTitleProvider(connection, 2).streamOfTitles(TitleKind.FILM, 2)).isEmpty();
 
         var urls = ArgumentCaptor.forClass(HttpUrl.class);
         verify(connection, times(2)).get(urls.capture());

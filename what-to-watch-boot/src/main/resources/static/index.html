@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="description" content="Films on your streaming services, ranked by IMDb, Filmweb and Metacritic.">
+    <meta name="description" content="Films and series on your streaming services, ranked by IMDb, Filmweb and Metacritic.">
     <title>What To Watch?</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238c3b2e'/%3E%3Cpath d='M12 9v14l11-7z' fill='%23fff'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="css/style.css">
@@ -17,14 +17,19 @@
             <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M12 9v14l11-7z"/></svg>
             What To Watch?
         </h1>
-        <fieldset class="sort">
-            <legend class="visually-hidden">Sort films by</legend>
+        <fieldset class="toggle kind">
+            <legend class="visually-hidden">Show</legend>
+            <label><input type="radio" name="kind" value="FILM" checked><span>Films</span></label>
+            <label><input type="radio" name="kind" value="SERIES"><span>Series</span></label>
+        </fieldset>
+        <fieldset class="toggle sort">
+            <legend class="visually-hidden">Sort by</legend>
             <label><input type="radio" name="sort" value="score" checked><span>Score</span></label>
             <label><input type="radio" name="sort" value="mine"><span>For you</span></label>
         </fieldset>
     </div>
     <div class="masthead-bottom">
-        <p class="tagline">Films on your streaming services, ranked by IMDb, Filmweb and Metacritic.</p>
+        <p class="tagline">Films and series on your streaming services, ranked by IMDb, Filmweb and Metacritic.</p>
         <div class="masthead-info">
             <dl class="legend" aria-label="How to read a card">
                 <div><dt><span class="legend-badge">80%</span></dt><dd>combined score</dd></div>

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.ScoreAssert;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.Resources;
 
@@ -47,6 +48,18 @@ class ImdbDatasetScoresProviderIntegrationTest {
     }
 
     @Test
+    void shouldRetrieveScoresOfSeriesAndMiniSeries() {
+        var titles = List.of(
+                series("Stranger Things", 2016),
+                series("The Queen's Gambit", 2020),
+                series("Adolescence", 2025));
+
+        assertThat(titles).allSatisfy(title -> assertThat(scores.findScoresBy(descriptionOf(title)))
+                .as("Scores of %s", title)
+                .anyMatch(ScoreAssert::isMeaningful));
+    }
+
+    @Test
     void shouldFindNearlyAllFilmsIRated() {
         var titles = Resources.readContentOf("films-with-my-scores.csv")
                 .lines()
@@ -67,6 +80,14 @@ class ImdbDatasetScoresProviderIntegrationTest {
                 .title(localTitle)
                 .originalTitle(originalTitle)
                 .year(year)
+                .build();
+    }
+
+    private static Title series(String originalTitle, int year) {
+        return Title.builder()
+                .originalTitle(originalTitle)
+                .year(year)
+                .kind(TitleKind.SERIES)
                 .build();
     }
 

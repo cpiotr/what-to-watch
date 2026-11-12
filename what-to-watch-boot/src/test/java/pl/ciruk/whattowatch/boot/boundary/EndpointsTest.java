@@ -10,6 +10,7 @@ import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 
@@ -57,7 +58,7 @@ class EndpointsTest {
     void shouldSearchFilmsOfPageAtOnce() throws Exception {
         var first = title("First");
         var second = title("Second");
-        when(titleProvider.streamOfTitles(1)).thenAnswer(ignored -> Stream.of(first, second));
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 1)).thenAnswer(ignored -> Stream.of(first, second));
         var secondSearched = new CountDownLatch(1);
         when(descriptionProvider.findDescriptionBy(first)).thenAnswer(ignored ->
                 secondSearched.await(5, SECONDS) ? Optional.of(descriptionOf(first)) : Optional.empty());
@@ -74,13 +75,29 @@ class EndpointsTest {
     @Test
     void shouldListSuggestedFilms() throws Exception {
         var title = title("Listed");
-        when(titleProvider.streamOfTitles(2)).thenAnswer(ignored -> Stream.of(title));
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 2)).thenAnswer(ignored -> Stream.of(title));
         when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.of(descriptionOf(title)));
 
         var response = get("/resources/suggestions/2");
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains("\"title\":\"Listed\"");
+    }
+
+    @Test
+    void shouldSuggestSeriesWhenAskedForThem() throws Exception {
+        var series = Title.builder().title("Series").originalTitle("Series").year(2020).kind(TitleKind.SERIES).build();
+        var film = title("Film");
+        when(titleProvider.streamOfTitles(TitleKind.SERIES, 4)).thenAnswer(ignored -> Stream.of(series));
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 4)).thenAnswer(ignored -> Stream.of(film));
+        when(descriptionProvider.findDescriptionBy(series)).thenReturn(Optional.of(descriptionOf(series)));
+        when(descriptionProvider.findDescriptionBy(film)).thenReturn(Optional.of(descriptionOf(film)));
+
+        var listed = get("/resources/suggestions/4?kind=SERIES").body();
+        var streamed = get("/resources/suggestions/4/stream?kind=SERIES").body();
+
+        assertThat(listed).contains("\"title\":\"Series\"").doesNotContain("\"title\":\"Film\"");
+        assertThat(streamed).contains("\"title\":\"Series\"").doesNotContain("\"title\":\"Film\"");
     }
 
     @Test
@@ -92,7 +109,7 @@ class EndpointsTest {
 
     @Test
     void shouldKeepErrorDetailsInLog() throws Exception {
-        when(titleProvider.streamOfTitles(3)).thenThrow(new IllegalStateException("Could not get https://internal.example"));
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 3)).thenThrow(new IllegalStateException("Could not get https://internal.example"));
 
         var response = get("/resources/titles/3");
 

@@ -6,14 +6,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 class FilmwebSelectors {
-    private static final Pattern NON_DIGIT = Pattern.compile("\\D");
+    private static final Pattern YEAR = Pattern.compile("\\d{4}");
 
+    // A series has the years it ran, such as "2022 - 2026", and is known by the first one
     Optional<Integer> findYear(Element details) {
-        var yearElement = details.selectFirst(".filmCoverSection__year");
-        return Optional.ofNullable(yearElement)
-                .map(Element::text)
-                .map(text -> NON_DIGIT.matcher(text).replaceAll(""))
-                .map(Integer::valueOf);
+        return Optional.ofNullable(details.selectFirst(".filmCoverSection__year"))
+                .flatMap(year -> YEAR.matcher(year.text()).results().findFirst())
+                .map(match -> Integer.valueOf(match.group()));
     }
 
     Optional<String> findLocalTitle(Element details) {

@@ -13,6 +13,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
@@ -69,24 +70,38 @@ public class MetacriticScoresProvider implements ScoresProvider {
         var url = new HttpUrl.Builder()
                 .scheme("https")
                 .host("www.metacritic.com")
-                .addPathSegment("movie")
+                .addPathSegment(sectionOf(title.kind()))
                 .addPathSegment(link)
                 .addPathSegment("")
                 .build();
 
         return connection.get(url)
-                .flatMap(MetacriticScoresProvider::findFilmData)
-                .filter(film -> titleOf(film).matches(title))
-                .flatMap(film -> scoreOf(film, url));
+                .flatMap(page -> findTitleData(page, title.kind()))
+                .filter(data -> titleOf(data, title.kind()).matches(title))
+                .flatMap(data -> scoreOf(data, url));
     }
 
-    // The film page describes the film and its Metascore as schema.org data
-    private static Optional<JsonNode> findFilmData(Element page) {
+    private static String sectionOf(TitleKind kind) {
+        return switch (kind) {
+            case FILM -> "movie";
+            case SERIES -> "tv";
+        };
+    }
+
+    // The page describes the film or series and its Metascore as schema.org data
+    private static Optional<JsonNode> findTitleData(Element page, TitleKind kind) {
         return page.select("script[type=application/ld+json]").stream()
                 .map(script -> readJson(script.data()))
                 .flatMap(Optional::stream)
-                .filter(json -> "Movie".equals(json.path("@type").asText()))
+                .filter(json -> schemaTypeOf(kind).equals(json.path("@type").asText()))
                 .findFirst();
+    }
+
+    private static String schemaTypeOf(TitleKind kind) {
+        return switch (kind) {
+            case FILM -> "Movie";
+            case SERIES -> "TVSeries";
+        };
     }
 
     private static Optional<JsonNode> readJson(String json) {
@@ -98,19 +113,20 @@ public class MetacriticScoresProvider implements ScoresProvider {
         }
     }
 
-    private static Title titleOf(JsonNode film) {
-        var name = film.path("name").asText();
-        var releaseDate = film.path("datePublished").asText();
+    private static Title titleOf(JsonNode data, TitleKind kind) {
+        var name = data.path("name").asText();
+        var releaseDate = data.path("datePublished").asText();
         var year = releaseDate.length() >= 4 ? Integer.parseInt(releaseDate.substring(0, 4)) : Title.MISSING_YEAR;
         return Title.builder()
                 .title(name)
                 .originalTitle(name)
                 .year(year)
+                .kind(kind)
                 .build();
     }
 
-    private static Optional<Score> scoreOf(JsonNode film, HttpUrl url) {
-        var rating = film.path("aggregateRating");
+    private static Optional<Score> scoreOf(JsonNode data, HttpUrl url) {
+        var rating = data.path("aggregateRating");
         var metascore = rating.path("ratingValue").asDouble();
         var numberOfReviews = rating.path("reviewCount").asInt();
         if (metascore <= 0 || numberOfReviews <= 0) {

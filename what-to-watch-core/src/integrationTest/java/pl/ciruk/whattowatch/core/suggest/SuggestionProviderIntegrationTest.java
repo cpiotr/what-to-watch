@@ -10,6 +10,7 @@ import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.Resources;
@@ -27,17 +28,17 @@ import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FilmSuggestionProviderIntegrationTest {
+class SuggestionProviderIntegrationTest {
     private static final int NUMBER_OF_TITLES = 25;
 
-    private FilmSuggestionProvider suggestions;
+    private SuggestionProvider suggestions;
     private ExecutorService pool;
 
     @BeforeEach
     void setUp() {
         HttpConnection<String> connection = TestConnections.cached();
         pool = Executors.newWorkStealingPool(32);
-        suggestions = new FilmSuggestionProvider(
+        suggestions = new SuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, pool),
                 sampleScoreProviders(connection),
@@ -48,12 +49,12 @@ class FilmSuggestionProviderIntegrationTest {
 
     @Test
     void shouldSuggestAllFilmsFromSampleTitleProvider() {
-        List<String> expectedTitles = provideTitlesFromResource().streamOfTitles(1)
+        List<String> expectedTitles = provideTitlesFromResource().streamOfTitles(TitleKind.FILM, 1)
                 .map(Title::asText)
                 .map(String::toLowerCase)
                 .collect(toList());
 
-        List<String> titles = CompletableFutures.getAllOf(suggestions.suggestFilms(1))
+        List<String> titles = CompletableFutures.getAllOf(suggestions.suggest(TitleKind.FILM, 1))
                 .filter(Objects::nonNull)
                 .filter(Film::isNotEmpty)
                 .map(Film::description)
@@ -89,9 +90,9 @@ class FilmSuggestionProviderIntegrationTest {
                 .lines()
                 .limit(NUMBER_OF_TITLES)
                 .map(line -> line.split(";"))
-                .map(FilmSuggestionProviderIntegrationTest::buildTitle)
+                .map(SuggestionProviderIntegrationTest::buildTitle)
                 .toList();
-        return (int pageNumber) -> titles.stream();
+        return (kind, pageNumber) -> titles.stream();
     }
 
     private static Title buildTitle(String[] array) {

@@ -7,17 +7,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.Film;
-import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.AsyncResponse;
 import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.Context;
@@ -41,13 +44,13 @@ import static java.util.stream.Collectors.toList;
 public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final FilmSuggestionProvider suggestionsProvider;
+    private final SuggestionProvider suggestionsProvider;
     private final FilmFilter filmFilter;
     private final PersonalRatings personalRatings;
     private final Timer responseTimer;
 
     @Inject
-    public Suggestions(FilmSuggestionProvider suggestionsProvider, FilmFilter filmFilter, PersonalRatings personalRatings) {
+    public Suggestions(SuggestionProvider suggestionsProvider, FilmFilter filmFilter, PersonalRatings personalRatings) {
         this.suggestionsProvider = suggestionsProvider;
         this.filmFilter = filmFilter;
         this.personalRatings = personalRatings;
@@ -59,14 +62,17 @@ public class Suggestions {
     @Path("{pageNumber}")
     @Produces(MediaType.APPLICATION_JSON)
     @ManagedAsync
-    public void get(@Suspended AsyncResponse asyncResponse, @PathParam("pageNumber") int pageNumber) {
-        LOGGER.info("Page number: {}", pageNumber);
+    public void get(
+            @Suspended AsyncResponse asyncResponse,
+            @PathParam("pageNumber") int pageNumber,
+            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+        LOGGER.info("Kind: {}, page number: {}", kind, pageNumber);
 
         asyncResponse.setTimeout(90, TimeUnit.SECONDS);
         asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
 
         try {
-            var films = responseTimer.record(() -> findSuggestions(pageNumber));
+            var films = responseTimer.record(() -> findSuggestions(kind, pageNumber));
 
             asyncResponse.resume(Response.ok(films).build());
             LOGGER.info("Finished getting suggestions for page {}", pageNumber);
@@ -80,13 +86,17 @@ public class Suggestions {
     @Path("{pageNumber}/stream")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     @ManagedAsync
-    public void stream(@Context SseEventSink sseEventSink, @Context Sse sse, @PathParam("pageNumber") int pageNumber) {
-        LOGGER.info("Stream page number: {}", pageNumber);
+    public void stream(
+            @Context SseEventSink sseEventSink,
+            @Context Sse sse,
+            @PathParam("pageNumber") int pageNumber,
+            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+        LOGGER.info("Stream kind: {}, page number: {}", kind, pageNumber);
 
         try (EventsSink sink = new EventsSink(sse, sseEventSink)) {
             responseTimer.record(() -> {
                 // Every search starts before any is awaited, so the rate-limited sites work at the same time
-                var sentFilms = suggestionsProvider.suggestFilms(pageNumber)
+                var sentFilms = suggestionsProvider.suggest(kind, pageNumber)
                         .map(sendToSinkIfWorthWatching(sink))
                         .toList();
                 sentFilms.forEach(CompletableFuture::join);
@@ -108,8 +118,8 @@ public class Suggestions {
         );
     }
 
-    private List<FilmResult> findSuggestions(int pageNumber) {
-        return CompletableFutures.getAllOf(suggestionsProvider.suggestFilms(pageNumber))
+    private List<FilmResult> findSuggestions(TitleKind kind, int pageNumber) {
+        return CompletableFutures.getAllOf(suggestionsProvider.suggest(kind, pageNumber))
                 .distinct()
                 .filter(filmFilter::isWorthWatching)
                 .map(this::toFilmResult)

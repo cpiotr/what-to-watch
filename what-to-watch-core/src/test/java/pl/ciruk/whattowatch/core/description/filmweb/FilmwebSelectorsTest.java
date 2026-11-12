@@ -9,6 +9,22 @@ class FilmwebSelectorsTest {
     private final FilmwebSelectors selectors = new FilmwebSelectors();
 
     @Test
+    void shouldFindYearOfFilm() {
+        var details = Jsoup.parse("""
+                <div class="filmCoverSection__year">2010</div>""");
+
+        assertThat(selectors.findYear(details)).hasValue(2010);
+    }
+
+    @Test
+    void shouldFindFirstYearOfSeries() {
+        var details = Jsoup.parse("""
+                <div class="filmCoverSection__year">2022 - 2026</div>""");
+
+        assertThat(selectors.findYear(details)).hasValue(2022);
+    }
+
+    @Test
     void shouldFindPlotWithoutLinkToFullDescription() {
         var page = Jsoup.parse("""
                 <div class="filmPosterSection__container">

@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.core.title.ekino;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
@@ -20,7 +21,7 @@ class EkinoTitleProviderIntegrationTest {
 
     @Test
     void shouldProvideCollectionOfTitles() {
-        try (Stream<Title> titles = provider.streamOfTitles(1)) {
+        try (Stream<Title> titles = provider.streamOfTitles(TitleKind.FILM, 1)) {
             assertThat(titles).isNotEmpty();
         }
     }

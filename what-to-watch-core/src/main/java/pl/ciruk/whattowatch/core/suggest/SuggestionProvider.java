@@ -7,6 +7,7 @@ import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 
@@ -23,7 +24,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUsing;
 
-public class FilmSuggestionProvider {
+public class SuggestionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final TitleProvider titles;
@@ -33,7 +34,7 @@ public class FilmSuggestionProvider {
     private final Cache<Title, Film> cache;
     private final Map<Title, CompletableFuture<Film>> filmsInProgress = new ConcurrentHashMap<>();
 
-    public FilmSuggestionProvider(
+    public SuggestionProvider(
             TitleProvider titles,
             DescriptionProvider descriptions,
             List<ScoresProvider> scoresProviders,
@@ -46,14 +47,15 @@ public class FilmSuggestionProvider {
         this.cache = cache;
     }
 
-    public Stream<CompletableFuture<Film>> suggestFilms(int pageNumber) {
-        LOGGER.info("Page number: {}", pageNumber);
+    public Stream<CompletableFuture<Film>> suggest(TitleKind kind, int pageNumber) {
+        LOGGER.info("Kind: {}, page number: {}", kind, pageNumber);
 
-        return titles.streamOfTitles(pageNumber)
+        return titles.streamOfTitles(kind, pageNumber)
                 .map(this::getOrFindFilmByTitle);
     }
 
     // Overlapping requests, such as the startup crawl and a user's, share one search for each film
+    // A title knows its kind, so a series and a film with the same name and year are cached apart
     private CompletableFuture<Film> getOrFindFilmByTitle(Title title) {
         var cachedFilm = cache.getIfPresent(title);
         if (cachedFilm != null) {

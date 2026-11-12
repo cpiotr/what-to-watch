@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoreType;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -45,6 +46,22 @@ class MetacriticScoresProviderTest {
                 .type(ScoreType.CRITIC)
                 .url("https://www.metacritic.com/movie/moana/")
                 .build());
+    }
+
+    @Test
+    void shouldReadMetascoreFromSeriesPage() {
+        givenPage("/tv/severance/", page("TVSeries", "Severance", "2022-02-18", 87, 41));
+
+        var scores = provider.findScoresBy(descriptionOf("Severance", 2022, TitleKind.SERIES)).toList();
+
+        assertThat(scores).extracting(Score::url).containsExactly("https://www.metacritic.com/tv/severance/");
+    }
+
+    @Test
+    void shouldNotTakeFilmScoreForSeries() {
+        givenPage("/tv/fargo/", filmPage("Fargo", "2014-04-15", 87, 41));
+
+        assertThat(provider.findScoresBy(descriptionOf("Fargo", 2014, TitleKind.SERIES))).isEmpty();
     }
 
     @Test
@@ -87,14 +104,22 @@ class MetacriticScoresProviderTest {
     }
 
     private static Element filmPage(String name, String releaseDate, int metascore, int numberOfReviews) {
-        var filmData = "{\"@type\":\"Movie\",\"name\":\"%s\",\"datePublished\":\"%s\",\"aggregateRating\":{\"ratingValue\":%d,\"reviewCount\":%d}}"
-                .formatted(name, releaseDate, metascore, numberOfReviews);
+        return page("Movie", name, releaseDate, metascore, numberOfReviews);
+    }
+
+    private static Element page(String schemaType, String name, String releaseDate, int metascore, int numberOfReviews) {
+        var filmData = "{\"@type\":\"%s\",\"name\":\"%s\",\"datePublished\":\"%s\",\"aggregateRating\":{\"ratingValue\":%d,\"reviewCount\":%d}}"
+                .formatted(schemaType, name, releaseDate, metascore, numberOfReviews);
         return Jsoup.parse("<html><head><script type=\"application/ld+json\">" + filmData + "</script></head><body></body></html>");
     }
 
     private static Description descriptionOf(String title, int year) {
+        return descriptionOf(title, year, TitleKind.FILM);
+    }
+
+    private static Description descriptionOf(String title, int year, TitleKind kind) {
         return Description.builder()
-                .title(Title.builder().title(title).year(year).build())
+                .title(Title.builder().title(title).year(year).kind(kind).build())
                 .build();
     }
 }

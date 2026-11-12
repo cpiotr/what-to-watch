@@ -10,7 +10,8 @@ public record Title(
         String originalTitle,
         String localTitle,
         int year,
-        String url) {
+        String url,
+        TitleKind kind) {
     public static final int MISSING_YEAR = 0;
 
     public static TitleBuilder builder() {
@@ -44,6 +45,8 @@ public record Title(
         private String title;
         private int year;
         private String url;
+        // Films unless said otherwise, as the API defaults to films
+        private TitleKind kind = TitleKind.FILM;
 
         public Title.TitleBuilder originalTitle(String originalTitle) {
             this.originalTitle = originalTitle;
@@ -65,13 +68,18 @@ public record Title(
             return this;
         }
 
+        public Title.TitleBuilder kind(TitleKind kind) {
+            this.kind = kind;
+            return this;
+        }
+
         public Title build() {
-            return new Title(originalTitle, title, year, url);
+            return new Title(originalTitle, title, year, url, kind);
         }
 
         @Override
         public String toString() {
-            return "Title.TitleBuilder(originalTitle=" + this.originalTitle + ", title=" + this.title + ", year=" + this.year + ", url=" + this.url + ")";
+            return "Title.TitleBuilder(originalTitle=" + this.originalTitle + ", title=" + this.title + ", year=" + this.year + ", url=" + this.url + ", kind=" + this.kind + ")";
         }
     }
 }

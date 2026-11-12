@@ -7,10 +7,12 @@ import org.springframework.stereotype.Component;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
+import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -56,11 +58,13 @@ public class Scores {
             @Suspended final AsyncResponse asyncResponse,
             @QueryParam("title") String title,
             @QueryParam("originalTitle") String originalTitle,
-            @QueryParam("year") int year) {
+            @QueryParam("year") int year,
+            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
         Title titleObj = Title.builder()
                 .title(title)
                 .originalTitle(originalTitle)
                 .year(year)
+                .kind(kind)
                 .build();
 
         Description description = Description.builder()
