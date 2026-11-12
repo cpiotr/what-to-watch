@@ -6,9 +6,9 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import pl.ciruk.whattowatch.core.filter.FilmFilter;
 import pl.ciruk.whattowatch.core.suggest.FilmSuggestionProvider;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.CompletableFuture;
 
 public class Bootstrap {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -33,8 +33,8 @@ public class Bootstrap {
     private void warmUpCaches() {
         LOGGER.info("Startup processing");
         try {
-            long numberOfFilms = filmSuggestions.suggestFilms(1)
-                    .map(CompletableFuture::join)
+            // Every search starts before any is awaited, so the rate-limited sites work at the same time
+            long numberOfFilms = CompletableFutures.getAllOf(filmSuggestions.suggestFilms(1))
                     .filter(filmFilter::isWorthWatching)
                     .distinct()
                     .count();

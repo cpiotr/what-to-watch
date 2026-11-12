@@ -98,9 +98,13 @@ public class Suggestions {
         LOGGER.info("Stream page number: {}", pageNumber);
 
         try (EventsSink sink = new EventsSink(sse, sseEventSink)) {
-            responseTimer.record(() -> suggestionsProvider.suggestFilms(pageNumber)
-                    .map(sendToSinkIfWorthWatching(sink))
-                    .forEach(CompletableFuture::join));
+            responseTimer.record(() -> {
+                // Every search starts before any is awaited, so the rate-limited sites work at the same time
+                var sentFilms = suggestionsProvider.suggestFilms(pageNumber)
+                        .map(sendToSinkIfWorthWatching(sink))
+                        .toList();
+                sentFilms.forEach(CompletableFuture::join);
+            });
             LOGGER.info("Finished streaming suggestions for page {}", pageNumber);
         } catch (Exception e) {
             LOGGER.error("Error while getting suggestions", e);
