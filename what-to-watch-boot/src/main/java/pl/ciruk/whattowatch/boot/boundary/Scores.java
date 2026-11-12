@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.MediaType;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -35,10 +36,12 @@ public class Scores {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final List<ScoresProvider> scoresProviders;
+    private final ExecutorService executorService;
 
     @Inject
-    public Scores(List<ScoresProvider> scoresProviders) {
+    public Scores(List<ScoresProvider> scoresProviders, ExecutorService executorService) {
         this.scoresProviders = scoresProviders;
+        this.executorService = executorService;
     }
 
     @PostConstruct
@@ -65,7 +68,7 @@ public class Scores {
                 .build();
 
         Function<ScoresProvider, CompletableFuture<Stream<Score>>> toScoresOfAsync =
-                scoresProvider -> scoresProvider.findScoresByAsync(description);
+                scoresProvider -> CompletableFuture.supplyAsync(() -> scoresProvider.findScoresBy(description), executorService);
 
         scoresProviders.stream()
                 .map(toScoresOfAsync)

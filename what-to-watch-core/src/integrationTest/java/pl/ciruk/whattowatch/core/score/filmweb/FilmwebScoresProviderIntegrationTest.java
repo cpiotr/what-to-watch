@@ -9,7 +9,6 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.net.TestConnections;
 
-import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,9 +18,7 @@ class FilmwebScoresProviderIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        scores = new FilmwebScoresProvider(
-                new FilmwebProxy(TestConnections.okHttp()),
-                Executors.newSingleThreadExecutor());
+        scores = new FilmwebScoresProvider(new FilmwebProxy(TestConnections.okHttp()));
     }
 
     @Test

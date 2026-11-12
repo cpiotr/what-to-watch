@@ -98,9 +98,8 @@ public class FilmSuggestionProvider {
             ScoresProvider scoresProvider,
             Description description,
             AtomicBoolean anyProviderFailed) {
-        return scoresProvider.findScoresByAsync(description)
-                // Collect here, so errors thrown while the lazy stream runs are caught below too
-                .thenApply(Stream::toList)
+        // Collected here, so errors thrown while a lazy stream runs are caught below too
+        return CompletableFuture.supplyAsync(() -> scoresProvider.findScoresBy(description).toList(), executorService)
                 .exceptionally(e -> {
                     LOGGER.warn("Cannot get scores from {} for {}", scoresProvider.getClass().getSimpleName(), description, e);
                     anyProviderFailed.set(true);

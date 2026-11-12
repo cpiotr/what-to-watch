@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.score.metacritic;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
@@ -22,9 +23,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -36,29 +34,12 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private static final Pattern SEPARATORS = Pattern.compile("[ -]+");
 
     private final HttpConnection<Element> connection;
-    private final ExecutorService executorService;
-    private final AtomicLong missingScores = new AtomicLong();
+    private final Counter missingScores = Metrics.counter(
+            Names.getNameForMissingScores(),
+            List.of(Tags.getProviderTag(METACRITIC)));
 
-    public MetacriticScoresProvider(
-            HttpConnection<Element> connection,
-            ExecutorService executorService) {
+    public MetacriticScoresProvider(HttpConnection<Element> connection) {
         this.connection = connection;
-        this.executorService = executorService;
-
-        Metrics.gauge(
-                Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag(METACRITIC)),
-                missingScores,
-                AtomicLong::get
-        );
-    }
-
-    @Override
-    public CompletableFuture<Stream<Score>> findScoresByAsync(Description description) {
-        return CompletableFuture.supplyAsync(
-                () -> findScoresBy(description),
-                executorService
-        );
     }
 
     @Override
@@ -72,7 +53,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .or(() -> findScore(link + "-" + title.year(), title));
         if (score.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", title);
-            missingScores.incrementAndGet();
+            missingScores.increment();
         }
 
         return score.stream()

@@ -1,7 +1,9 @@
 package pl.ciruk.whattowatch.core.score.filmweb;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -12,42 +14,24 @@ import pl.ciruk.whattowatch.core.source.FilmwebFilm;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
-import pl.ciruk.whattowatch.utils.text.NumberTokenizer;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class FilmwebScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String FILMWEB = "Filmweb";
+    private static final int MAX_FILMWEB_SCORE = 10;
 
     private final FilmwebProxy filmwebProxy;
-    private final ExecutorService executorService;
-    private final AtomicLong missingScores = new AtomicLong();
+    private final Counter missingScores = Metrics.counter(
+            Names.getNameForMissingScores(),
+            List.of(Tags.getProviderTag(FILMWEB)));
 
-    public FilmwebScoresProvider(FilmwebProxy filmwebProxy, ExecutorService executorService) {
+    public FilmwebScoresProvider(FilmwebProxy filmwebProxy) {
         this.filmwebProxy = filmwebProxy;
-        this.executorService = executorService;
-
-        Metrics.gauge(
-                Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag(FILMWEB)),
-                missingScores,
-                AtomicLong::get
-        );
-    }
-
-    @Override
-    public CompletableFuture<Stream<Score>> findScoresByAsync(Description description) {
-        return CompletableFuture.supplyAsync(
-                () -> findScoresBy(description),
-                executorService
-        );
     }
 
     @Override
@@ -64,7 +48,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
 
         if (scores.isEmpty()) {
             LOGGER.warn("Missing Filmweb score for {}", description);
-            missingScores.incrementAndGet();
+            missingScores.increment();
         }
         scores.forEach(score -> LOGGER.debug("Score for {}: {}", description, score));
         return scores.stream();
@@ -72,21 +56,26 @@ public class FilmwebScoresProvider implements ScoresProvider {
 
     private Optional<Score> findScore(FilmwebFilm film) {
         return filmwebProxy.getPageWithFilmDetailsFor(film)
-                .flatMap(FilmwebSelectors.SCORE_FROM_DETAILS::extractFrom)
-                .map(scoreText -> createScore(scoreText, filmwebProxy.linkTo(film)))
-                .filter(score -> score.grade() > 0 && score.quantity() > 0);
+                .flatMap(details -> scoreFrom(details, filmwebProxy.linkTo(film)));
     }
 
-    private static Score createScore(String scoreText, HttpUrl link) {
-        var numberTokenizer = new NumberTokenizer(scoreText);
-        var rating = numberTokenizer.hasMoreTokens() ? numberTokenizer.nextToken().asNormalizedDouble() : -1;
-        var quantity = numberTokenizer.hasMoreTokens() ? (int) numberTokenizer.nextToken().asSimpleLong() : -1;
-        return Score.builder()
-                .grade(rating / 10.0)
-                .quantity(quantity)
-                .source(FILMWEB)
-                .type(ScoreType.AMATEUR)
-                .url(link.toString())
-                .build();
+    private static Optional<Score> scoreFrom(Element details, HttpUrl link) {
+        var rating = details.selectFirst("[itemprop=ratingValue]");
+        var votes = details.selectFirst("[itemprop=ratingCount]");
+        if (rating == null || votes == null) {
+            return Optional.empty();
+        }
+
+        // Filmweb writes ratings with a decimal comma, such as "7,8"
+        var grade = Double.parseDouble(rating.text().replace(',', '.')) / MAX_FILMWEB_SCORE;
+        var quantity = Long.parseLong(votes.text().replaceAll("\\D", ""));
+        return Optional.of(Score.builder()
+                        .grade(grade)
+                        .quantity(quantity)
+                        .source(FILMWEB)
+                        .type(ScoreType.AMATEUR)
+                        .url(link.toString())
+                        .build())
+                .filter(score -> score.grade() > 0 && score.quantity() > 0);
     }
 }

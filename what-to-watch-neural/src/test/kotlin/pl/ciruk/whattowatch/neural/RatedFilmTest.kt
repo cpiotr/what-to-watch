@@ -3,10 +3,8 @@ package pl.ciruk.whattowatch.neural
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
-import pl.ciruk.whattowatch.core.description.Description
 import pl.ciruk.whattowatch.core.score.Score
 import pl.ciruk.whattowatch.core.score.ScoresProvider
-import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
 
 class RatedFilmTest {
@@ -37,12 +35,7 @@ class RatedFilmTest {
     @Test
     fun shouldAddScoresFromProvider() {
         val imdb = Score.amateur(0.75, 1000)
-        val provider = object : ScoresProvider {
-            override fun findScoresByAsync(description: Description): CompletableFuture<Stream<Score>> =
-                    CompletableFuture.completedFuture(findScoresBy(description))
-
-            override fun findScoresBy(description: Description): Stream<Score> = Stream.of(imdb)
-        }
+        val provider = ScoresProvider { Stream.of(imdb) }
         val film = RatedFilm.readAll().first()
 
         val withImdb = film.withScoresFrom(provider)

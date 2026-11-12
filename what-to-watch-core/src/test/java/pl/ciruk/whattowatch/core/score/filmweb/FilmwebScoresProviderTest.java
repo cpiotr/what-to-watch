@@ -39,7 +39,7 @@ class FilmwebScoresProviderTest {
         when(filmwebProxy.getPageWithFilmDetailsFor(any())).thenReturn(Optional.of(Jsoup.parse(
                 "<span itemprop=\"ratingValue\">8,2</span><span itemprop=\"ratingCount\">667030</span>")));
         when(filmwebProxy.linkTo(any())).thenReturn(HttpUrl.get("https://www.filmweb.pl/film/Incepcja-2010-500891"));
-        provider = new FilmwebScoresProvider(filmwebProxy, Executors.newSingleThreadExecutor());
+        provider = new FilmwebScoresProvider(filmwebProxy);
     }
 
     @AfterEach
@@ -62,7 +62,7 @@ class FilmwebScoresProviderTest {
         assertThat(provider.findScoresBy(descriptionOf(TITLE, 2010))).hasSize(1);
         assertThat(provider.findScoresBy(descriptionOf("Unknown", 2010))).isEmpty();
 
-        var missingScores = registry.get(Names.getNameForMissingScores()).tag("provider", "Filmweb").gauge().value();
+        var missingScores = registry.get(Names.getNameForMissingScores()).tag("provider", "Filmweb").counter().count();
         assertThat(missingScores).isEqualTo(1.0);
     }
 

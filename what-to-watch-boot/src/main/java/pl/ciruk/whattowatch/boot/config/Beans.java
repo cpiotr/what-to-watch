@@ -103,18 +103,18 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider imdbScores(ExecutorService executorService) {
-        return new ImdbDatasetScoresProvider(properties.imdb().datasetsDirectory(), executorService);
+    ScoresProvider imdbScores() {
+        return new ImdbDatasetScoresProvider(properties.imdb().datasetsDirectory());
     }
 
     @Bean
-    ScoresProvider filmwebScores(FilmwebProxy filmwebProxy, ExecutorService executorService) {
-        return new FilmwebScoresProvider(filmwebProxy, executorService);
+    ScoresProvider filmwebScores(FilmwebProxy filmwebProxy) {
+        return new FilmwebScoresProvider(filmwebProxy);
     }
 
     @Bean
-    ScoresProvider metacriticScores(@Cached @LongExpiry HttpConnection<Element> httpConnection, ExecutorService executorService) {
-        return new MetacriticScoresProvider(httpConnection, executorService);
+    ScoresProvider metacriticScores(@Cached @LongExpiry HttpConnection<Element> httpConnection) {
+        return new MetacriticScoresProvider(httpConnection);
     }
 
     @Bean

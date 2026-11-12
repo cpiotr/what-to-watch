@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.core.score.imdb;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
@@ -22,56 +23,33 @@ import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 // Most of the coupling comes from the nested types that map IMDb's search response
 @SuppressWarnings("PMD.CouplingBetweenObjects")
-public class ImdbScoresProvider implements ScoresProvider {
-    static final int NUMBER_OF_VOTES_LOWER_BOUND = 100;
+public class ImdbSearchScoresProvider implements ScoresProvider {
+    private static final int NUMBER_OF_VOTES_LOWER_BOUND = ImdbDatasetScoresProvider.NUMBER_OF_VOTES_LOWER_BOUND;
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MAX_IMDB_SCORE = 10;
     private static final String IMDB = "IMDb";
     private static final int MAX_PAGE_ATTEMPTS = 3;
     private static final Duration DELAY_BETWEEN_PAGE_ATTEMPTS = Duration.ofSeconds(5);
     private final HttpConnection<Element> httpConnection;
-    private final ExecutorService executorService;
     private final Duration delayBetweenPageAttempts;
-    private final AtomicLong missingScores = new AtomicLong();
+    private final Counter missingScores = Metrics.counter(
+            Names.getNameForMissingScores(),
+            List.of(Tags.getProviderTag(IMDB)));
     private final ObjectMapper objectMapper;
 
-    public ImdbScoresProvider(
-            HttpConnection<Element> httpConnection,
-            ExecutorService executorService) {
-        this(httpConnection, executorService, DELAY_BETWEEN_PAGE_ATTEMPTS);
+    public ImdbSearchScoresProvider(HttpConnection<Element> httpConnection) {
+        this(httpConnection, DELAY_BETWEEN_PAGE_ATTEMPTS);
     }
 
-    ImdbScoresProvider(
-            HttpConnection<Element> httpConnection,
-            ExecutorService executorService,
-            Duration delayBetweenPageAttempts) {
+    ImdbSearchScoresProvider(HttpConnection<Element> httpConnection, Duration delayBetweenPageAttempts) {
         this.httpConnection = httpConnection;
-        this.executorService = executorService;
         this.delayBetweenPageAttempts = delayBetweenPageAttempts;
         this.objectMapper = new ObjectMapper();
-
-        Metrics.gauge(
-                Names.getNameForMissingScores(),
-                List.of(Tags.getProviderTag(IMDB)),
-                missingScores,
-                AtomicLong::get
-        );
-    }
-
-    @Override
-    public CompletableFuture<Stream<Score>> findScoresByAsync(Description description) {
-        return CompletableFuture.supplyAsync(
-                () -> findScoresBy(description),
-                executorService
-        );
     }
 
     @Override
@@ -84,7 +62,7 @@ public class ImdbScoresProvider implements ScoresProvider {
         if (firstResult.isEmpty()) {
             LOGGER.warn("Missing score for {}", description);
             LOGGER.trace("Search query: {}", createUrl(description));
-            missingScores.incrementAndGet();
+            missingScores.increment();
         }
 
         return firstResult.stream()

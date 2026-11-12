@@ -19,20 +19,25 @@ public record Film(
         return EMPTY;
     }
 
+    // Amateur and critic scores count by their types' weights, however many votes each has
     public Double normalizedScore() {
-        var amateurScore = calculateWeightedAverage(scoresOfType(ScoreType.AMATEUR))
-                .map(score -> Doubles.normalizeScore(score, countQuantity(ScoreType.AMATEUR)))
-                .map(Score::amateur);
-        var criticScore = calculateWeightedAverage(scoresOfType(ScoreType.CRITIC))
-                .map(score -> Doubles.normalizeScore(score, countQuantity(ScoreType.CRITIC)))
-                .map(Score::critic);
-        var weightedScores = Stream.concat(
-                amateurScore.stream(),
-                criticScore.stream()
-        );
-
-        return calculateWeightedAverage(weightedScores.collect(Collectors.toList()))
+        double weightedSum = 0;
+        long totalWeight = 0;
+        for (var type : ScoreType.values()) {
+            var score = normalizedScoreOf(type);
+            if (score.isPresent()) {
+                weightedSum += score.get() * type.getWeight();
+                totalWeight += type.getWeight();
+            }
+        }
+        return Optional.of(weightedSum / totalWeight)
+                .filter(Doubles.greaterThan(0.0))
                 .orElse(0.0);
+    }
+
+    private Optional<Double> normalizedScoreOf(ScoreType type) {
+        return calculateWeightedAverage(scoresOfType(type))
+                .map(average -> Doubles.normalizeScore(average, countQuantity(type)));
     }
 
     private long countQuantity(ScoreType type) {

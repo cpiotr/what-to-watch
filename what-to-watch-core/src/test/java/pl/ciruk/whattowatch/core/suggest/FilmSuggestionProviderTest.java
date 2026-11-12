@@ -44,8 +44,8 @@ class FilmSuggestionProviderTest {
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(description)));
 
         scoreProvider = mock(ScoresProvider.class);
-        when(scoreProvider.findScoresByAsync(description))
-                .thenAnswer(ignored -> CompletableFuture.completedFuture(Stream.of(Score.critic(1.0, 100))));
+        when(scoreProvider.findScoresBy(description))
+                .thenAnswer(ignored -> Stream.of(Score.critic(1.0, 100)));
 
         cache = Caffeine.newBuilder().build();
         filmSuggestionProvider = new FilmSuggestionProvider(
@@ -75,7 +75,7 @@ class FilmSuggestionProviderTest {
         assertThat(films).isNotEmpty();
 
         verify(descriptionProvider).findDescriptionByAsync(title);
-        verify(scoreProvider).findScoresByAsync(description);
+        verify(scoreProvider).findScoresBy(description);
     }
 
     @Test
@@ -105,8 +105,8 @@ class FilmSuggestionProviderTest {
     @Test
     void shouldKeepOtherScoresWhenOneProviderFails() {
         var failingScoreProvider = mock(ScoresProvider.class);
-        when(failingScoreProvider.findScoresByAsync(description))
-                .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("Unexpected page")));
+        when(failingScoreProvider.findScoresBy(description))
+                .thenThrow(new IllegalStateException("Unexpected page"));
         var provider = createProviderWith(List.of(scoreProvider, failingScoreProvider));
 
         List<Film> films = CompletableFutures.getAllOf(provider.suggestFilms(1))
@@ -120,11 +120,10 @@ class FilmSuggestionProviderTest {
     @Test
     void shouldKeepOtherScoresWhenProviderStreamFailsLazily() {
         var lazilyFailingScoreProvider = mock(ScoresProvider.class);
-        when(lazilyFailingScoreProvider.findScoresByAsync(description))
-                .thenAnswer(ignored -> CompletableFuture.completedFuture(
-                        Stream.of("page").<Score>map(page -> {
-                            throw new IllegalStateException("Unexpected page");
-                        })));
+        when(lazilyFailingScoreProvider.findScoresBy(description))
+                .thenAnswer(ignored -> Stream.of("page").<Score>map(page -> {
+                    throw new IllegalStateException("Unexpected page");
+                }));
         var provider = createProviderWith(List.of(scoreProvider, lazilyFailingScoreProvider));
 
         List<Film> films = CompletableFutures.getAllOf(provider.suggestFilms(1))

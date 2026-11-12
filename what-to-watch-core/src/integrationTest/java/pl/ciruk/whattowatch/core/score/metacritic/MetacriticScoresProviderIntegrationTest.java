@@ -22,7 +22,7 @@ class MetacriticScoresProviderIntegrationTest {
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scoresProvider = new MetacriticScoresProvider(connection, Executors.newSingleThreadExecutor());
+        scoresProvider = new MetacriticScoresProvider(connection);
     }
 
     @Test

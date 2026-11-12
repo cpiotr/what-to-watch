@@ -40,7 +40,7 @@ class FilmSuggestionProviderIntegrationTest {
         suggestions = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, pool),
-                sampleScoreProviders(connection, pool),
+                sampleScoreProviders(connection),
                 pool,
                 Caffeine.newBuilder().build()
         );
@@ -76,11 +76,11 @@ class FilmSuggestionProviderIntegrationTest {
         return new FilmwebDescriptionProvider(filmwebProxy, pool);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection, ExecutorService executorService) {
+    private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(connection), executorService),
-                new MetacriticScoresProvider(jsoupConnection, executorService)
+                new FilmwebScoresProvider(new FilmwebProxy(connection)),
+                new MetacriticScoresProvider(jsoupConnection)
         );
     }
 

@@ -1,6 +1,5 @@
 package pl.ciruk.whattowatch.core.score.imdb;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.core.description.Description;
@@ -11,15 +10,12 @@ import pl.ciruk.whattowatch.utils.Resources;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 // Reads the datasets that `./gradlew downloadImdbDatasets` puts in the repository's imdb directory
 class ImdbDatasetScoresProviderIntegrationTest {
-    private static ExecutorService executorService;
     private static ImdbDatasetScoresProvider scores;
 
     @BeforeAll
@@ -29,15 +25,7 @@ class ImdbDatasetScoresProviderIntegrationTest {
                 Files.exists(directory.resolve("title.ratings.tsv.gz")) && Files.exists(directory.resolve("title.basics.tsv.gz")),
                 "No IMDb datasets in " + directory.toAbsolutePath());
 
-        executorService = Executors.newSingleThreadExecutor();
-        scores = new ImdbDatasetScoresProvider(directory, executorService);
-    }
-
-    @AfterAll
-    static void shutDown() {
-        if (executorService != null) {
-            executorService.shutdownNow();
-        }
+        scores = new ImdbDatasetScoresProvider(directory);
     }
 
     @Test

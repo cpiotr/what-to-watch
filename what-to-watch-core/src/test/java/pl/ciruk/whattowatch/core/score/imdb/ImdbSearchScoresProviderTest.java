@@ -17,17 +17,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class ImdbScoresProviderTest {
+class ImdbSearchScoresProviderTest {
 
     private HttpConnection<Element> connection;
-    private ImdbScoresProvider provider;
+    private ImdbSearchScoresProvider provider;
     private Description description;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
         connection = mock(HttpConnection.class);
-        provider = new ImdbScoresProvider(connection, Executors.newSingleThreadExecutor(), Duration.ZERO);
+        provider = new ImdbSearchScoresProvider(connection, Duration.ZERO);
         var title = Title.builder()
                 .title("Test title")
                 .year(2010)

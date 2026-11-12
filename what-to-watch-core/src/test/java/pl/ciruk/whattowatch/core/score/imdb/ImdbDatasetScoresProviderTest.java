@@ -22,7 +22,7 @@ class ImdbDatasetScoresProviderTest {
     void setUp(@TempDir Path directory) {
         gzipped("title.ratings.tsv", directory);
         gzipped("title.basics.tsv", directory);
-        provider = new ImdbDatasetScoresProvider(directory, Executors.newSingleThreadExecutor());
+        provider = new ImdbDatasetScoresProvider(directory);
     }
 
     @Test
@@ -43,13 +43,6 @@ class ImdbDatasetScoresProviderTest {
         var scores = provider.findScoresBy(description("Nieznany", "Unknown", 2020));
 
         assertThat(scores).isEmpty();
-    }
-
-    @Test
-    void shouldGiveScoreAsynchronously() {
-        var scores = provider.findScoresByAsync(description("Kraina lodu", "Frozen", 2013)).join();
-
-        assertThat(scores).extracting(Score::url).containsExactly("https://www.imdb.com/title/tt2294629");
     }
 
     private static Description description(String localTitle, String originalTitle, int year) {

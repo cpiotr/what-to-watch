@@ -12,7 +12,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.score.filmweb.FilmwebScoresProvider;
-import pl.ciruk.whattowatch.core.score.imdb.ImdbScoresProvider;
+import pl.ciruk.whattowatch.core.score.imdb.ImdbSearchScoresProvider;
 import pl.ciruk.whattowatch.core.score.metacritic.MetacriticScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.title.Title;
@@ -74,7 +74,7 @@ public class FilmSuggestionsBenchmark {
         suggestionsWorkStealing = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, workStealingPool),
-                sampleScoreProviders(connection, workStealingPool),
+                sampleScoreProviders(connection),
                 workStealingPool,
                 Caffeine.newBuilder().build()
         );
@@ -83,7 +83,7 @@ public class FilmSuggestionsBenchmark {
         suggestionsFixedPool = new FilmSuggestionProvider(
                 provideTitlesFromResource(),
                 sampleDescriptionProvider(connection, fixedPool),
-                sampleScoreProviders(connection, fixedPool),
+                sampleScoreProviders(connection),
                 fixedPool,
                 Caffeine.newBuilder().build()
         );
@@ -128,14 +128,12 @@ public class FilmSuggestionsBenchmark {
                 pool);
     }
 
-    private static List<ScoresProvider> sampleScoreProviders(
-            HttpConnection<String> connection,
-            ExecutorService executorService) {
+    private static List<ScoresProvider> sampleScoreProviders(HttpConnection<String> connection) {
         JsoupConnection jsoupConnection = new JsoupConnection(connection);
         return List.of(
-                new FilmwebScoresProvider(new FilmwebProxy(connection), executorService),
-                new MetacriticScoresProvider(jsoupConnection, executorService),
-                new ImdbScoresProvider(jsoupConnection, executorService)
+                new FilmwebScoresProvider(new FilmwebProxy(connection)),
+                new MetacriticScoresProvider(jsoupConnection),
+                new ImdbSearchScoresProvider(jsoupConnection)
         );
     }
 

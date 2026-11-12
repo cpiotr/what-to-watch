@@ -16,14 +16,14 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled("IMDb answers with an AWS WAF challenge; the app reads IMDb's datasets instead")
-class ImdbScoresProviderIntegationTest {
+class ImdbSearchScoresProviderIntegrationTest {
     private ScoresProvider scores;
 
     @BeforeEach
     void setUp() {
         JsoupConnection connection = TestConnections.jsoup();
 
-        scores = new ImdbScoresProvider(connection, Executors.newSingleThreadExecutor());
+        scores = new ImdbSearchScoresProvider(connection);
     }
 
     @Test

@@ -29,7 +29,7 @@ class MetacriticScoresProviderTest {
     void setUp() {
         connection = mock(HttpConnection.class);
         when(connection.get(any(HttpUrl.class))).thenReturn(Optional.empty());
-        provider = new MetacriticScoresProvider(connection, Executors.newSingleThreadExecutor());
+        provider = new MetacriticScoresProvider(connection);
     }
 
     @Test
