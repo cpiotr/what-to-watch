@@ -54,6 +54,14 @@ class RedisCacheTest {
         assertThat(redisCache.get(TEST_KEY)).hasValue(value);
     }
 
+    // A cached connection stores an empty value for a missing page
+    @Test
+    void shouldRetrieveEmptyValue() {
+        redisCache.put(TEST_KEY, "");
+
+        assertThat(redisCache.get(TEST_KEY)).hasValue("");
+    }
+
     @Test
     void shouldRemoveEntryThatCannotBeRead() {
         redisClient.set(TEST_KEY, TEST_VALUE);
