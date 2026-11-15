@@ -29,12 +29,12 @@ class FilmwebScoresProviderTest {
     private static final FilmwebTitle INCEPTION = new FilmwebTitle(500_891, "Incepcja", TITLE, 2010, TitleKind.FILM);
 
     private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+    private final FilmwebProxy filmwebProxy = mock(FilmwebProxy.class);
     private FilmwebScoresProvider provider;
 
     @BeforeEach
     void setUp() {
         Metrics.addRegistry(registry);
-        var filmwebProxy = mock(FilmwebProxy.class);
         when(filmwebProxy.searchBy(anyString(), anyInt(), any())).thenAnswer(ignored -> Stream.empty());
         when(filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM)).thenAnswer(ignored -> Stream.of(INCEPTION));
         when(filmwebProxy.getDetailsPageFor(any())).thenReturn(Optional.of(Jsoup.parse(
@@ -67,9 +67,31 @@ class FilmwebScoresProviderTest {
         assertThat(missingScores).isEqualTo(1.0);
     }
 
+    @Test
+    void shouldSearchByLocalTitleWhenOriginalTitleFindsNothing() {
+        var killer = new FilmwebTitle(10_002_852, "Zabójca", "The Killer", 2023, TitleKind.FILM);
+        when(filmwebProxy.searchBy("Zabójca", 2023, TitleKind.FILM)).thenAnswer(ignored -> Stream.of(killer));
+
+        var scores = provider.findScoresBy(descriptionOf("Zabójca", "The Killer", 2023)).toList();
+
+        assertThat(scores).hasSize(1);
+        verify(filmwebProxy).searchBy("The Killer", 2023, TitleKind.FILM);
+    }
+
+    @Test
+    void shouldNotSearchByLocalTitleWhenOriginalTitleFindsScore() {
+        assertThat(provider.findScoresBy(descriptionOf("Incepcja", TITLE, 2010))).hasSize(1);
+
+        verify(filmwebProxy, never()).searchBy(eq("Incepcja"), anyInt(), any());
+    }
+
     private static Description descriptionOf(String title, int year) {
+        return descriptionOf(title, title, year);
+    }
+
+    private static Description descriptionOf(String localTitle, String originalTitle, int year) {
         return Description.builder()
-                .title(Title.builder().title(title).originalTitle(title).year(year).build())
+                .title(Title.builder().title(localTitle).originalTitle(originalTitle).year(year).build())
                 .build();
     }
 }

@@ -12,13 +12,17 @@ import pl.ciruk.whattowatch.core.score.ScoreType;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
 import pl.ciruk.whattowatch.core.source.FilmwebTitle;
 import pl.ciruk.whattowatch.core.source.FilmwebProxy;
+import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
 
 public class FilmwebScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -39,12 +43,16 @@ public class FilmwebScoresProvider implements ScoresProvider {
         LOGGER.debug("Description: {}", description);
 
         var title = description.getTitle();
-        var scores = filmwebProxy.searchBy(title.asText(), title.year(), title.kind())
-                .filter(film -> film.toTitle().matches(title))
-                .map(this::findScore)
-                .flatMap(Optional::stream)
-                .filter(Score::isSignificant)
-                .toList();
+        // Filmweb's search answers with its first ten hits only, which can miss the film when its original title is
+        // common, as with "The Killer" (2023), so the local title is searched as well, like descriptions are
+        var scores = Stream.of(title.asText(), title.localTitle())
+                .filter(Objects::nonNull)
+                .filter(not(String::isEmpty))
+                .distinct()
+                .map(text -> scoresFor(text, title))
+                .filter(not(List::isEmpty))
+                .findFirst()
+                .orElse(List.of());
 
         if (scores.isEmpty()) {
             LOGGER.warn("Missing Filmweb score for {}", description);
@@ -52,6 +60,15 @@ public class FilmwebScoresProvider implements ScoresProvider {
         }
         scores.forEach(score -> LOGGER.debug("Score for {}: {}", description, score));
         return scores.stream();
+    }
+
+    private List<Score> scoresFor(String titleText, Title title) {
+        return filmwebProxy.searchBy(titleText, title.year(), title.kind())
+                .filter(film -> film.toTitle().matches(title))
+                .map(this::findScore)
+                .flatMap(Optional::stream)
+                .filter(Score::isSignificant)
+                .toList();
     }
 
     private Optional<Score> findScore(FilmwebTitle film) {

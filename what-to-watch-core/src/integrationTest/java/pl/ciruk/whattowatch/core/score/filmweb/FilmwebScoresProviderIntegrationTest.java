@@ -61,6 +61,23 @@ class FilmwebScoresProviderIntegrationTest {
         }
     }
 
+    // The search for "The Killer" answers with ten other films, so this one is found by its Polish title
+    @Test
+    void shouldRetrieveMeaningfulScoreOfFilmWithCommonOriginalTitle() {
+        Title title = Title.builder()
+                .title("Zabójca")
+                .originalTitle("The Killer")
+                .year(2023)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        try (Stream<Score> scores = this.scores.findScoresBy(description)) {
+            assertThat(scores).anyMatch(ScoreAssert::isMeaningful);
+        }
+    }
+
     @Test
     void shouldRetrieveMeaningfulScoreOfSeries() {
         Title title = Title.builder()
