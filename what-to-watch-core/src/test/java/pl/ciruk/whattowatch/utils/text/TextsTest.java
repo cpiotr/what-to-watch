@@ -12,6 +12,11 @@ class TextsTest {
     }
 
     @Test
+    void shouldIgnoreSurroundingWhitespace() {
+        assertThat(Texts.matchesAlphanumerically(" The Devil All the Time", "The Devil All the Time ")).isTrue();
+    }
+
+    @Test
     void shouldIgnoreDiacritics() {
         assertThat(Texts.matchesAlphanumerically("Katyń", "Katyn")).isTrue();
         assertThat(Texts.matchesAlphanumerically("Żółw Łódź", "zolw lodz")).isTrue();

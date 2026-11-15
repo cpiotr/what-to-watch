@@ -22,11 +22,12 @@ public final class Texts {
     }
 
     /**
-     * Lower case, without diacritics, a leading article or anything but letters, digits and spaces.
-     * "&" counts as "and".
+     * Lower case, without diacritics, surrounding whitespace, a leading article or anything but letters, digits and
+     * spaces. "&" counts as "and".
      */
     public static String unify(String text) {
-        var folded = withoutDiacritics(text.toLowerCase(Locale.ROOT)).replace("&", "and");
+        // Filmweb has " The Devil All the Time", where the space would keep the article
+        var folded = withoutDiacritics(text.strip().toLowerCase(Locale.ROOT)).replace("&", "and");
         return NOT_ALPHANUMERIC_OR_SPACE
                 .matcher(stripArticle(folded))
                 .replaceAll("");
