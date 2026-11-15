@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 class FilmwebProxyTest {
+    private static final String FILMS_SEARCH = "/api/v1/films/search";
     private static final String TITLE = "Incepcja";
     private static final long FILM_ID = 500_891;
     private static final String SERIES = "Wednesday";
@@ -32,7 +33,7 @@ class FilmwebProxyTest {
 
     @Test
     void shouldFindFilmsInSearchResults() {
-        givenResponse("/api/v1/films/search", """
+        givenResponse(FILMS_SEARCH, """
                 {"total":2,"searchHits":[
                   {"id":500891,"type":"film","matchedTitle":"Incepcja"},
                   {"id":42,"type":"serial","matchedTitle":"Incepcja: serial"}
@@ -43,6 +44,24 @@ class FilmwebProxyTest {
         var films = filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM).toList();
 
         assertThat(films).containsExactly(new FilmwebTitle(FILM_ID, TITLE, "Inception", 2010, TitleKind.FILM));
+    }
+
+    @Test
+    void shouldLookUpOnlyHitsNamedLikeQuery() {
+        givenResponse(FILMS_SEARCH, """
+                {"total":3,"searchHits":[
+                  {"id":10042518,"type":"film","matchedTitle":"Squealer - The Serial Killer"},
+                  {"id":10002852,"type":"film","matchedTitle":"The Killer"},
+                  {"id":10043408,"type":"film","matchedTitle":"The Lady Killer"}
+                ]}""");
+        givenResponse("/api/v1/title/10002852/info", """
+                {"id":10002852,"title":"Zabójca","originalTitle":"The Killer","year":2023,"type":"film"}""");
+
+        var films = filmwebProxy.searchBy("The Killer", 2023, TitleKind.FILM).toList();
+
+        assertThat(films).containsExactly(new FilmwebTitle(10_002_852, "Zabójca", "The Killer", 2023, TitleKind.FILM));
+        verify(connection, never()).get(argThat((HttpUrl url) -> url != null && url.encodedPath().contains("10042518")));
+        verify(connection, never()).get(argThat((HttpUrl url) -> url != null && url.encodedPath().contains("10043408")));
     }
 
     @Test
@@ -59,7 +78,7 @@ class FilmwebProxyTest {
 
     @Test
     void shouldSearchAroundGivenYear() {
-        givenResponse("/api/v1/films/search", """
+        givenResponse(FILMS_SEARCH, """
                 {"total":0,"searchHits":[]}""");
 
         assertThat(filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM)).isEmpty();
@@ -72,7 +91,7 @@ class FilmwebProxyTest {
 
     @Test
     void shouldFindNoFilmsWhenResponseIsNotJson() {
-        givenResponse("/api/v1/films/search", "<html>Service unavailable</html>");
+        givenResponse(FILMS_SEARCH, "<html>Service unavailable</html>");
 
         assertThat(filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM)).isEmpty();
     }

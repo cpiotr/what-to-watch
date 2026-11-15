@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.text.Texts;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Year;
@@ -46,6 +47,9 @@ public class FilmwebProxy {
                 .stream()
                 .flatMap(searchResults -> StreamSupport.stream(searchResults.path("searchHits").spliterator(), false))
                 .filter(hit -> typeOf(kind).equals(hit.path("type").asText()))
+                // The hits are mostly other films whose titles contain the query, and each costs a request to look
+                // up, so only those named like the query are. The search's years already match the film's.
+                .filter(hit -> Texts.matchesAlphanumerically(hit.path("matchedTitle").asText(), title))
                 .map(hit -> hit.path("id").asLong())
                 .map(id -> findTitleBy(id, kind))
                 .flatMap(Optional::stream);
