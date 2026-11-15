@@ -339,9 +339,17 @@ function sourceRow(score) {
 }
 
 // Rating a title marks it watched; the ratings live in one file on the server, next to the ones I rated before.
+// The model learns from a rating's Filmweb score, so the server refuses a title without one.
 function myRating(entry) {
     const {film} = entry;
     const rated = film.myRating != null;
+    const rateable = film.scores.some(score => score.source.toLowerCase() === 'filmweb');
+    if (!rateable) {
+        return h('div', {class: 'my-rating'},
+            h('p', {}, 'Can’t be rated: Filmweb has no score for it'),
+            rated && button('Remove rating', () => rate(entry, null), 'button secondary small'),
+            h('p', {class: 'my-rating-error', role: 'status'}));
+    }
     return h('div', {class: 'my-rating'},
         h('p', {id: 'my-rating-label'}, rated ? 'Your rating' : 'Seen it? Rate it to mark it watched'),
         h('div', {class: 'my-rating-scale', role: 'group', 'aria-labelledby': 'my-rating-label'},
@@ -379,7 +387,8 @@ async function rate(entry, rating) {
     ratedInDialog = true;
     const updated = myRating(entry);
     control.replaceWith(updated);
-    updated.querySelector(rating == null ? 'button' : '[aria-pressed="true"]').focus();
+    // A title without a Filmweb score has no buttons left once its rating is removed
+    updated.querySelector(rating == null ? 'button' : '[aria-pressed="true"]')?.focus();
 }
 
 // Hiding or rating changes which films count as watched, so the grid, the counts and the footer follow.

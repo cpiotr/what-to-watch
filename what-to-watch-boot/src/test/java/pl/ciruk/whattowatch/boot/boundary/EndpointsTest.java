@@ -142,11 +142,23 @@ class EndpointsTest {
     @Test
     void shouldRateTitleKnownOnlyByOriginalTitle() throws Exception {
         var response = put(RATINGS, """
-                {"title": null, "originalTitle": "Only Original", "year": 2021, "rating": 7}
+                {"title": null, "originalTitle": "Only Original", "year": 2021, "rating": 7,
+                 "scores": [{"grade": 0.7, "quantity": 3000, "source": "Filmweb", "type": "AMATEUR"}]}
                 """);
 
         assertThat(response.statusCode()).isEqualTo(204);
-        assertThat(get(RATINGS).body()).contains("\n;Only Original;2021;7;;;;;FILM\n");
+        assertThat(get(RATINGS).body()).contains("\n;Only Original;2021;7;7.0;3000;;;FILM\n");
+    }
+
+    @Test
+    void shouldRejectRatingWithoutFilmwebScore() throws Exception {
+        var response = put(RATINGS, """
+                {"title": "Bez Filmwebu", "year": 2023, "rating": 7,
+                 "scores": [{"grade": 0.73, "quantity": 59, "source": "Metacritic", "type": "CRITIC"}]}
+                """);
+
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(get(RATINGS).body()).doesNotContain("Bez Filmwebu");
     }
 
     @Test
@@ -169,7 +181,8 @@ class EndpointsTest {
     @Test
     void shouldRemoveRating() throws Exception {
         put(RATINGS, """
-                {"title": "Pomyłka", "year": 2020, "kind": "SERIES", "rating": 2}
+                {"title": "Pomyłka", "year": 2020, "kind": "SERIES", "rating": 2,
+                 "scores": [{"grade": 0.6, "quantity": 2000, "source": "Filmweb", "type": "AMATEUR"}]}
                 """);
 
         var removed = delete(RATINGS + "?title=Pomy%C5%82ka&year=2020&kind=SERIES");

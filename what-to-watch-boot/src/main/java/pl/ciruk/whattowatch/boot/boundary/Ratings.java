@@ -1,5 +1,6 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
+import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.neural.MyRatings;
@@ -16,6 +17,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.List;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
@@ -24,6 +26,7 @@ import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 public class Ratings {
     private static final int MIN_RATING = 1;
     private static final int MAX_RATING = 10;
+    private static final String FILMWEB = "Filmweb";
 
     private final MyRatings myRatings;
 
@@ -51,6 +54,9 @@ public class Ratings {
         if (request.rating() < MIN_RATING || request.rating() > MAX_RATING) {
             return Responses.badRequest("A rating is from 1 to 10");
         }
+        if (lacksFilmwebScore(request.scores())) {
+            return Responses.badRequest("A title without a Filmweb score can't be rated");
+        }
         myRatings.rate(request.toRatedTitle());
         return Response.noContent().build();
     }
@@ -76,6 +82,11 @@ public class Ratings {
     // Some titles are only known by their original title. A missing year binds to 0.
     private static boolean lacksTitleOrYear(String title, String originalTitle, int year) {
         return blankAsNull(title) == null && blankAsNull(originalTitle) == null || year <= 0;
+    }
+
+    // My model learns from the ratings' Filmweb scores, so every rating keeps one
+    private static boolean lacksFilmwebScore(List<Score> scores) {
+        return scores == null || scores.stream().noneMatch(score -> FILMWEB.equalsIgnoreCase(score.source()));
     }
 
     static String blankAsNull(String text) {
