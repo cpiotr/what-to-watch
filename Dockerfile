@@ -11,8 +11,10 @@ FROM eclipse-temurin:25-jre
 WORKDIR /what-to-watch
 ENV TZ=Europe/Warsaw
 
-# IMDb's non-commercial datasets, refreshed daily: rebuild the image to update the scores
-ADD https://datasets.imdbws.com/title.ratings.tsv.gz https://datasets.imdbws.com/title.basics.tsv.gz imdb/
+# IMDb's non-commercial datasets, refreshed daily: rebuild the image to update the scores. Downloads are readable
+# only by root by default, and Docker Compose runs the app as me. The mode also applies to the directory it creates,
+# so it must be one that can be entered.
+ADD --chmod=755 https://datasets.imdbws.com/title.ratings.tsv.gz https://datasets.imdbws.com/title.basics.tsv.gz imdb/
 
 COPY --from=build /what-to-watch/app.jar .
 

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
@@ -19,6 +21,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
@@ -31,6 +34,8 @@ import static org.mockito.Mockito.when;
 // Each test uses its own titles, since found films stay cached for the whole context
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "w2w.bootstrap.enabled=false")
 class EndpointsTest {
+    private static final String RATINGS = "/resources/ratings";
+
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Value("${local.server.port}")
@@ -48,6 +53,15 @@ class EndpointsTest {
     private ScoresProvider metacriticScores;
     @MockitoBean(name = "suggestionFilter")
     private SuggestionFilter suggestionFilter;
+
+    @DynamicPropertySource
+    static void ratingsInTemporaryFile(DynamicPropertyRegistry registry) throws IOException {
+        var directory = Files.createTempDirectory("ratings");
+        var file = directory.resolve("rated-films.csv");
+        directory.toFile().deleteOnExit();
+        file.toFile().deleteOnExit();
+        registry.add("w2w.ratings.file", file::toString);
+    }
 
     @BeforeEach
     void setUp() {
@@ -81,7 +95,7 @@ class EndpointsTest {
         var response = get("/resources/suggestions/2");
 
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("\"title\":\"Listed\"", "\"watched\":false");
+        assertThat(response.body()).contains("\"title\":\"Listed\"", "\"myRating\":null");
     }
 
     // Air (2023) is one of the films I rated
@@ -93,7 +107,77 @@ class EndpointsTest {
 
         var response = get("/resources/suggestions/5");
 
-        assertThat(response.body()).contains("\"title\":\"Air\"", "\"watched\":true");
+        assertThat(response.body()).contains("\"title\":\"Air\"", "\"myRating\":7");
+    }
+
+    @Test
+    void shouldMarkSuggestionWatchedOnceIRateIt() throws Exception {
+        var title = Title.builder().title("Oceniony").originalTitle("Rated").year(2020).build();
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 6)).thenAnswer(ignored -> Stream.of(title));
+        when(descriptionProvider.findDescriptionBy(title)).thenReturn(Optional.of(descriptionOf(title)));
+
+        var rated = put(RATINGS, """
+                {"title": "Oceniony", "originalTitle": "Rated", "year": 2020, "kind": "FILM", "rating": 8,
+                 "scores": [{"grade": 0.75, "quantity": 5000, "source": "Filmweb", "type": "AMATEUR"},
+                            {"grade": 0.8, "quantity": 9000, "source": "IMDb", "type": "AMATEUR"}]}
+                """);
+        var suggested = get("/resources/suggestions/6").body();
+        var ratings = get(RATINGS).body();
+
+        assertThat(rated.statusCode()).isEqualTo(204);
+        assertThat(suggested).contains("\"localTitle\":\"Oceniony\"", "\"myRating\":8");
+        assertThat(ratings).startsWith("title;originalTitle;year;rating;").endsWith("\nOceniony;Rated;2020;8;7.5;5000;;;FILM\n");
+    }
+
+    @Test
+    void shouldRejectRatingOutsideScale() throws Exception {
+        var response = put(RATINGS, """
+                {"title": "Zbyt dobry", "year": 2020, "rating": 11}
+                """);
+
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(get(RATINGS).body()).doesNotContain("Zbyt dobry");
+    }
+
+    @Test
+    void shouldRateTitleKnownOnlyByOriginalTitle() throws Exception {
+        var response = put(RATINGS, """
+                {"title": null, "originalTitle": "Only Original", "year": 2021, "rating": 7}
+                """);
+
+        assertThat(response.statusCode()).isEqualTo(204);
+        assertThat(get(RATINGS).body()).contains("\n;Only Original;2021;7;;;;;FILM\n");
+    }
+
+    @Test
+    void shouldRejectRatingWithoutYear() throws Exception {
+        var response = put(RATINGS, """
+                {"title": "Bez roku", "rating": 5}
+                """);
+
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(get(RATINGS).body()).doesNotContain("Bez roku");
+    }
+
+    @Test
+    void shouldDownloadRatingsAsFile() throws Exception {
+        var response = get(RATINGS);
+
+        assertThat(response.headers().firstValue("Content-Disposition")).hasValue("attachment; filename=\"rated-films.csv\"");
+    }
+
+    @Test
+    void shouldRemoveRating() throws Exception {
+        put(RATINGS, """
+                {"title": "Pomyłka", "year": 2020, "kind": "SERIES", "rating": 2}
+                """);
+
+        var removed = delete(RATINGS + "?title=Pomy%C5%82ka&year=2020&kind=SERIES");
+        var removedAgain = delete(RATINGS + "?title=Pomy%C5%82ka&year=2020&kind=SERIES");
+
+        assertThat(removed.statusCode()).isEqualTo(204);
+        assertThat(removedAgain.statusCode()).isEqualTo(404);
+        assertThat(get(RATINGS).body()).doesNotContain("Pomyłka");
     }
 
     @Test
@@ -141,7 +225,25 @@ class EndpointsTest {
     }
 
     private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).build();
+        return send(HttpRequest.newBuilder(uri(path)).build());
+    }
+
+    private HttpResponse<String> put(String path, String json) throws IOException, InterruptedException {
+        return send(HttpRequest.newBuilder(uri(path))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build());
+    }
+
+    private HttpResponse<String> delete(String path) throws IOException, InterruptedException {
+        return send(HttpRequest.newBuilder(uri(path)).DELETE().build());
+    }
+
+    private URI uri(String path) {
+        return URI.create("http://localhost:" + port + path);
+    }
+
+    private HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 

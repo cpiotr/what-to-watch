@@ -2,6 +2,7 @@ package pl.ciruk.whattowatch.boot.boundary;
 
 import jakarta.ws.rs.core.Response;
 
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
@@ -17,5 +18,12 @@ final class Responses {
     // Details stay in the server log: the exception holds internal class names and scraped URLs
     static Response internalError() {
         return Response.status(INTERNAL_SERVER_ERROR).entity("{\"error\":\"Internal error\"}").build();
+    }
+
+    static Response badRequest(String error) {
+        return Response.status(BAD_REQUEST).entity(new ErrorBody(error)).build();
+    }
+
+    record ErrorBody(String error) {
     }
 }

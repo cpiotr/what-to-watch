@@ -29,6 +29,9 @@ class WhatToWatchBootTest {
         writeGzipped(directory.resolve("title.ratings.tsv.gz"), "tconst\taverageRating\tnumVotes\n");
         writeGzipped(directory.resolve("title.basics.tsv.gz"), "tconst\ttitleType\tprimaryTitle\toriginalTitle\n");
         registry.add("w2w.imdb.datasets-directory", directory::toString);
+        var ratings = directory.resolve("rated-films.csv");
+        ratings.toFile().deleteOnExit();
+        registry.add("w2w.ratings.file", ratings::toString);
     }
 
     private static void writeGzipped(Path file, String content) throws IOException {

@@ -31,9 +31,8 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.core.title.justwatch.JustWatchTitleProvider;
+import pl.ciruk.whattowatch.neural.MyRatings;
 import pl.ciruk.whattowatch.neural.PersonalRatings;
-import pl.ciruk.whattowatch.neural.RatedFilm;
-import pl.ciruk.whattowatch.neural.WatchedFilms;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 
@@ -142,25 +141,23 @@ public class Beans {
         return new Bootstrap(suggestionProvider, suggestionFilter);
     }
 
-    // IMDb's ratings aren't in the training data, so the rated films get them from the same index as suggestions
+    // IMDb's ratings aren't in the training data, so the rated titles get them from the same index as suggestions.
+    // Learning again after every rating takes milliseconds.
     @Bean
-    PersonalRatings personalRatings(ScoresProvider imdbScores) {
-        var ratedFilms = RatedFilm.readAll().stream()
-                .map(ratedFilm -> ratedFilm.withScoresFrom(imdbScores))
-                .toList();
-        LOGGER.info("Learning my ratings from {} rated films", ratedFilms.size());
-        return PersonalRatings.trainOn(ratedFilms);
+    MyRatings myRatings(ScoresProvider imdbScores) {
+        var file = properties.ratings().file().toAbsolutePath();
+        return MyRatings.open(file, ratedTitles -> {
+            LOGGER.info("Learning my ratings from {} rated titles in {}", ratedTitles.size(), file);
+            return PersonalRatings.trainOn(ratedTitles.stream()
+                    .map(ratedTitle -> ratedTitle.withScoresFrom(imdbScores))
+                    .toList());
+        });
     }
 
     @Bean
-    WatchedFilms watchedFilms() {
-        return WatchedFilms.of(RatedFilm.readAll());
-    }
-
-    @Bean
-    FilmByScoreFilter filmByScoreFilter(PersonalRatings personalRatings) {
+    FilmByScoreFilter filmByScoreFilter(MyRatings myRatings) {
         return new FilmByScoreFilter(
-                scored -> Objects.requireNonNullElse(personalRatings.predict(scored), 0.0),
+                scored -> Objects.requireNonNullElse(myRatings.predict(scored), 0.0),
                 properties.suggestions().ratingThreshold());
     }
 

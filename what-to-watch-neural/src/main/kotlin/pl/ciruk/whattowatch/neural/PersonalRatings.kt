@@ -34,10 +34,10 @@ class PersonalRatings private constructor(
         private const val PENALTY = 10.0
 
         @JvmStatic
-        fun trainOn(ratedFilms: List<RatedFilm>): PersonalRatings {
-            val meanMetacriticGrade = ratedFilms.mapNotNull { grade(it.film, METACRITIC) }.average()
+        fun trainOn(ratedTitles: List<RatedTitle>): PersonalRatings {
+            val meanMetacriticGrade = ratedTitles.mapNotNull { grade(it.scored, METACRITIC) }.average()
                     .takeUnless { it.isNaN() } ?: 0.0
-            val usable = ratedFilms.mapNotNull { rated -> features(rated.film, meanMetacriticGrade)?.let { it to rated.rating } }
+            val usable = ratedTitles.mapNotNull { rated -> features(rated.scored, meanMetacriticGrade)?.let { it to rated.rating } }
             val model = RidgeRegression.fit(
                     usable.map { it.first },
                     usable.map { it.second.toDouble() }.toDoubleArray(),

@@ -49,6 +49,10 @@ cmake-build-debug/
 # IMDb datasets for local runs
 /imdb/
 
+# My ratings, when the jar runs from the repository's root, and the new copy left by a save that didn't finish
+/ratings/
+rated-films.csv.tmp
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 

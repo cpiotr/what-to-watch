@@ -3,6 +3,7 @@ package pl.ciruk.whattowatch.boot.config;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.boundary.Descriptions;
+import pl.ciruk.whattowatch.boot.boundary.Ratings;
 import pl.ciruk.whattowatch.boot.boundary.Scores;
 import pl.ciruk.whattowatch.boot.boundary.Suggestions;
 import pl.ciruk.whattowatch.boot.boundary.Titles;
@@ -19,5 +20,6 @@ public class Jersey extends ResourceConfig {
         register(Scores.class);
         register(Titles.class);
         register(Suggestions.class);
+        register(Ratings.class);
     }
 }

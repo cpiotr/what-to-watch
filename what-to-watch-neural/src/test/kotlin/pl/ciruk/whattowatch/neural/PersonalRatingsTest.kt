@@ -9,22 +9,22 @@ import pl.ciruk.whattowatch.core.suggest.ScoredTitle
 import pl.ciruk.whattowatch.core.title.Title
 
 class PersonalRatingsTest {
-    private val ratedFilms = RatedFilm.readAll()
-    private val personalRatings = PersonalRatings.trainOn(ratedFilms)
+    private val ratedTitles = RatedTitle.readBundled()
+    private val personalRatings = PersonalRatings.trainOn(ratedTitles)
 
     @Test
     fun shouldRankFilmsItWasNotTrainedOnAtLeastAsWellAsSuggestionScore() {
         val folds = 5
         val predictions = (0 until folds).flatMap { fold ->
-            val model = PersonalRatings.trainOn(ratedFilms.filterIndexed { index, _ -> index % folds != fold })
-            ratedFilms.filterIndexed { index, _ -> index % folds == fold }
-                    .mapNotNull { rated -> model.predict(rated.film)?.let { rated to it } }
+            val model = PersonalRatings.trainOn(ratedTitles.filterIndexed { index, _ -> index % folds != fold })
+            ratedTitles.filterIndexed { index, _ -> index % folds == fold }
+                    .mapNotNull { rated -> model.predict(rated.scored)?.let { rated to it } }
         }
         val ratings = predictions.map { it.first.rating.toDouble() }.toDoubleArray()
         val predicted = predictions.map { it.second }.toDoubleArray()
-        val suggestionScores = predictions.map { it.first.film.normalizedScore() }.toDoubleArray()
+        val suggestionScores = predictions.map { it.first.scored.normalizedScore() }.toDoubleArray()
 
-        assertThat(predictions).hasSizeGreaterThan(ratedFilms.size - 10)
+        assertThat(predictions).hasSizeGreaterThan(ratedTitles.size - 10)
         assertThat(spearman(predicted, ratings)).isGreaterThanOrEqualTo(spearman(suggestionScores, ratings))
     }
 

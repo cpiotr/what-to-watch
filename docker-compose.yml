@@ -27,6 +27,13 @@ services:
         -XX:ReservedCodeCacheSize=256m
         -XX:+PreserveFramePointer
         -Xlog:gc:stdout:time
+    # Runs as me rather than root, so the ratings file it replaces stays mine on a Linux host. Set W2W_UID and
+    # W2W_GID to my ids if they aren't 1000 (`id -u`, `id -g`).
+    user: "${W2W_UID:-1000}:${W2W_GID:-1000}"
+    # The app rates straight into the repository's ratings, so git shows what I rated. The whole directory is
+    # mounted, because a file is replaced by renaming a new one over it.
+    volumes:
+      - ./what-to-watch-neural/src/main/resources:/what-to-watch/ratings
     ports:
       - "8080:8080"
     depends_on:

@@ -9,8 +9,7 @@ import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
-import pl.ciruk.whattowatch.neural.PersonalRatings;
-import pl.ciruk.whattowatch.neural.WatchedFilms;
+import pl.ciruk.whattowatch.neural.MyRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
@@ -47,20 +46,17 @@ public class Suggestions {
 
     private final SuggestionProvider suggestionsProvider;
     private final SuggestionFilter suggestionFilter;
-    private final PersonalRatings personalRatings;
-    private final WatchedFilms watchedFilms;
+    private final MyRatings myRatings;
     private final Timer responseTimer;
 
     @Inject
     public Suggestions(
             SuggestionProvider suggestionsProvider,
             SuggestionFilter suggestionFilter,
-            PersonalRatings personalRatings,
-            WatchedFilms watchedFilms) {
+            MyRatings myRatings) {
         this.suggestionsProvider = suggestionsProvider;
         this.suggestionFilter = suggestionFilter;
-        this.personalRatings = personalRatings;
-        this.watchedFilms = watchedFilms;
+        this.myRatings = myRatings;
 
         responseTimer = Metrics.timer(Names.createName(Suggestions.class, "response"));
     }
@@ -135,17 +131,21 @@ public class Suggestions {
 
     private SuggestionResult toSuggestionResult(ScoredTitle scored) {
         var description = scored.description();
+        var title = description.getTitle();
         return new SuggestionResult(
                 description.titleAsText(),
+                title.localTitle(),
+                title.originalTitle(),
                 description.getYear(),
+                title.kind(),
                 description.getPlot(),
                 description.getFoundFor().url(),
                 description.getPoster(),
                 scored.normalizedScore(),
-                personalRatings.predict(scored),
+                myRatings.predict(scored),
                 scored.scores(),
                 description.getGenres(),
-                watchedFilms.contains(description.getTitle()));
+                myRatings.ratingOf(title));
     }
 
     static class EventsSink implements AutoCloseable {

@@ -19,6 +19,7 @@ let anchor = null;        // the card kept still while films are inserted, see k
 let anchoredAt = 0;       // the scroll position after the last correction
 let hideWatched = false;  // whether films I rated are left out of the grid, the counts and the dialog
 let footerFor = null;     // redraws the footer, so its counts follow hiding or showing watched films
+let ratedInDialog = false; // whether a rating changed while the dialog was open, see showWatchedChange
 
 // The choice is remembered in this browser, but the page works the same when storage is blocked.
 try {
@@ -44,7 +45,7 @@ const COMPARE = {
 const compare = (a, b) => a.batch - b.batch || COMPARE[sortBy](a, b);
 
 // `ranked` keeps hidden films too, so showing them again puts them back in place.
-const visible = () => ranked.filter(entry => !(hideWatched && entry.film.watched));
+const visible = () => ranked.filter(entry => !(hideWatched && isWatched(entry.film)));
 
 const ICON = {
     heart: '<path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 5.3 3 1.8-1.9 3.2-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="currentColor"/>',
@@ -133,16 +134,20 @@ function predicted(film) {
         svg(ICON.heart), Math.round(film.predictedRating * 10), '%', h('span', {class: 'for-you'}, 'for you'));
 }
 
+// A title is watched once I rated it
+const isWatched = film => film.myRating != null;
+const watchedLabel = film => `Watched · ${film.myRating}/10`;
+
 function card(entry) {
     const {film} = entry;
     const sources = film.scores.map(score => h('span', {}, score.source, ' ', h('b', {}, percent(score.grade))));
-    return h('li', {class: film.watched ? 'film is-watched' : 'film'},
+    return h('li', {class: isWatched(film) ? 'film is-watched' : 'film'},
         h('div', {class: 'poster'},
             poster(film),
             scoreBadge(film),
             h('div', {class: 'tags'},
                 h('span', {class: 'tag new-tag'}, 'New'),
-                h('span', {class: 'tag watched-tag'}, 'Watched')),
+                h('span', {class: 'tag watched-tag'}, watchedLabel(film))),
             h('div', {class: 'peek', 'aria-hidden': 'true'},
                 film.plot && h('p', {class: 'peek-plot'}, film.plot),
                 h('p', {class: 'peek-sources'}, sources))),
@@ -333,6 +338,59 @@ function sourceRow(score) {
         h('span', {class: 'votes'}, `${count(score.quantity)} ${unit}`));
 }
 
+// Rating a title marks it watched; the ratings live in one file on the server, next to the ones I rated before.
+function myRating(entry) {
+    const {film} = entry;
+    const rated = film.myRating != null;
+    return h('div', {class: 'my-rating'},
+        h('p', {id: 'my-rating-label'}, rated ? 'Your rating' : 'Seen it? Rate it to mark it watched'),
+        h('div', {class: 'my-rating-scale', role: 'group', 'aria-labelledby': 'my-rating-label'},
+            Array.from({length: 10}, (_, i) => i + 1).map(rating => h('button', {
+                type: 'button', 'aria-pressed': String(film.myRating === rating), onclick: () => rate(entry, rating),
+            }, rating))),
+        rated && button('Remove rating', () => rate(entry, null), 'button secondary small'),
+        h('p', {class: 'my-rating-error', role: 'status'}));
+}
+
+// A rating replaces any earlier one of the same title on the server; null removes it.
+async function rate(entry, rating) {
+    const {film} = entry;
+    const title = {title: film.localTitle, originalTitle: film.originalTitle, year: film.year, kind: film.kind};
+    const query = new URLSearchParams({year: film.year, kind: film.kind});
+    if (film.localTitle) query.set('title', film.localTitle);
+    if (film.originalTitle) query.set('originalTitle', film.originalTitle);
+    const control = dialog.querySelector('.my-rating');
+    try {
+        const response = rating == null
+            ? await fetch(`/resources/ratings?${query}`, {method: 'DELETE'})
+            : await fetch('/resources/ratings', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({...title, rating, scores: film.scores}),
+            });
+        if (!response.ok && response.status !== 404) throw new Error(`HTTP ${response.status}`);
+    } catch {
+        control.querySelector('.my-rating-error').textContent = 'The rating wasn’t saved. Try again.';
+        return;
+    }
+    film.myRating = rating;
+    entry.card.classList.toggle('is-watched', isWatched(film));
+    entry.card.querySelector('.watched-tag').textContent = watchedLabel(film);
+    ratedInDialog = true;
+    const updated = myRating(entry);
+    control.replaceWith(updated);
+    updated.querySelector(rating == null ? 'button' : '[aria-pressed="true"]').focus();
+}
+
+// Hiding or rating changes which films count as watched, so the grid, the counts and the footer follow.
+function showWatchedChange() {
+    // The card held still so far may be one that is hidden now, so pick it again from the cards that stay.
+    anchor = null;
+    keepingViewStill(arrange);
+    if (!status.classList.contains('busy')) setStatus(shownCount(), false);
+    footerFor?.();
+}
+
 function showDetails(entry) {
     shown = entry;
     const {film} = entry;
@@ -354,6 +412,7 @@ function showDetails(entry) {
         h('div', {class: 'details-body'},
             h('p', {class: film.plot ? 'plot' : 'plot missing'}, film.plot || 'No plot summary yet.'),
             h('ul', {class: 'sources', 'aria-label': 'Scores by source'}, film.scores.map(sourceRow)),
+            myRating(entry),
             h('a', {class: 'button watch', href: film.link, target: '_blank', rel: 'noopener'},
                 svg(ICON.play), service ? `Watch on ${service}` : 'Watch now')),
         h('div', {class: 'details-nav'},
@@ -378,7 +437,12 @@ dialog.addEventListener('click', event => {
         || event.clientY < box.top || event.clientY > box.bottom;
     if (outside && event.detail > 0) dialog.close();
 });
-dialog.addEventListener('close', () => shown?.card.querySelector('.title button').focus());
+// A film rated in the dialog is hidden only once it closes, so the dialog's films don't move under the reader.
+dialog.addEventListener('close', () => {
+    if (ratedInDialog) showWatchedChange();
+    ratedInDialog = false;
+    if (shown?.card.isConnected) shown.card.querySelector('.title button').focus();
+});
 
 document.querySelector('.sort').addEventListener('change', event => {
     sortBy = event.target.value;
@@ -395,11 +459,7 @@ hideWatchedSwitch.addEventListener('change', event => {
     } catch {
         // Remembered only until the page reloads
     }
-    // The card held still so far may be one that is hidden now, so pick it again from the cards that stay.
-    anchor = null;
-    keepingViewStill(arrange);
-    if (!status.classList.contains('busy')) setStatus(shownCount(), false);
-    footerFor?.();
+    showWatchedChange();
 });
 
 // Films and series are never ranked together, so the other kind starts again from its first page.

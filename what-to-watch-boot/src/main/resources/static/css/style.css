@@ -191,6 +191,9 @@ button { font: inherit; color: inherit; }
 .legend dt { display: flex; }
 .legend dd { margin: 0; }
 
+.ratings-link { color: var(--muted); text-decoration-color: var(--line); text-underline-offset: 3px; }
+.ratings-link:hover { color: var(--text); text-decoration-color: var(--accent); }
+
 .legend-badge {
 	padding: 1px 6px;
 	border-radius: 5px;
@@ -677,6 +680,43 @@ main {
 	border-radius: 3px;
 	background: linear-gradient(var(--accent), var(--accent)) 0 0 / var(--value) 100% no-repeat, var(--surface-2);
 }
+
+.my-rating {
+	display: grid;
+	justify-items: start;
+	gap: 8px;
+}
+
+.my-rating p { margin: 0; color: var(--muted); font-size: 14px; }
+.my-rating .my-rating-error { color: var(--heart); }
+.my-rating-error:empty { display: none; }
+
+/* Ten buttons always share one row, down to phone width */
+.my-rating-scale {
+	display: grid;
+	grid-template-columns: repeat(10, minmax(0, 1fr));
+	gap: 4px;
+	justify-self: stretch;
+	max-width: 420px;
+}
+
+.my-rating-scale button {
+	height: 36px;
+	padding: 0;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: var(--surface-2);
+	color: var(--text);
+	font: inherit;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+}
+
+.my-rating-scale button:hover { border-color: var(--accent); }
+.my-rating-scale button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.button.small { padding: 6px 14px; font-size: 14px; }
 
 .watch { justify-self: start; }
 

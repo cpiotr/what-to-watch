@@ -14,7 +14,8 @@ public record W2wProperties(
         @DefaultValue Suggestions suggestions,
         @DefaultValue Films films,
         @DefaultValue Cache cache,
-        @DefaultValue Imdb imdb) {
+        @DefaultValue Imdb imdb,
+        @DefaultValue Ratings ratings) {
 
     public record Pool(@DefaultValue("16") int size, @DefaultValue("false") boolean useVirtual) {
     }
@@ -44,5 +45,9 @@ public record W2wProperties(
 
     // The Docker image downloads IMDb's datasets into /what-to-watch/imdb, its working directory
     public record Imdb(@DefaultValue("imdb") Path datasetsDirectory) {
+    }
+
+    // My ratings, which the app writes. Docker Compose mounts the repository's ratings at /what-to-watch/ratings.
+    public record Ratings(@DefaultValue("ratings/rated-films.csv") Path file) {
     }
 }
