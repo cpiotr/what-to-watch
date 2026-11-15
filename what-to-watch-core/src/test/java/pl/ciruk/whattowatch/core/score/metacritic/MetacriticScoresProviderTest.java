@@ -75,6 +75,15 @@ class MetacriticScoresProviderTest {
     }
 
     @Test
+    void shouldFindSeriesNamedWithYearByYearInLink() {
+        givenPage("/tv/the-diplomat-2023/", page("TVSeries", "The Diplomat (2023)", "2023-04-20", 79, 72));
+
+        var scores = provider.findScoresBy(descriptionOf("The Diplomat", 2023, TitleKind.SERIES)).toList();
+
+        assertThat(scores).extracting(Score::url).containsExactly("https://www.metacritic.com/tv/the-diplomat-2023/");
+    }
+
+    @Test
     void shouldIgnoreFilmFromDifferentYear() {
         givenPage("/movie/west-side-story/", filmPage("West Side Story", "1961-12-13", 86, 17));
 

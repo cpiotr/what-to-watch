@@ -33,6 +33,8 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Pattern NOT_IN_LINK = Pattern.compile("[^a-z0-9 -]");
     private static final Pattern SEPARATORS = Pattern.compile("[ -]+");
+    // A series with a year in its link has it in its name too, such as "The Diplomat (2023)"
+    private static final Pattern YEAR_IN_NAME = Pattern.compile("\\s*\\(\\d{4}\\)$");
 
     private final HttpConnection<Element> connection;
     private final Counter missingScores = Metrics.counter(
@@ -114,7 +116,7 @@ public class MetacriticScoresProvider implements ScoresProvider {
     }
 
     private static Title titleOf(JsonNode data, TitleKind kind) {
-        var name = data.path("name").asText();
+        var name = YEAR_IN_NAME.matcher(data.path("name").asText()).replaceFirst("");
         var releaseDate = data.path("datePublished").asText();
         var year = releaseDate.length() >= 4 ? Integer.parseInt(releaseDate.substring(0, 4)) : Title.MISSING_YEAR;
         return Title.builder()

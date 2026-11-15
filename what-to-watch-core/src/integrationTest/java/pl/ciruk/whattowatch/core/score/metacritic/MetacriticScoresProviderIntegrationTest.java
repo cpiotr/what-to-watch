@@ -153,6 +153,25 @@ class MetacriticScoresProviderIntegrationTest {
                 .containsExactly("https://www.metacritic.com/tv/stranger-things/");
     }
 
+    // Its page names it "The Diplomat (2023)"
+    @Test
+    void shouldRetrieveScoreOfSeriesWithYearInLink() {
+        Title title = Title.builder()
+                .title("The Diplomat")
+                .year(2023)
+                .kind(TitleKind.SERIES)
+                .build();
+        Description description = Description.builder()
+                .title(title)
+                .build();
+
+        List<Score> scores = scoresProvider.findScoresBy(description).toList();
+
+        assertThat(scores)
+                .extracting(Score::url)
+                .containsExactly("https://www.metacritic.com/tv/the-diplomat-2023/");
+    }
+
     private Title titleOfRespectfulFilm() {
         return Title.builder()
                 .originalTitle("Moana")
