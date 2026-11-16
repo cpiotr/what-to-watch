@@ -23,6 +23,8 @@ class FilmwebDescriptionProviderTest {
     private static final String CASINO_ROYALE = "Casino Royale";
     private static final String SHAWSHANK = "Skazani na Shawshank";
     private static final String THE_BEAR = "The Bear";
+    private static final String THE_DIPLOMAT = "The Diplomat";
+    private static final String DYPLOMATKA = "Dyplomatka";
     private static final FilmwebTitle CASINO_ROYALE_2006 = new FilmwebTitle(107_642, CASINO_ROYALE, CASINO_ROYALE, 2006, TitleKind.FILM);
 
     private final FilmwebProxy filmwebProxy = mock(FilmwebProxy.class);
@@ -32,6 +34,7 @@ class FilmwebDescriptionProviderTest {
     @BeforeEach
     void setUp() {
         when(filmwebProxy.searchBy(anyString(), anyInt(), any())).thenAnswer(ignored -> Stream.empty());
+        when(filmwebProxy.searchFor(anyString(), any())).thenCallRealMethod();
         provider = new FilmwebDescriptionProvider(filmwebProxy, executorService);
     }
 
@@ -72,6 +75,26 @@ class FilmwebDescriptionProviderTest {
                 .build());
 
         assertThat(description).hasTitle("The Shawshank Redemption");
+    }
+
+    @Test
+    void shouldTellSeriesWithSameOriginalTitleApartByLocalTitle() {
+        var british = new FilmwebTitle(10_060_925, "Dyplomatki", THE_DIPLOMAT, 2023, TitleKind.SERIES);
+        var netflix = new FilmwebTitle(10_033_009, DYPLOMATKA, THE_DIPLOMAT, 2023, TitleKind.SERIES);
+        when(filmwebProxy.searchBy(THE_DIPLOMAT, 2023, TitleKind.SERIES)).thenAnswer(ignored -> Stream.of(british, netflix));
+        when(filmwebProxy.getDetailsPageFor(british)).thenReturn(Optional.of(filmPage("Dyplomatki", THE_DIPLOMAT, 2023)));
+        when(filmwebProxy.getDetailsPageFor(netflix)).thenReturn(Optional.of(filmPage(DYPLOMATKA, THE_DIPLOMAT, 2023)));
+
+        var found = provider.findDescriptionBy(Title.builder()
+                        .title(DYPLOMATKA)
+                        .originalTitle(THE_DIPLOMAT)
+                        .year(2023)
+                        .kind(TitleKind.SERIES)
+                        .build())
+                .orElseThrow()
+                .getTitle();
+
+        assertThat(found.localTitle()).isEqualTo(DYPLOMATKA);
     }
 
     // The score providers search each site for the kind of the title found here

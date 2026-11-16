@@ -26,7 +26,8 @@ import static org.mockito.Mockito.*;
 
 class FilmwebScoresProviderTest {
     private static final String TITLE = "Inception";
-    private static final FilmwebTitle INCEPTION = new FilmwebTitle(500_891, "Incepcja", TITLE, 2010, TitleKind.FILM);
+    private static final String LOCAL_TITLE = "Incepcja";
+    private static final FilmwebTitle INCEPTION = new FilmwebTitle(500_891, LOCAL_TITLE, TITLE, 2010, TitleKind.FILM);
 
     private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
     private final FilmwebProxy filmwebProxy = mock(FilmwebProxy.class);
@@ -37,6 +38,7 @@ class FilmwebScoresProviderTest {
         Metrics.addRegistry(registry);
         when(filmwebProxy.searchBy(anyString(), anyInt(), any())).thenAnswer(ignored -> Stream.empty());
         when(filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM)).thenAnswer(ignored -> Stream.of(INCEPTION));
+        when(filmwebProxy.searchFor(anyString(), any())).thenCallRealMethod();
         when(filmwebProxy.getDetailsPageFor(any())).thenReturn(Optional.of(Jsoup.parse(
                 "<span itemprop=\"ratingValue\">8,2</span><span itemprop=\"ratingCount\">667030</span>")));
         when(filmwebProxy.linkTo(any())).thenReturn(HttpUrl.get("https://www.filmweb.pl/film/Incepcja-2010-500891"));
@@ -80,9 +82,20 @@ class FilmwebScoresProviderTest {
 
     @Test
     void shouldNotSearchByLocalTitleWhenOriginalTitleFindsScore() {
-        assertThat(provider.findScoresBy(descriptionOf("Incepcja", TITLE, 2010))).hasSize(1);
+        assertThat(provider.findScoresBy(descriptionOf(LOCAL_TITLE, TITLE, 2010))).hasSize(1);
 
-        verify(filmwebProxy, never()).searchBy(eq("Incepcja"), anyInt(), any());
+        verify(filmwebProxy, never()).searchBy(eq(LOCAL_TITLE), anyInt(), any());
+    }
+
+    @Test
+    void shouldReadScoreOnlyOfFilmWithSameLocalTitle() {
+        var otherInception = new FilmwebTitle(1, "Incepcja 2", TITLE, 2010, TitleKind.FILM);
+        when(filmwebProxy.searchBy(TITLE, 2010, TitleKind.FILM)).thenAnswer(ignored -> Stream.of(otherInception, INCEPTION));
+
+        assertThat(provider.findScoresBy(descriptionOf(LOCAL_TITLE, TITLE, 2010))).hasSize(1);
+
+        verify(filmwebProxy).getDetailsPageFor(INCEPTION);
+        verify(filmwebProxy, never()).getDetailsPageFor(otherInception);
     }
 
     private static Description descriptionOf(String title, int year) {

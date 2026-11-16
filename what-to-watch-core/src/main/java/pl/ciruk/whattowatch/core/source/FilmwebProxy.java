@@ -8,12 +8,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.text.Texts;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Year;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -53,6 +55,18 @@ public class FilmwebProxy {
                 .map(hit -> hit.path("id").asLong())
                 .map(id -> findTitleBy(id, kind))
                 .flatMap(Optional::stream);
+    }
+
+    // Titles can share an original title and year, as Netflix's "The Diplomat" (2023) and a British series do, and
+    // then their local titles tell them apart: "Dyplomatka" and "Dyplomatki"
+    public List<FilmwebTitle> searchFor(String query, Title title) {
+        var matches = searchBy(query, title.year(), title.kind())
+                .filter(film -> film.toTitle().matches(title))
+                .toList();
+        var exactMatches = matches.stream()
+                .filter(film -> film.toTitle().matchesExactly(title))
+                .toList();
+        return exactMatches.isEmpty() ? matches : exactMatches;
     }
 
     // Filmweb calls a series a serial, in its search API, search results and links

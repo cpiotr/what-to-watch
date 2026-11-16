@@ -35,6 +35,13 @@ public record Title(
         return hasMatchingTitle && hasMatchingYear;
     }
 
+    // Both its local and original title match, not just one of them
+    public boolean matchesExactly(Title otherTitle) {
+        return matches(otherTitle)
+                && Texts.matchesAlphanumerically(otherTitle.localTitle(), localTitle)
+                && Texts.matchesAlphanumerically(otherTitle.originalTitle(), originalTitle);
+    }
+
     @Override
     public String toString() {
         return asText() + " (" + year + ')';

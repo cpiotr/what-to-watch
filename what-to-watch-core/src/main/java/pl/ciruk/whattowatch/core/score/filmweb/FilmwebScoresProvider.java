@@ -63,8 +63,7 @@ public class FilmwebScoresProvider implements ScoresProvider {
     }
 
     private List<Score> scoresFor(String titleText, Title title) {
-        return filmwebProxy.searchBy(titleText, title.year(), title.kind())
-                .filter(film -> film.toTitle().matches(title))
+        return filmwebProxy.searchFor(titleText, title).stream()
                 .map(this::findScore)
                 .flatMap(Optional::stream)
                 .filter(Score::isSignificant)
