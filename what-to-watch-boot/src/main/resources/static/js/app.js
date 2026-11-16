@@ -8,8 +8,9 @@ const dialog = document.getElementById('details');
 const ranked = [];        // {film, page, batch, arrival, card}: batches in loading order, each in the selected order
 const seen = new Set();   // lastEventId of every film received
 const dividers = new Map(); // batch -> the row that starts it
-let sortBy = 'score';
-let kind = 'FILM';        // films or series, as the server calls them
+// The browser keeps the choices checked across a reload, so the page starts from what they show.
+let sortBy = document.querySelector('.sort input:checked').value;
+let kind = document.querySelector('.kind input:checked').value; // films or series, as the server calls them
 let loading = null;       // the stream of the page being loaded
 let arrivals = 0;
 let lastPage = 0;         // the last page that finished loading
