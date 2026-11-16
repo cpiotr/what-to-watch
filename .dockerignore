@@ -4,3 +4,5 @@
 .kotlin
 **/build
 imdb
+# Notes, so editing them does not rebuild the app
+**/*.md

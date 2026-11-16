@@ -1,4 +1,5 @@
-FROM eclipse-temurin:25-jdk AS build
+# The OS is named, so it changes only when edited here, while Java 25 still gets its patches with `--pull`
+FROM eclipse-temurin:25-jdk-resolute AS build
 WORKDIR /what-to-watch
 COPY . .
 ARG W2W_VERSION
@@ -7,7 +8,7 @@ RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew :what-to-watch-boot:bootJar -Pversion=$W2W_VERSION --no-daemon --stacktrace \
  && cp what-to-watch-boot/build/libs/what-to-watch-boot-$W2W_VERSION.jar app.jar
 
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:25-jre-resolute
 WORKDIR /what-to-watch
 ENV TZ=Europe/Warsaw
 
@@ -19,5 +20,7 @@ ADD --chmod=755 https://datasets.imdbws.com/title.ratings.tsv.gz https://dataset
 COPY --from=build /what-to-watch/app.jar .
 
 EXPOSE 8080
+# The image's own user (uid 1000), so the app never runs as root, even without the user Docker Compose sets
+USER ubuntu
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
