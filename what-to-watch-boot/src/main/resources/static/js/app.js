@@ -137,7 +137,6 @@ function predicted(film) {
 
 // A title is watched once I rated it
 const isWatched = film => film.myRating != null;
-const watchedLabel = film => `Watched · ${film.myRating}/10`;
 
 function card(entry) {
     const {film} = entry;
@@ -145,10 +144,13 @@ function card(entry) {
     return h('li', {class: isWatched(film) ? 'film is-watched' : 'film'},
         h('div', {class: 'poster'},
             poster(film),
-            scoreBadge(film),
-            h('div', {class: 'tags'},
-                h('span', {class: 'tag new-tag'}, 'New'),
-                h('span', {class: 'tag watched-tag'}, watchedLabel(film))),
+            h('div', {class: 'corners'},
+                scoreBadge(film),
+                h('div', {class: 'tags'},
+                    h('span', {class: 'tag new-tag'}, 'New'),
+                    // Only a mark: my rating is in the dialog
+                    h('span', {class: 'tag watched-tag', title: 'Watched'},
+                        h('span', {'aria-hidden': 'true'}, '✅'), h('span', {class: 'visually-hidden'}, 'Watched')))),
             h('div', {class: 'peek', 'aria-hidden': 'true'},
                 film.plot && h('p', {class: 'peek-plot'}, film.plot),
                 h('p', {class: 'peek-sources'}, sources))),
@@ -384,7 +386,6 @@ async function rate(entry, rating) {
     }
     film.myRating = rating;
     entry.card.classList.toggle('is-watched', isWatched(film));
-    entry.card.querySelector('.watched-tag').textContent = watchedLabel(film);
     ratedInDialog = true;
     const updated = myRating(entry);
     control.replaceWith(updated);
