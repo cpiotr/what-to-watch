@@ -19,6 +19,9 @@ ADD --chmod=755 https://datasets.imdbws.com/title.ratings.tsv.gz https://dataset
 
 COPY --from=build /what-to-watch/app.jar .
 
+# For GC logs. A new volume mounted here takes the owner from the image, so the app can write to it.
+RUN install -d -o ubuntu -g ubuntu logs
+
 EXPOSE 8080
 # The image's own user (uid 1000), so the app never runs as root, even without the user Docker Compose sets
 USER ubuntu

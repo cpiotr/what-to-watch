@@ -26,7 +26,7 @@ services:
         -XX:InitialCodeCacheSize=256m
         -XX:ReservedCodeCacheSize=256m
         -XX:+PreserveFramePointer
-        -Xlog:gc:stdout:time
+        -Xlog:gc*:file=/what-to-watch/logs/gc.log:time,uptime,level,tags:filecount=5,filesize=10m
     # Runs as me rather than root, so the ratings file it replaces stays mine on a Linux host. Set W2W_UID and
     # W2W_GID to my ids if they aren't 1000 (`id -u`, `id -g`).
     user: "${W2W_UID:-1000}:${W2W_GID:-1000}"
@@ -34,6 +34,8 @@ services:
     # mounted, because a file is replaced by renaming a new one over it.
     volumes:
       - ./what-to-watch-neural/src/main/resources:/what-to-watch/ratings
+      # GC logs, kept apart from the app's log and across new containers
+      - w2w-logs:/what-to-watch/logs
     ports:
       - "8080:8080"
     depends_on:
@@ -41,3 +43,4 @@ services:
 
 volumes:
   redis-data:
+  w2w-logs:
