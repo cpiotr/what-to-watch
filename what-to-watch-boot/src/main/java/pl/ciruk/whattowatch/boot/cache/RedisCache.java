@@ -59,12 +59,11 @@ public class RedisCache implements CacheProvider<String> {
     public Optional<String> get(String key) {
         requestCounter.increment();
 
-        var optionalValue = Failsafe.with(circuitBreaker, Fallback.of(Optional.empty()))
-                .onComplete(event -> {
-                    if (event.getFailure() != null) {
-                        LOGGER.error("Cannot retrieve value", event.getFailure());
-                    }
-                })
+        // The fallback goes outside the breaker, or it turns every failure into a success the breaker never sees
+        var optionalValue = Failsafe.with(Fallback.<Optional<String>>of(event -> {
+                    LOGGER.debug("Cannot retrieve value", event.getLastFailure());
+                    return Optional.empty();
+                }), circuitBreaker)
                 .get(() -> getValueFromCache(key));
         if (optionalValue.isEmpty()) {
             LOGGER.debug("Missing key: {}", key);
@@ -110,7 +109,7 @@ public class RedisCache implements CacheProvider<String> {
 
     @Override
     public void put(String key, String value) {
-        Failsafe.with(circuitBreaker, Fallback.of(doNothing()))
+        Failsafe.with(Fallback.of(doNothing()), circuitBreaker)
                 .run(() -> putValueToCache(key, value));
     }
 

@@ -12,6 +12,7 @@ import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.RedisClient;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,13 +24,15 @@ class RedisCacheTest {
     private final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:6.2.24-alpine"))
             .withExposedPorts(6379)
             .waitingFor(Wait.forListeningPort());
+    private CircuitBreaker<Optional<String>> circuitBreaker;
     private RedisCache redisCache;
     private RedisClient redisClient;
 
     @BeforeEach
     void setUp() {
         redisClient = RedisClient.create(redis.getHost(), redis.getFirstMappedPort());
-        redisCache = new RedisCache(redisClient, "test", Duration.ofHours(1), new CircuitBreaker<>());
+        circuitBreaker = new CircuitBreaker<>();
+        redisCache = new RedisCache(redisClient, "test", Duration.ofHours(1), circuitBreaker);
         redisClient.flushAll();
     }
 
@@ -68,6 +71,14 @@ class RedisCacheTest {
 
         assertThat(redisCache.get(TEST_KEY)).isEmpty();
         assertThat(redisClient.exists(TEST_KEY)).isFalse();
+    }
+
+    @Test
+    void shouldOpenCircuitWhenRedisIsDown() {
+        redis.stop();
+
+        assertThat(redisCache.get(TEST_KEY)).isEmpty();
+        assertThat(circuitBreaker.isOpen()).isTrue();
     }
 
     @Test

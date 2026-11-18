@@ -16,6 +16,7 @@ import redis.clients.jedis.RedisClient;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configuration
 public class Caches {
@@ -53,12 +54,23 @@ public class Caches {
         return new RedisCache(redisClient, "short", cache.shortExpiry(), circuitBreaker);
     }
 
+    // The breaker opens again after every failed probe, so an outage is logged once rather than every second
     @Bean
     CircuitBreaker<Optional<String>> circuitBreaker() {
+        var redisDown = new AtomicBoolean();
         return new CircuitBreaker<Optional<String>>()
                 .withFailureThreshold(3, 10)
                 .withSuccessThreshold(5)
-                .withDelay(Duration.ofSeconds(1));
+                .withDelay(Duration.ofSeconds(1))
+                .onOpen(() -> {
+                    if (redisDown.compareAndSet(false, true)) {
+                        LOGGER.warn("Redis doesn't answer, so pages are fetched again until it does");
+                    }
+                })
+                .onClose(() -> {
+                    redisDown.set(false);
+                    LOGGER.info("Redis answers again");
+                });
     }
 
 }
