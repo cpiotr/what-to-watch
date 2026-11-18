@@ -16,11 +16,11 @@ public record W2wProperties(
         @DefaultValue Imdb imdb,
         @DefaultValue Ratings ratings) {
 
-    // Streaming services are JustWatch's short names: nfx is Netflix, prv is Amazon Prime Video
+    // Streaming services are JustWatch's short names: nfx is Netflix, prv is Amazon Prime Video, dnp is Disney+
     public record Titles(
             @DefaultValue("justwatch") TitleSource source,
             @DefaultValue("10") int pagesPerRequest,
-            @DefaultValue({"nfx", "prv"}) List<String> streamingServices) {
+            @DefaultValue({"nfx", "prv", "dnp"}) List<String> streamingServices) {
     }
 
     public enum TitleSource {
@@ -30,13 +30,13 @@ public record W2wProperties(
     }
 
     // My predicted rating, from 1 to 10, that a film needs to be suggested
-    public record Suggestions(@DefaultValue("5.3") double ratingThreshold) {
+    public record Suggestions(@DefaultValue("5.4") double ratingThreshold) {
     }
 
     public record Films(@DefaultValue("10000") int cacheSize) {
     }
 
-    public record Cache(@DefaultValue("10d") Duration longExpiry, @DefaultValue("20m") Duration shortExpiry) {
+    public record Cache(@DefaultValue("10d") Duration longExpiry, @DefaultValue("1h") Duration shortExpiry) {
     }
 
     // The Docker image downloads IMDb's datasets into /what-to-watch/imdb, its working directory

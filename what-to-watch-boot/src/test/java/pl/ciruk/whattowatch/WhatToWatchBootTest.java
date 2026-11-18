@@ -8,6 +8,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import pl.ciruk.whattowatch.boot.WhatToWatchBoot;
 import pl.ciruk.whattowatch.boot.config.Bootstrap;
+import pl.ciruk.whattowatch.boot.config.HttpProperties;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WhatToWatchBootTest {
     @Autowired
     private ApplicationContext context;
+    @Autowired
+    private HttpProperties http;
 
     @DynamicPropertySource
     static void emptyImdbDatasets(DynamicPropertyRegistry registry) throws IOException {
@@ -39,6 +42,12 @@ class WhatToWatchBootTest {
             gzip.write(content.getBytes(UTF_8));
         }
         file.toFile().deleteOnExit();
+    }
+
+    // As Docker Compose sets it, so every way of running the app is as gentle with Filmweb
+    @Test
+    void shouldAskFilmwebFourTimesPerSecond() {
+        assertThat(http.requestsPerSecondByDomain()).containsEntry("filmweb.pl", 4.0);
     }
 
     @Test

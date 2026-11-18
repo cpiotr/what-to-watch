@@ -53,12 +53,12 @@ class PropertiesBindingTest {
         var w2w = new Binder(source).bind("w2w", W2wProperties.class).get();
 
         assertThat(w2w.cache().longExpiry()).isEqualTo(Duration.ofDays(10));
-        assertThat(w2w.cache().shortExpiry()).isEqualTo(Duration.ofMinutes(20));
-        assertThat(w2w.suggestions().ratingThreshold()).isEqualTo(5.3);
+        assertThat(w2w.cache().shortExpiry()).isEqualTo(Duration.ofHours(1));
+        assertThat(w2w.suggestions().ratingThreshold()).isEqualTo(5.4);
         assertThat(w2w.imdb().datasetsDirectory()).isEqualTo(Path.of("imdb"));
         assertThat(w2w.ratings().file()).isEqualTo(Path.of("ratings/rated-films.csv"));
         assertThat(w2w.titles().source()).isEqualTo(W2wProperties.TitleSource.JUSTWATCH);
-        assertThat(w2w.titles().streamingServices()).containsExactly("nfx", "prv");
+        assertThat(w2w.titles().streamingServices()).containsExactly("nfx", "prv", "dnp");
     }
 
     @Test
