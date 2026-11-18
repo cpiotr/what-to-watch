@@ -87,6 +87,15 @@ class EndpointsTest {
     }
 
     @Test
+    void shouldEndFailedPageWithoutSayingItIsDone() throws Exception {
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 7)).thenThrow(new IllegalStateException("JustWatch is down"));
+
+        var events = get("/resources/suggestions/7/stream").body();
+
+        assertThat(events).doesNotContain("poisonPill");
+    }
+
+    @Test
     void shouldListSuggestedFilms() throws Exception {
         var title = title("Listed");
         when(titleProvider.streamOfTitles(TitleKind.FILM, 2)).thenAnswer(ignored -> Stream.of(title));

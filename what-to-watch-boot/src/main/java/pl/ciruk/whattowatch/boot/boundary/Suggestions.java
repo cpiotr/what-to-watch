@@ -104,6 +104,8 @@ public class Suggestions {
                         .toList();
                 sent.forEach(CompletableFuture::join);
             });
+            // Only a page searched to the end says so. A failed one just stops, and the page offers to retry it.
+            sink.sendEnd();
             LOGGER.info("Finished streaming suggestions for page {}", pageNumber);
         } catch (Exception e) {
             LOGGER.error("Error while getting suggestions", e);
@@ -167,8 +169,7 @@ public class Suggestions {
             this.eventSink.send(event);
         }
 
-        @Override
-        public void close() throws IOException {
+        void sendEnd() {
             if (!eventSink.isClosed()) {
                 OutboundSseEvent event = this.sse.newEventBuilder()
                         .name("poisonPill")
@@ -177,8 +178,12 @@ public class Suggestions {
                         .data(String.class, "poisonPill")
                         .build();
                 this.eventSink.send(event);
-                eventSink.close();
             }
+        }
+
+        @Override
+        public void close() throws IOException {
+            eventSink.close();
         }
     }
 }
