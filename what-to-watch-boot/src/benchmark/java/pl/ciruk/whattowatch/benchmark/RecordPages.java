@@ -2,12 +2,13 @@ package pl.ciruk.whattowatch.benchmark;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import okhttp3.OkHttpClient;
+import pl.ciruk.whattowatch.core.title.TitleKind;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.net.DomainRateLimiter;
 import pl.ciruk.whattowatch.utils.net.OkHttpConnection;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 /**
@@ -22,10 +23,7 @@ public final class RecordPages {
         var sites = new RecordedPages.Recording(new OkHttpConnection(new OkHttpClient(), new DomainRateLimiter(domain -> 1)));
         try (var executorService = Executors.newVirtualThreadPerTaskExecutor()) {
             var suggestions = CachedScoringBenchmark.suggestionsFrom(sites, executorService, Caffeine.newBuilder().build());
-            var scored = CachedScoringBenchmark.TITLES.stream()
-                    .map(suggestions::getOrScore)
-                    .map(CompletableFuture::join)
-                    .toList();
+            var scored = CompletableFutures.getAllOf(suggestions.suggest(TitleKind.FILM, 1)).toList();
             CachedScoringBenchmark.requireCriticAndAudienceScores(scored);
         }
         sites.save(Path.of(args[0]));

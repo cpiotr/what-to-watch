@@ -16,8 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -26,6 +29,11 @@ import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUs
 
 public class SuggestionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    // Enough to keep every rate-limited site busy. Each title holds pages of up to 640 KB while it's scored, so a
+    // page of 100 at once filled a 512 MB heap.
+    private static final int TITLES_IN_FLIGHT = 10;
+    // Waiting for a turn blocks, so it happens on a thread of its own rather than in the pool that scores
+    private static final Executor WAITING = command -> Thread.ofVirtual().name("WaitingForTurn").start(command);
 
     private final TitleProvider titles;
     private final DescriptionProvider descriptions;
@@ -33,6 +41,8 @@ public class SuggestionProvider {
     private final ExecutorService executorService;
     private final Cache<Title, ScoredTitle> cache;
     private final Map<Title, CompletableFuture<ScoredTitle>> titlesInProgress = new ConcurrentHashMap<>();
+    // Shared by all requests, such as the startup crawl and a page, so together they stay within the limit
+    private final Semaphore turns = new Semaphore(TITLES_IN_FLIGHT, true);
 
     public SuggestionProvider(
             TitleProvider titles,
@@ -48,15 +58,45 @@ public class SuggestionProvider {
     }
 
     public Stream<CompletableFuture<ScoredTitle>> suggest(TitleKind kind, int pageNumber) {
+        return suggest(kind, pageNumber, () -> false);
+    }
+
+    // Titles still waiting for a turn once the request is stopped, such as a page closed early, aren't searched
+    public Stream<CompletableFuture<ScoredTitle>> suggest(TitleKind kind, int pageNumber, BooleanSupplier stopped) {
         LOGGER.info("Kind: {}, page number: {}", kind, pageNumber);
 
         return titles.streamOfTitles(kind, pageNumber)
-                .map(this::getOrScore);
+                .map(title -> inTurn(title, stopped));
+    }
+
+    // A title that is already scored needs no turn
+    private CompletableFuture<ScoredTitle> inTurn(Title title, BooleanSupplier stopped) {
+        var cached = cache.getIfPresent(title);
+        if (cached != null) {
+            return completedFuture(cached);
+        }
+        return CompletableFuture.runAsync(this::awaitTurn, WAITING)
+                .thenCompose(ignored -> {
+                    if (stopped.getAsBoolean()) {
+                        turns.release();
+                        return completedFuture(ScoredTitle.empty());
+                    }
+                    return getOrScore(title).whenComplete((scored, error) -> turns.release());
+                });
+    }
+
+    private void awaitTurn() {
+        try {
+            turns.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for a turn to search", e);
+        }
     }
 
     // Overlapping requests, such as the startup crawl and a user's, share one search for each title
     // A title knows its kind, so a series and a film with the same name and year are cached apart
-    public CompletableFuture<ScoredTitle> getOrScore(Title title) {
+    private CompletableFuture<ScoredTitle> getOrScore(Title title) {
         var cached = cache.getIfPresent(title);
         if (cached != null) {
             return completedFuture(cached);

@@ -28,6 +28,8 @@ import pl.ciruk.whattowatch.core.source.FilmwebProxy;
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.Title;
+import pl.ciruk.whattowatch.core.title.TitleKind;
+import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.net.CachedConnection;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
@@ -35,7 +37,6 @@ import redis.clients.jedis.RedisClient;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -118,11 +119,6 @@ public class CachedScoringBenchmark {
     }
 
     private List<ScoredTitle> scoreAll() {
-        return TITLES.stream()
-                .map(suggestions::getOrScore)
-                .toList()
-                .stream()
-                .map(CompletableFuture::join)
-                .toList();
+        return CompletableFutures.getAllOf(suggestions.suggest(TitleKind.FILM, 1)).toList();
     }
 }

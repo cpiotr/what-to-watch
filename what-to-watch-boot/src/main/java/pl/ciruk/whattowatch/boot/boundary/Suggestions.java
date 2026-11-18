@@ -16,19 +16,16 @@ import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
-import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.ratings.MyRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -40,12 +37,8 @@ public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     // A page of titles nobody searched for yet takes minutes at the sites' rate limits
     private static final long NO_TIMEOUT = 0L;
-    // Enough to keep every rate-limited site busy, and few enough that a page closed early, for example to show the
-    // other kind, soon stops taking the sites' turns
-    private static final int TITLES_IN_FLIGHT = 10;
 
     private final SuggestionProvider suggestionsProvider;
-    private final TitleProvider titleProvider;
     private final SuggestionFilter suggestionFilter;
     private final MyRatings myRatings;
     private final ExecutorService executorService;
@@ -53,12 +46,10 @@ public class Suggestions {
 
     public Suggestions(
             SuggestionProvider suggestionsProvider,
-            TitleProvider titleProvider,
             SuggestionFilter suggestionFilter,
             MyRatings myRatings,
             ExecutorService executorService) {
         this.suggestionsProvider = suggestionsProvider;
-        this.titleProvider = titleProvider;
         this.suggestionFilter = suggestionFilter;
         this.myRatings = myRatings;
         this.executorService = executorService;
@@ -105,26 +96,13 @@ public class Suggestions {
     }
 
     private void sendWorthWatching(PageStream stream, TitleKind kind, int pageNumber) {
-        var inFlight = new Semaphore(TITLES_IN_FLIGHT);
-        var sent = new ArrayList<CompletableFuture<Void>>();
-        // Collected first: a lazy stream of searches can start several before it hands over the first
-        var titles = titleProvider.streamOfTitles(kind, pageNumber).toList();
-        try {
-            for (var title : titles) {
-                inFlight.acquire();
-                if (stream.isClosed()) {
-                    LOGGER.info("Stopped streaming page {}, which was closed", pageNumber);
-                    break;
-                }
-                sent.add(suggestionsProvider.getOrScore(title)
-                        .thenAccept(scored -> sendIfWorthWatching(stream, scored))
-                        .whenComplete((ignored, error) -> inFlight.release()));
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while streaming page " + pageNumber, e);
-        }
+        var sent = suggestionsProvider.suggest(kind, pageNumber, stream::isClosed)
+                .map(futureTitle -> futureTitle.thenAccept(scored -> sendIfWorthWatching(stream, scored)))
+                .toList();
         sent.forEach(CompletableFuture::join);
+        if (stream.isClosed()) {
+            LOGGER.info("Stopped streaming page {}, which was closed", pageNumber);
+        }
     }
 
     private void sendIfWorthWatching(PageStream stream, ScoredTitle scored) {

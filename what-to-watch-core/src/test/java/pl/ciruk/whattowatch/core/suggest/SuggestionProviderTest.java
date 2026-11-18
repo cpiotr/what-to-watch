@@ -17,8 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -54,6 +57,36 @@ class SuggestionProviderTest {
                 List.of(scoreProvider),
                 Executors.newSingleThreadExecutor(),
                 cache);
+    }
+
+    // As when a page is closed while its titles are searched
+    @Test
+    void shouldNotSearchTitlesStillWaitingForTurnOnceStopped() throws InterruptedException {
+        var titles = IntStream.rangeClosed(1, 12)
+                .mapToObj(number -> Title.builder().title("Waiting " + number).year(2020).build())
+                .toList();
+        TitleProvider titleProvider = mock(TitleProvider.class);
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 2)).thenAnswer(ignored -> titles.stream());
+        var tenSearching = new CountDownLatch(10);
+        var released = new CountDownLatch(1);
+        when(descriptionProvider.findDescriptionBy(any())).thenAnswer(ignored -> {
+            tenSearching.countDown();
+            if (!released.await(5, SECONDS)) {
+                throw new IllegalStateException("Searches weren't released");
+            }
+            return Optional.empty();
+        });
+        var stopped = new AtomicBoolean();
+        var provider = new SuggestionProvider(
+                titleProvider, descriptionProvider, List.of(scoreProvider), Executors.newVirtualThreadPerTaskExecutor(), cache);
+
+        var scored = provider.suggest(TitleKind.FILM, 2, stopped::get).toList();
+        assertThat(tenSearching.await(5, SECONDS)).isTrue();
+        stopped.set(true);
+        released.countDown();
+
+        assertThat(CompletableFutures.getAllOf(scored)).hasSize(12);
+        verify(descriptionProvider, times(10)).findDescriptionBy(any());
     }
 
     @Test
