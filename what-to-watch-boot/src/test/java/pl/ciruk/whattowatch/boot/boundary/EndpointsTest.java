@@ -54,10 +54,15 @@ class EndpointsTest {
     @MockitoBean(name = "suggestionFilter")
     private SuggestionFilter suggestionFilter;
 
+    // My own ratings change whenever I rate in the app, so the tests rate in a file of their own
     @DynamicPropertySource
     static void ratingsInTemporaryFile(DynamicPropertyRegistry registry) throws IOException {
         var directory = Files.createTempDirectory("ratings");
         var file = directory.resolve("rated-films.csv");
+        Files.writeString(file, """
+                title;originalTitle;year;rating;filmweb;filmwebVotes;metacritic;metacriticReviews;kind
+                Air;;2023;7;7.01;30318;73;59;FILM
+                """);
         directory.toFile().deleteOnExit();
         file.toFile().deleteOnExit();
         registry.add("w2w.ratings.file", file::toString);
@@ -107,7 +112,7 @@ class EndpointsTest {
         assertThat(response.body()).contains("\"title\":\"Listed\"", "\"myRating\":null");
     }
 
-    // Air (2023) is one of the films I rated
+    // Air (2023) is the film rated in the test ratings
     @Test
     void shouldMarkFilmsIWatched() throws Exception {
         var title = Title.builder().title("Air").year(2023).build();
