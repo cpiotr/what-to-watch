@@ -1,5 +1,3 @@
-ext.moduleName = 'what.to.watch.core'
-
 apply plugin: 'java'
 
 java {
@@ -9,14 +7,6 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.release = project.javaVersion.toInteger()
-}
-
-compileJava {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.compilerArgs += ['--module-path', classpath.asPath]
-        classpath = files()
-    }
 }
 
 testing {
