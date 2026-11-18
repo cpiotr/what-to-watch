@@ -8,4 +8,8 @@
     <Match>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!-- JMH generates these from the benchmarks -->
+    <Match>
+        <Package name="~.*\.jmh_generated"/>
+    </Match>
 </FindBugsFilter>

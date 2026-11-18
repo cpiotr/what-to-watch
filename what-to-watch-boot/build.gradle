@@ -28,6 +28,22 @@ configurations {
     benchmarkImplementation.extendsFrom testImplementation
 }
 
+// The benchmarks start Redis in Docker
+tasks.register('jmh', JavaExec) {
+    group = 'verification'
+    description = 'Runs the JMH benchmarks.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'org.openjdk.jmh.Main'
+}
+
+// Asks the live sites, so only when they have changed their pages
+tasks.register('recordBenchmarkPages', JavaExec) {
+    description = 'Records the pages the benchmarks score.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'pl.ciruk.whattowatch.benchmark.RecordPages'
+    args file('src/benchmark/resources/recorded-pages.json.gz')
+}
+
 bootRun {
     dependsOn ':downloadImdbDatasets'
     systemProperty 'w2w.imdb.datasets-directory', rootProject.file('imdb')
@@ -62,7 +78,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 
     benchmarkImplementation("org.openjdk.jmh:jmh-core:$jmhVersion")
-    benchmarkImplementation("org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion")
+    benchmarkAnnotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion")
 }
 
 println("[what-to-watch-boot] Building version: $version")
