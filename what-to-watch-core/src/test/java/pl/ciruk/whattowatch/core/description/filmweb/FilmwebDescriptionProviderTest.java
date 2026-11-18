@@ -25,6 +25,7 @@ class FilmwebDescriptionProviderTest {
     private static final String THE_BEAR = "The Bear";
     private static final String THE_DIPLOMAT = "The Diplomat";
     private static final String DYPLOMATKA = "Dyplomatka";
+    private static final String AIR = "Air";
     private static final FilmwebTitle CASINO_ROYALE_2006 = new FilmwebTitle(107_642, CASINO_ROYALE, CASINO_ROYALE, 2006, TitleKind.FILM);
 
     private final FilmwebProxy filmwebProxy = mock(FilmwebProxy.class);
@@ -117,10 +118,37 @@ class FilmwebDescriptionProviderTest {
     }
 
     @Test
+    void shouldTellFilmsWithSameTitleAndYearApartByVotes() {
+        var unknown = new FilmwebTitle(10_082_942, AIR, AIR, 2023, TitleKind.FILM);
+        var known = new FilmwebTitle(10_030_286, AIR, AIR, 2023, TitleKind.FILM);
+        when(filmwebProxy.searchBy(AIR, 2023, TitleKind.FILM)).thenAnswer(ignored -> Stream.of(unknown, known));
+        when(filmwebProxy.getDetailsPageFor(unknown)).thenReturn(Optional.of(ratedPage(AIR, 2023, "", "")));
+        when(filmwebProxy.getDetailsPageFor(known))
+                .thenReturn(Optional.of(ratedPage(AIR, 2023, "30 409", "Sonny Vaccaro signs Michael Jordan.")));
+
+        var found = provider.findDescriptionBy(Title.builder().title(AIR).originalTitle(AIR).year(2023).build())
+                .orElseThrow();
+
+        assertThat(found.getPlot()).isEqualTo("Sonny Vaccaro signs Michael Jordan.");
+    }
+
+    @Test
     void shouldFindNothingForUnknownFilm() {
         var description = provider.findDescriptionBy(Title.builder().originalTitle("Unknown").year(2020).build());
 
         assertThat(description).isEmpty();
+    }
+
+    // A film nobody rated has no vote count
+    private static Element ratedPage(String title, int year, String votes, String plot) {
+        return Jsoup.parse("<div class=\"filmCoverSection__titleDetails\">"
+                + "<h1 class=\"filmCoverSection__title\">" + title + "</h1>"
+                + "<div class=\"filmCoverSection__originalTitle\">" + title
+                + " <span class=\"filmCoverSection__year\">" + year + "</span></div>"
+                + "</div>"
+                + (votes.isEmpty() ? "" : "<span itemprop=\"ratingCount\">" + votes + "</span>")
+                + "<div class=\"filmPosterSection__container\"><div class=\"filmPosterSection__plot\">"
+                + "<span itemprop=\"description\">" + plot + "</span></div></div>");
     }
 
     private static Element filmPage(String localTitle, String originalTitle, int year) {

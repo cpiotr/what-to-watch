@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static java.util.function.Predicate.not;
+
 class FilmwebSelectors {
     private static final Pattern YEAR = Pattern.compile("\\d{4}");
 
@@ -36,6 +38,15 @@ class FilmwebSelectors {
     Optional<String> findPlot(Element details) {
         return Optional.ofNullable(details.selectFirst("div.filmPosterSection__container div.filmPosterSection__plot [itemprop=description]"))
                 .map(Element::text);
+    }
+
+    // Written with spaces, such as "30 409", and missing for a title nobody has rated yet
+    long findNumberOfVotes(Element details) {
+        return Optional.ofNullable(details.selectFirst("[itemprop=ratingCount]"))
+                .map(votes -> votes.text().replaceAll("\\D", ""))
+                .filter(not(String::isEmpty))
+                .map(Long::parseLong)
+                .orElse(0L);
     }
 
     Stream<String> findGenres(Element details) {

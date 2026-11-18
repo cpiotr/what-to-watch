@@ -14,6 +14,7 @@ import pl.ciruk.whattowatch.utils.metrics.Names;
 import pl.ciruk.whattowatch.utils.metrics.Tags;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,7 +48,7 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .filter(not(String::isEmpty))
                 .flatMap(text -> filmsForTitle(text, title))
                 .filter(description -> description.getTitle().matches(title))
-                .findAny();
+                .findFirst();
         if (foundDescription.isEmpty()) {
             LOGGER.warn("Missing description for: {}", title);
             missingDescriptions.increment();
@@ -64,6 +65,8 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
                 .toList();
         return CompletableFutures.getAllOf(futures)
                 .flatMap(Optional::stream)
+                // Films can share a title and year, as two "Air" (2023) do, and the one most people rated is meant
+                .sorted(Comparator.comparingLong(selector::findNumberOfVotes).reversed())
                 .map(page -> descriptionFrom(page, requestedTitle))
                 .flatMap(Optional::stream);
     }
