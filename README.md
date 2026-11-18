@@ -1,14 +1,52 @@
 # what-to-watch
-## Building 
+## Building
 ```
 ./gradlew clean build
 ```
+The tests start Redis in Docker, so Docker must be running. The tests against the live sites run apart, as CI runs
+them on weekdays:
+```
+./gradlew downloadImdbDatasets integrationTest
+```
 
 ## Running
+With Docker Compose, then open http://localhost:8080/:
 ```
-docker-compose build
-docker-compose up
-xdg-open http://localhost:8080/
+docker-compose up --build
+```
+Locally, with Redis from Docker Compose, which publishes it to this machine only. `bootRun` downloads IMDb's
+datasets into `imdb/` first.
+```
+docker-compose up -d cache
+./gradlew bootRun
+```
+
+### Settings
+The settings and their defaults are records in `what-to-watch-boot/src/main/java/pl/ciruk/whattowatch/boot/config`:
+`W2wProperties` (`w2w.*`), `HttpProperties` (`http.*`) and `RedisProperties` (`redis.*`). `application.properties`
+and the `environment` in `docker-compose.yml` set the same values, to show how each way of running sets them, so
+change all three together. Only Redis's host differs. To try a value once:
+```
+./gradlew bootRun --args='--w2w.suggestions.rating-threshold=6'
+```
+`w2w.bootstrap.enabled=false` skips the search of the first page that warms up the caches after a start.
+
+### Health and metrics
+On port 8081, which Docker Compose publishes to this machine only:
+```
+curl localhost:8081/actuator/health
+curl localhost:8081/actuator/metrics
+curl localhost:8081/actuator/metrics/Suggestions.response
+```
+
+### Benchmarks
+The benchmark scores titles from pages recorded from the sites, read through Redis in Docker:
+```
+./gradlew jmh
+```
+When a site changes its pages, record them again. This asks the live sites, at one request per second.
+```
+./gradlew recordBenchmarkPages
 ```
 
 ### GC logs
