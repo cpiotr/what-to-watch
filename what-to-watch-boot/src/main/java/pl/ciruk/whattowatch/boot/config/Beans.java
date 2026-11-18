@@ -4,17 +4,15 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
+import net.jodah.failsafe.CircuitBreaker;
+import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.ciruk.whattowatch.boot.cache.Cached;
-import pl.ciruk.whattowatch.boot.cache.LongExpiry;
-import pl.ciruk.whattowatch.boot.cache.NotCached;
-import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
-import pl.ciruk.whattowatch.boot.config.Connections.NoCookies;
+import pl.ciruk.whattowatch.boot.cache.RedisCache;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.description.filmweb.FilmwebDescriptionProvider;
 import pl.ciruk.whattowatch.core.filter.FilmByScoreFilter;
@@ -34,11 +32,18 @@ import pl.ciruk.whattowatch.core.title.justwatch.JustWatchTitleProvider;
 import pl.ciruk.whattowatch.ratings.MyRatings;
 import pl.ciruk.whattowatch.ratings.PersonalRatings;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
+import pl.ciruk.whattowatch.utils.net.CachedConnection;
+import pl.ciruk.whattowatch.utils.net.DomainRateLimiter;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import pl.ciruk.whattowatch.utils.net.InMemoryCookieJar;
+import pl.ciruk.whattowatch.utils.net.OkHttpConnection;
+import pl.ciruk.whattowatch.utils.net.html.JsoupConnection;
+import redis.clients.jedis.RedisClient;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
@@ -64,21 +69,38 @@ public class Beans {
         return Executors.newThreadPerTaskExecutor(factory);
     }
 
-    // JustWatch takes POST requests, which aren't cached
     @Bean
     TitleProvider titleProvider(
-            @Cached @ShortExpiry HttpConnection<Element> pageConnection,
-            @NotCached @NoCookies HttpConnection<String> apiConnection) {
+            OkHttpClient httpClient,
+            DomainRateLimiter rateLimiter,
+            RedisClient redisClient,
+            CircuitBreaker<Optional<String>> circuitBreaker) {
         var titles = properties.titles();
         return switch (titles.source()) {
-            case JUSTWATCH -> new JustWatchTitleProvider(apiConnection, titles.streamingServices());
-            case EKINO -> new EkinoTitleProvider(pageConnection, titles.pagesPerRequest());
+            // JustWatch takes POST requests, which aren't cached
+            case JUSTWATCH -> new JustWatchTitleProvider(
+                    new OkHttpConnection(httpClient, rateLimiter),
+                    titles.streamingServices());
+            case EKINO -> new EkinoTitleProvider(
+                    ekinoPages(httpClient, rateLimiter, redisClient, circuitBreaker),
+                    titles.pagesPerRequest());
         };
     }
 
+    // Only Ekino keeps the cookies a site sets, and its pages are cached for w2w.cache.short-expiry
+    private HttpConnection<Element> ekinoPages(
+            OkHttpClient httpClient,
+            DomainRateLimiter rateLimiter,
+            RedisClient redisClient,
+            CircuitBreaker<Optional<String>> circuitBreaker) {
+        var withCookies = httpClient.newBuilder().cookieJar(new InMemoryCookieJar()).build();
+        var cache = new RedisCache(redisClient, "short", properties.cache().shortExpiry(), circuitBreaker);
+        return new JsoupConnection(new CachedConnection(cache, new OkHttpConnection(withCookies, rateLimiter)));
+    }
+
     @Bean
-    FilmwebProxy filmwebProxy(@Cached @LongExpiry HttpConnection<String> connection) {
-        return new FilmwebProxy(connection);
+    FilmwebProxy filmwebProxy(HttpConnection<String> cachedPages) {
+        return new FilmwebProxy(cachedPages);
     }
 
     @Bean
@@ -97,8 +119,8 @@ public class Beans {
     }
 
     @Bean
-    ScoresProvider metacriticScores(@Cached @LongExpiry HttpConnection<Element> httpConnection) {
-        return new MetacriticScoresProvider(httpConnection);
+    ScoresProvider metacriticScores(HttpConnection<String> cachedPages) {
+        return new MetacriticScoresProvider(new JsoupConnection(cachedPages));
     }
 
     @Bean
@@ -139,21 +161,15 @@ public class Beans {
         });
     }
 
+    // Listed here rather than collected from the context, where any other predicate would become a filter too
     @Bean
-    FilmByScoreFilter filmByScoreFilter(MyRatings myRatings) {
-        return new FilmByScoreFilter(
+    SuggestionFilter suggestionFilter(MyRatings myRatings) {
+        var predictedForMe = new FilmByScoreFilter(
                 scored -> Objects.requireNonNullElse(myRatings.predict(scored), 0.0),
                 properties.suggestions().ratingThreshold());
-    }
-
-    @Bean
-    Predicate<ScoredTitle> atLeastOneCriticScore() {
-        return scored -> scored.scores().stream().anyMatch(score -> score.type() == ScoreType.CRITIC);
-    }
-
-    @Bean
-    SuggestionFilter suggestionFilter(List<Predicate<ScoredTitle>> filters) {
-        return new SuggestionFilter(filters);
+        Predicate<ScoredTitle> atLeastOneCriticScore =
+                scored -> scored.scores().stream().anyMatch(score -> score.type() == ScoreType.CRITIC);
+        return new SuggestionFilter(List.of(predictedForMe, atLeastOneCriticScore));
     }
 
 }

@@ -5,9 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.ciruk.whattowatch.boot.cache.LongExpiry;
 import pl.ciruk.whattowatch.boot.cache.RedisCache;
-import pl.ciruk.whattowatch.boot.cache.ShortExpiry;
 import pl.ciruk.whattowatch.utils.cache.CacheProvider;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.Protocol;
@@ -43,15 +41,8 @@ public class Caches {
     }
 
     @Bean
-    @LongExpiry
-    CacheProvider<String> longExpiryCache(RedisClient redisClient, CircuitBreaker<Optional<String>> circuitBreaker) {
+    CacheProvider<String> pageCache(RedisClient redisClient, CircuitBreaker<Optional<String>> circuitBreaker) {
         return new RedisCache(redisClient, "long", cache.longExpiry(), circuitBreaker);
-    }
-
-    @Bean
-    @ShortExpiry
-    CacheProvider<String> shortExpiryCache(RedisClient redisClient, CircuitBreaker<Optional<String>> circuitBreaker) {
-        return new RedisCache(redisClient, "short", cache.shortExpiry(), circuitBreaker);
     }
 
     // The breaker opens again after every failed probe, so an outage is logged once rather than every second
