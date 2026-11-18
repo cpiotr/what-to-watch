@@ -152,7 +152,7 @@ function card(entry) {
                     h('span', {class: 'tag watched-tag', title: 'Watched'},
                         h('span', {'aria-hidden': 'true'}, '✅'), h('span', {class: 'visually-hidden'}, 'Watched')))),
             h('div', {class: 'peek', 'aria-hidden': 'true'},
-                film.plot && h('p', {class: 'peek-plot'}, film.plot),
+                film.plot && h('p', {class: 'peek-plot', lang: 'pl'}, film.plot),
                 h('p', {class: 'peek-sources'}, sources))),
         h('h2', {class: 'title'},
             h('button', {type: 'button', 'aria-haspopup': 'dialog', onclick: () => showDetails(entry)}, film.title)),
@@ -437,16 +437,17 @@ function showDetails(entry) {
                 film.predictedRating != null && h('span', {class: 'summary-mine'},
                     svg(ICON.heart), h('b', {}, Math.round(film.predictedRating * 10), '%'), h('span', {}, 'predicted for you')))),
         h('div', {class: 'details-body'},
-            h('p', {class: film.plot ? 'plot' : 'plot missing'}, film.plot || 'No plot summary yet.'),
+            // Plots come from Filmweb, in Polish
+            h('p', {class: film.plot ? 'plot' : 'plot missing', lang: film.plot ? 'pl' : null}, film.plot || 'No plot summary yet.'),
             h('ul', {class: 'sources', 'aria-label': 'Scores by source'}, film.scores.map(sourceRow)),
             myRating(entry),
             h('a', {class: 'button watch', href: film.link, target: '_blank', rel: 'noopener'},
                 svg(ICON.play), service ? `Watch on ${service}` : 'Watch now')),
         h('div', {class: 'details-nav'},
-            h('button', {type: 'button', class: 'icon-button', 'aria-label': 'Previous film', disabled: index === 0,
+            h('button', {type: 'button', class: 'icon-button', 'aria-label': `Previous ${NOUNS[kind].one}`, disabled: index === 0,
                 onclick: () => step(-1)}, svg(ICON.prev)),
             h('span', {}, `${index + 1} / ${entries.length}`),
-            h('button', {type: 'button', class: 'icon-button', 'aria-label': 'Next film', disabled: index === entries.length - 1,
+            h('button', {type: 'button', class: 'icon-button', 'aria-label': `Next ${NOUNS[kind].one}`, disabled: index === entries.length - 1,
                 onclick: () => step(1)}, svg(ICON.next))),
         h('button', {type: 'button', class: 'icon-button close', 'aria-label': 'Close', onclick: () => dialog.close()}, svg(ICON.close)));
     dialog.onkeydown = event => {
@@ -492,6 +493,7 @@ hideWatchedSwitch.addEventListener('change', event => {
 // Films and series are never ranked together, so the other kind starts again from its first page.
 document.querySelector('.kind').addEventListener('change', event => {
     kind = event.target.value;
+    labelGrid();
     loading?.close();
     shown = null;
     if (dialog.open) dialog.close();
@@ -506,4 +508,9 @@ document.querySelector('.kind').addEventListener('change', event => {
     loadPage(1);
 });
 
+function labelGrid() {
+    grid.setAttribute('aria-label', `Suggested ${NOUNS[kind].many}, best first`);
+}
+
+labelGrid();
 loadPage(1);
