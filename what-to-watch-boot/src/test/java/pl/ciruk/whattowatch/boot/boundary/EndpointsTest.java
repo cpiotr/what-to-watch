@@ -304,6 +304,16 @@ class EndpointsTest {
         assertThat(metrics).contains("\"Suggestions.response\"", "\"cache.gets\"", "\"RedisCache.long.miss.count\"");
     }
 
+    @Test
+    void shouldShowAllMetricsForPrometheus() throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + managementPort + "/actuator/prometheus")).build();
+
+        var metrics = send(request);
+
+        assertThat(metrics.headers().firstValue("Content-Type")).hasValueSatisfying(type -> assertThat(type).startsWith("text/plain"));
+        assertThat(metrics.body()).contains("Suggestions_response_seconds_count", "cache_gets_total{cache=\"scoredTitles\"");
+    }
+
     private HttpResponse<String> get(String path) throws IOException, InterruptedException {
         return send(HttpRequest.newBuilder(uri(path)).build());
     }

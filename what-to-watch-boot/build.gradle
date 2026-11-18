@@ -61,6 +61,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-jmx")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("io.micrometer:micrometer-core")
     implementation("redis.clients:jedis")
     implementation("org.jsoup:jsoup:$jsoupVersion")

@@ -37,7 +37,9 @@ On port 8081, which Docker Compose publishes to this machine only:
 curl localhost:8081/actuator/health
 curl localhost:8081/actuator/metrics
 curl localhost:8081/actuator/metrics/Suggestions.response
+curl localhost:8081/actuator/prometheus
 ```
+The last one has all metrics at once, in the format Prometheus scrapes.
 
 ### Benchmarks
 The benchmark scores titles from pages recorded from the sites, read through Redis in Docker:
