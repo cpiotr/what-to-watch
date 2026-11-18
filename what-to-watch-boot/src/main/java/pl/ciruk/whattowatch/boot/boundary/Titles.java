@@ -1,55 +1,43 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
-import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.container.AsyncResponse;
-import jakarta.ws.rs.container.Suspended;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
-@Component
-@Path("/titles")
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+@RestController
+@RequestMapping("/resources/titles")
 public class Titles {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final TitleProvider titleProvider;
+    private final ExecutorService executorService;
 
-    @Inject
-    public Titles(TitleProvider titleProvider) {
+    public Titles(TitleProvider titleProvider, ExecutorService executorService) {
         this.titleProvider = titleProvider;
+        this.executorService = executorService;
     }
 
-    @GET
-    @Path("{pageNumber}")
-    @ManagedAsync
-    @Produces(MediaType.APPLICATION_JSON)
-    public void findAll(
-            @Suspended AsyncResponse asyncResponse,
-            @PathParam("pageNumber") int pageNumber,
-            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+    @GetMapping("/{pageNumber}")
+    public CompletableFuture<List<Title>> findAll(
+            @PathVariable int pageNumber,
+            @RequestParam(defaultValue = "FILM") TitleKind kind) {
         LOGGER.info("Kind: {}, page number: {}", kind, pageNumber);
 
-        asyncResponse.setTimeout(20, TimeUnit.SECONDS);
-        asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
-        try {
-            asyncResponse.resume(Response.ok(titleProvider.streamOfTitles(kind, pageNumber).toList()).build());
-        } catch (RuntimeException e) {
-            LOGGER.error("Error while getting titles", e);
-            asyncResponse.resume(Responses.internalError());
-        }
+        return CompletableFuture.supplyAsync(() -> titleProvider.streamOfTitles(kind, pageNumber).toList(), executorService)
+                .orTimeout(20, SECONDS);
     }
 }

@@ -57,10 +57,6 @@ dependencies {
     implementation project(":what-to-watch-core")
     implementation project(":what-to-watch-neural")
 
-    implementation("org.springframework.boot:spring-boot-starter-jersey")
-    // Jersey 4 doesn't support Jackson 3 yet, so its JSON goes through Jackson 2
-    implementation("org.springframework.boot:spring-boot-jackson2")
-    implementation("org.glassfish.jersey.media:jersey-media-sse")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-jmx")

@@ -1,28 +1,28 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.neural.MyRatings;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.util.List;
 
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-
-@Named
-@Path("/ratings")
+@RestController
+@RequestMapping("/resources/ratings")
 public class Ratings {
     private static final int MIN_RATING = 1;
     private static final int MAX_RATING = 10;
@@ -30,45 +30,42 @@ public class Ratings {
 
     private final MyRatings myRatings;
 
-    @Inject
     public Ratings(MyRatings myRatings) {
         this.myRatings = myRatings;
     }
 
     // The whole file, to copy over the bundled ratings in the repository
-    @GET
-    @Produces("text/csv")
-    public Response all() {
-        return Response.ok(myRatings.toCsv())
-                .header("Content-Disposition", "attachment; filename=\"rated-films.csv\"")
-                .build();
+    @GetMapping(produces = "text/csv;charset=UTF-8")
+    public ResponseEntity<String> all() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("rated-films.csv").build().toString())
+                .body(myRatings.toCsv());
     }
 
-    @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response rate(RatingRequest request) {
-        if (request == null || lacksTitleOrYear(request.title(), request.originalTitle(), request.year())) {
-            return Responses.badRequest("A title or an original title, and a year, are needed");
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rate(@RequestBody RatingRequest request) {
+        if (lacksTitleOrYear(request.title(), request.originalTitle(), request.year())) {
+            throw badRequest("A title or an original title, and a year, are needed");
         }
         if (request.rating() < MIN_RATING || request.rating() > MAX_RATING) {
-            return Responses.badRequest("A rating is from 1 to 10");
+            throw badRequest("A rating is from 1 to 10");
         }
         if (lacksFilmwebScore(request.scores())) {
-            return Responses.badRequest("A title without a Filmweb score can't be rated");
+            throw badRequest("A title without a Filmweb score can't be rated");
         }
         myRatings.rate(request.toRatedTitle());
-        return Response.noContent().build();
     }
 
-    @DELETE
-    public Response remove(
-            @QueryParam("title") String title,
-            @QueryParam("originalTitle") String originalTitle,
-            @QueryParam("year") int year,
-            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remove(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String originalTitle,
+            @RequestParam(defaultValue = "0") int year,
+            @RequestParam(defaultValue = "FILM") TitleKind kind) {
         if (lacksTitleOrYear(title, originalTitle, year)) {
-            return Responses.badRequest("A title or an original title, and a year, are needed");
+            throw badRequest("A title or an original title, and a year, are needed");
         }
         var rated = Title.builder()
                 .title(blankAsNull(title))
@@ -76,7 +73,13 @@ public class Ratings {
                 .year(year)
                 .kind(kind)
                 .build();
-        return myRatings.remove(rated) ? Response.noContent().build() : Response.status(NOT_FOUND).build();
+        if (!myRatings.remove(rated)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The title has no rating");
+        }
+    }
+
+    private static ResponseStatusException badRequest(String detail) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, detail);
     }
 
     // Some titles are only known by their original title. A missing year binds to 0.

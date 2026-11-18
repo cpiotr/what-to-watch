@@ -1,9 +1,11 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
-import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.score.ScoresProvider;
@@ -11,36 +13,26 @@ import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.container.AsyncResponse;
-import jakarta.ws.rs.container.Suspended;
-import jakarta.ws.rs.core.MediaType;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static pl.ciruk.whattowatch.utils.concurrent.CompletableFutures.combineUsing;
 
-@Component
-@Path("/scores")
+@RestController
+@RequestMapping("/resources/scores")
 public class Scores {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final List<ScoresProvider> scoresProviders;
     private final ExecutorService executorService;
 
-    @Inject
     public Scores(List<ScoresProvider> scoresProviders, ExecutorService executorService) {
         this.scoresProviders = scoresProviders;
         this.executorService = executorService;
@@ -51,15 +43,12 @@ public class Scores {
         LOGGER.debug("ScoresProviders: {}", scoresProviders);
     }
 
-    @GET
-    @ManagedAsync
-    @Produces(MediaType.APPLICATION_JSON)
-    public void scoresFor(
-            @Suspended final AsyncResponse asyncResponse,
-            @QueryParam("title") String title,
-            @QueryParam("originalTitle") String originalTitle,
-            @QueryParam("year") int year,
-            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+    @GetMapping
+    public CompletableFuture<List<Score>> scoresFor(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String originalTitle,
+            @RequestParam(defaultValue = "0") int year,
+            @RequestParam(defaultValue = "FILM") TitleKind kind) {
         Title titleObj = Title.builder()
                 .title(title)
                 .originalTitle(originalTitle)
@@ -80,17 +69,10 @@ public class Scores {
                 })
                 .thenApply(List::stream);
 
-        scoresProviders.stream()
+        return scoresProviders.stream()
                 .map(toScoresOfAsync)
                 .reduce(completedFuture(Stream.empty()), combineUsing(Stream::concat))
                 .thenApply(stream -> stream.collect(toList()))
-                .thenApply(asyncResponse::resume)
-                .exceptionally(e -> {
-                    LOGGER.error("Error while getting scores for {}", titleObj, e);
-                    return asyncResponse.resume(Responses.internalError());
-                });
-
-        asyncResponse.setTimeout(10, TimeUnit.SECONDS);
-        asyncResponse.setTimeoutHandler(ar -> ar.resume(Responses.requestTimedOut()));
+                .orTimeout(10, SECONDS);
     }
 }

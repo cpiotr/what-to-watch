@@ -1,46 +1,38 @@
 package pl.ciruk.whattowatch.boot.boundary;
 
-import org.springframework.stereotype.Component;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import pl.ciruk.whattowatch.core.description.Description;
 import pl.ciruk.whattowatch.core.description.DescriptionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 import pl.ciruk.whattowatch.core.title.Title;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Response;
-
-@Component
-@Path("/descriptions")
+@RestController
+@RequestMapping("/resources/descriptions")
 public class Descriptions {
     private final DescriptionProvider filmwebDescriptions;
 
-    @Inject
     public Descriptions(DescriptionProvider filmwebDescriptions) {
         this.filmwebDescriptions = filmwebDescriptions;
     }
 
-    @GET
-    @Produces("application/json")
-    public Response find(
-            @QueryParam("title") String title,
-            @QueryParam("originalTitle") String originalTitle,
-            @QueryParam("year") int year,
-            @QueryParam("kind") @DefaultValue("FILM") TitleKind kind) {
+    @GetMapping
+    public ResponseEntity<Description> find(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String originalTitle,
+            @RequestParam(defaultValue = "0") int year,
+            @RequestParam(defaultValue = "FILM") TitleKind kind) {
         var titleObject = Title.builder()
                 .title(title)
                 .originalTitle(originalTitle)
                 .year(year)
                 .kind(kind)
                 .build();
-        var optionalDescription = filmwebDescriptions.findDescriptionBy(titleObject);
 
-        return optionalDescription.map(Response::ok)
-                .orElse(Response.status(Response.Status.NOT_FOUND))
-                .build();
+        return ResponseEntity.of(filmwebDescriptions.findDescriptionBy(titleObject));
     }
 
 }

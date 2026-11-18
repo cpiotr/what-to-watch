@@ -2,12 +2,12 @@ package pl.ciruk.whattowatch.boot.config;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
-import jakarta.inject.Qualifier;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.ciruk.whattowatch.boot.cache.Cached;

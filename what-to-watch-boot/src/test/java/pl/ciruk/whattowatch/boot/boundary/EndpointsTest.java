@@ -127,7 +127,8 @@ class EndpointsTest {
 
         var rated = put(RATINGS, """
                 {"title": "Oceniony", "originalTitle": "Rated", "year": 2020, "kind": "FILM", "rating": 8,
-                 "scores": [{"grade": 0.75, "quantity": 5000, "source": "Filmweb", "type": "AMATEUR"},
+                 "scores": [{"grade": 0.75, "quantity": 5000, "source": "Filmweb", "type": "AMATEUR",
+                             "url": "https://www.filmweb.pl/film/Rated-2020-1", "significant": true},
                             {"grade": 0.8, "quantity": 9000, "source": "IMDb", "type": "AMATEUR"}]}
                 """);
         var suggested = get("/resources/suggestions/6").body();
@@ -232,7 +233,20 @@ class EndpointsTest {
         var response = get("/resources/titles/3");
 
         assertThat(response.statusCode()).isEqualTo(500);
-        assertThat(response.body()).isEqualTo("{\"error\":\"Internal error\"}");
+        assertThat(response.headers().firstValue("Content-Type")).hasValue("application/problem+json");
+        assertThat(response.body()).contains("\"detail\":\"Internal error\"").doesNotContain("internal.example");
+    }
+
+    @Test
+    void shouldRejectUnknownKindWithoutNamingInternalTypes() throws Exception {
+        var listed = get("/resources/suggestions/8?kind=film");
+        var rated = put(RATINGS, """
+                {"title": "Rodzaj", "year": 2020, "kind": "film", "rating": 7}
+                """);
+
+        assertThat(listed.statusCode()).isEqualTo(400);
+        assertThat(rated.statusCode()).isEqualTo(400);
+        assertThat(listed.body() + rated.body()).contains("\"status\":400").doesNotContain("pl.ciruk");
     }
 
     @Test

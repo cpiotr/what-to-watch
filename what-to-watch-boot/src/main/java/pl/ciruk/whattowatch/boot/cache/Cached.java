@@ -1,6 +1,6 @@
 package pl.ciruk.whattowatch.boot.cache;
 
-import jakarta.inject.Qualifier;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
