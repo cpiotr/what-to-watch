@@ -2,6 +2,8 @@ package pl.ciruk.whattowatch.boot.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,10 +103,11 @@ public class Beans {
 
     @Bean
     Cache<Title, ScoredTitle> cache() {
-        return Caffeine.newBuilder()
+        Cache<Title, ScoredTitle> cache = Caffeine.newBuilder()
                 .maximumSize(properties.films().cacheSize())
                 .recordStats()
                 .build();
+        return CaffeineCacheMetrics.monitor(Metrics.globalRegistry, cache, "scoredTitles");
     }
 
     @Bean

@@ -40,6 +40,8 @@ class EndpointsTest {
 
     @Value("${local.server.port}")
     private int port;
+    @Value("${local.management.port}")
+    private int managementPort;
 
     @MockitoBean(name = "titleProvider")
     private TitleProvider titleProvider;
@@ -263,6 +265,15 @@ class EndpointsTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains("\"grade\":0.81");
+    }
+
+    @Test
+    void shouldShowMetricsOnManagementPort() throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + managementPort + "/actuator/metrics")).build();
+
+        var metrics = send(request).body();
+
+        assertThat(metrics).contains("\"Suggestions.response\"", "\"cache.gets\"", "\"RedisCache.long.miss.count\"");
     }
 
     private HttpResponse<String> get(String path) throws IOException, InterruptedException {
