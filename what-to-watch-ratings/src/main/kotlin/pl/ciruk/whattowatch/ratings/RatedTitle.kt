@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.neural
+package pl.ciruk.whattowatch.ratings
 
 import pl.ciruk.whattowatch.core.description.Description
 import pl.ciruk.whattowatch.core.score.Score

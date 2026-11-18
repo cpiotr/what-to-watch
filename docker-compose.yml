@@ -27,7 +27,7 @@ services:
     # The app rates straight into the repository's ratings, so git shows what I rated. The whole directory is
     # mounted, because a file is replaced by renaming a new one over it.
     volumes:
-      - ./what-to-watch-neural/src/main/resources:/what-to-watch/ratings
+      - ./what-to-watch-ratings/src/main/resources:/what-to-watch/ratings
       # GC logs, kept apart from the app's log and across new containers
       - w2w-logs:/what-to-watch/logs
     ports:

@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.neural
+package pl.ciruk.whattowatch.ratings
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within

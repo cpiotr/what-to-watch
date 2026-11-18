@@ -5,7 +5,7 @@ import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
-import pl.ciruk.whattowatch.neural.RatedTitle;
+import pl.ciruk.whattowatch.ratings.RatedTitle;
 
 import java.util.List;
 import java.util.Objects;

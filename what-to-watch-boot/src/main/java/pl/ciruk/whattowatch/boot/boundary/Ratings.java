@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import pl.ciruk.whattowatch.core.score.Score;
 import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
-import pl.ciruk.whattowatch.neural.MyRatings;
+import pl.ciruk.whattowatch.ratings.MyRatings;
 
 import java.util.List;
 

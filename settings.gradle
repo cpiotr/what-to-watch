@@ -9,5 +9,5 @@ pluginManagement {
 
 include 'what-to-watch-core'
 include 'what-to-watch-boot'
-include 'what-to-watch-neural'
+include 'what-to-watch-ratings'
 

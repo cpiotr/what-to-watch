@@ -4,7 +4,7 @@ apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
-// The neural module is compiled with a newer Kotlin than Boot's BOM manages, and needs its standard library
+// The ratings module is compiled with a newer Kotlin than Boot's BOM manages, and needs its standard library
 ext['kotlin.version'] = kotlinVersion
 
 java {
@@ -38,7 +38,7 @@ bootRun {
     dependsOn ':downloadImdbDatasets'
     systemProperty 'w2w.imdb.datasets-directory', rootProject.file('imdb')
     // Run locally, the app rates straight into the repository's ratings, so git shows what I rated
-    systemProperty 'w2w.ratings.file', project(':what-to-watch-neural').file('src/main/resources/rated-films.csv')
+    systemProperty 'w2w.ratings.file', project(':what-to-watch-ratings').file('src/main/resources/rated-films.csv')
 }
 
 // The dependency-management plugin applies Boot's BOM to every configuration, which downgrades
@@ -55,7 +55,7 @@ configurations.matching { it.name.startsWith('spotbugs') }.configureEach {
 
 dependencies {
     implementation project(":what-to-watch-core")
-    implementation project(":what-to-watch-neural")
+    implementation project(":what-to-watch-ratings")
 
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")

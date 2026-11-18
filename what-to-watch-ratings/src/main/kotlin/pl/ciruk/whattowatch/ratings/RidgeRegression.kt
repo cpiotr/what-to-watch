@@ -1,4 +1,4 @@
-package pl.ciruk.whattowatch.neural
+package pl.ciruk.whattowatch.ratings
 
 import kotlin.math.sqrt
 

@@ -29,8 +29,8 @@ import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.core.title.ekino.EkinoTitleProvider;
 import pl.ciruk.whattowatch.core.title.justwatch.JustWatchTitleProvider;
-import pl.ciruk.whattowatch.neural.MyRatings;
-import pl.ciruk.whattowatch.neural.PersonalRatings;
+import pl.ciruk.whattowatch.ratings.MyRatings;
+import pl.ciruk.whattowatch.ratings.PersonalRatings;
 import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 

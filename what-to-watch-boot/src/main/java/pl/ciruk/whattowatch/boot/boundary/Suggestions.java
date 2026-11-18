@@ -16,7 +16,7 @@ import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
-import pl.ciruk.whattowatch.neural.MyRatings;
+import pl.ciruk.whattowatch.ratings.MyRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
