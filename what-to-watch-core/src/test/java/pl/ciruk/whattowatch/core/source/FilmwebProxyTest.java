@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,6 +90,37 @@ class FilmwebProxyTest {
                         && "2011".equals(url.queryParameter("endYear"))));
     }
 
+    // Filmweb ranks "Air" (2023) on the third of four pages, after films such as "Air Fryer Slaughter"
+    @Test
+    void shouldFindFilmOnLaterPageOfSearchResults() {
+        givenSearchPage(null, """
+                {"total":21,"searchHits":[
+                  {"id":1,"type":"film","matchedTitle":"Air Fryer Slaughter"},
+                  {"id":2,"type":"film","matchedTitle":"On Air"}
+                ]}""");
+        givenSearchPage("2", """
+                {"total":21,"searchHits":[{"id":3,"type":"film","matchedTitle":"Love in the Air"}]}""");
+        givenSearchPage("3", """
+                {"total":21,"searchHits":[{"id":10030286,"type":"film","matchedTitle":"Air"}]}""");
+        givenResponse("/api/v1/title/10030286/info", """
+                {"id":10030286,"title":"Air","originalTitle":"Air","year":2023,"type":"film"}""");
+
+        var films = filmwebProxy.searchBy("Air", 2023, TitleKind.FILM).toList();
+
+        assertThat(films).containsExactly(new FilmwebTitle(10_030_286, "Air", "Air", 2023, TitleKind.FILM));
+    }
+
+    @Test
+    void shouldReadAtMostFivePagesOfSearchResults() {
+        givenSearchPage(null, """
+                {"total":1000,"searchHits":[{"id":1,"type":"film","matchedTitle":"Love Actually"}]}""");
+
+        assertThat(filmwebProxy.searchBy("Love", 2003, TitleKind.FILM)).isEmpty();
+
+        verify(connection).get(argThat((HttpUrl url) -> url != null && "5".equals(url.queryParameter("page"))));
+        verify(connection, never()).get(argThat((HttpUrl url) -> url != null && "6".equals(url.queryParameter("page"))));
+    }
+
     @Test
     void shouldFindNoFilmsWhenResponseIsNotJson() {
         givenResponse(FILMS_SEARCH, "<html>Service unavailable</html>");
@@ -124,6 +156,14 @@ class FilmwebProxyTest {
 
         assertThat(filmwebProxy.linkTo(series).toString())
                 .isEqualTo("https://www.filmweb.pl/serial/Wednesday-2022-10007");
+    }
+
+    // The first page has no page number
+    private void givenSearchPage(String page, String body) {
+        when(connection.get(argThat((HttpUrl url) -> url != null
+                && FILMS_SEARCH.equals(url.encodedPath())
+                && Objects.equals(page, url.queryParameter("page")))))
+                .thenReturn(Optional.of(body));
     }
 
     private void givenResponse(String path, String body) {
