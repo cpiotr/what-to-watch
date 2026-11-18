@@ -364,13 +364,17 @@ function myRating(entry) {
 }
 
 // A rating replaces any earlier one of the same title on the server; null removes it.
+// By the time the server answers, the dialog may show another title or be closed.
 async function rate(entry, rating) {
+    // A second click before the first is saved would race it
+    if (entry.saving) return;
+    entry.saving = true;
     const {film} = entry;
     const title = {title: film.localTitle, originalTitle: film.originalTitle, year: film.year, kind: film.kind};
     const query = new URLSearchParams({year: film.year, kind: film.kind});
     if (film.localTitle) query.set('title', film.localTitle);
     if (film.originalTitle) query.set('originalTitle', film.originalTitle);
-    const control = dialog.querySelector('.my-rating');
+    let saved = false;
     try {
         const response = rating == null
             ? await fetch(`/resources/ratings?${query}`, {method: 'DELETE'})
@@ -379,14 +383,26 @@ async function rate(entry, rating) {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({...title, rating, scores: film.scores}),
             });
-        if (!response.ok && response.status !== 404) throw new Error(`HTTP ${response.status}`);
+        saved = response.ok || response.status === 404;
     } catch {
+        // Not saved, as with an error status
+    }
+    entry.saving = false;
+    if (saved) {
+        film.myRating = rating;
+        entry.card.classList.toggle('is-watched', isWatched(film));
+        if (dialog.open) ratedInDialog = true;
+        else showWatchedChange();
+    }
+    if (!dialog.open || shown !== entry) {
+        if (!saved) setStatus(`${shownCount()} · the rating of ${film.title} wasn’t saved`, false);
+        return;
+    }
+    const control = dialog.querySelector('.my-rating');
+    if (!saved) {
         control.querySelector('.my-rating-error').textContent = 'The rating wasn’t saved. Try again.';
         return;
     }
-    film.myRating = rating;
-    entry.card.classList.toggle('is-watched', isWatched(film));
-    ratedInDialog = true;
     const updated = myRating(entry);
     control.replaceWith(updated);
     // A title without a Filmweb score has no buttons left once its rating is removed
