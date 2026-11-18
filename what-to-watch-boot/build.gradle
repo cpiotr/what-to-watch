@@ -1,9 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-
-// The ratings module is compiled with a newer Kotlin than Boot's BOM manages, and needs its standard library
-ext['kotlin.version'] = kotlinVersion
 
 java {
     sourceCompatibility = JavaVersion.toVersion(project.javaVersion)
@@ -39,19 +35,10 @@ bootRun {
     systemProperty 'w2w.ratings.file', project(':what-to-watch-ratings').file('src/main/resources/rated-films.csv')
 }
 
-// The dependency-management plugin applies Boot's BOM to every configuration, which downgrades
-// SpotBugs' own libraries and breaks it. Keep the versions SpotBugs asks for.
-configurations.matching { it.name.startsWith('spotbugs') }.configureEach {
-    incoming.beforeResolve {
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.version) {
-                details.useVersion(details.requested.version)
-            }
-        }
-    }
-}
-
 dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
+    // The ratings module uses a newer Kotlin than Boot's BOM, so all of Kotlin's libraries follow it
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     implementation project(":what-to-watch-core")
     implementation project(":what-to-watch-ratings")
 
