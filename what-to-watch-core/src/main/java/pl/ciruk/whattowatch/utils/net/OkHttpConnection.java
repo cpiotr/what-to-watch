@@ -9,7 +9,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.ciruk.whattowatch.utils.concurrent.Threads;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import java.io.IOException;
@@ -74,29 +73,26 @@ public class OkHttpConnection implements HttpConnection<String> {
 
     private Response executeOnce(Request request) {
         awaitTurn(request.url());
-        return Threads.manageBlocking(() -> {
-            var sample = Timer.start();
-            try {
-                Response response = okHttpClient.newCall(request).execute();
-                LOGGER.trace("Got response {} from: {}", response.code(), response.request().url());
-                recordRedirects(response);
-                rateLimiter.recordResponse(response.request().url(), response);
-                return response;
-            } catch (SocketTimeoutException e) {
-                rateLimiter.recordFailure(request.url());
-                throw new RetryableException("Timed out getting " + request.url(), e);
-            } catch (IOException e) {
-                rateLimiter.recordFailure(request.url());
-                throw new RequestException("Could not get " + request.url(), e);
-            } catch (RuntimeException e) {
-                throw new RequestException("Could not get " + request.url(), e);
-            } finally {
-                sample.stop(requestsTimer);
-            }
-        });
+        var sample = Timer.start();
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            LOGGER.trace("Got response {} from: {}", response.code(), response.request().url());
+            recordRedirects(response);
+            rateLimiter.recordResponse(response.request().url(), response);
+            return response;
+        } catch (SocketTimeoutException e) {
+            rateLimiter.recordFailure(request.url());
+            throw new RetryableException("Timed out getting " + request.url(), e);
+        } catch (IOException e) {
+            rateLimiter.recordFailure(request.url());
+            throw new RequestException("Could not get " + request.url(), e);
+        } catch (RuntimeException e) {
+            throw new RequestException("Could not get " + request.url(), e);
+        } finally {
+            sample.stop(requestsTimer);
+        }
     }
 
-    // Waits outside managedBlock: a thread blocked inside it makes a ForkJoinPool start another one
     private void awaitTurn(HttpUrl url) {
         try {
             rateLimiter.awaitTurn(url);

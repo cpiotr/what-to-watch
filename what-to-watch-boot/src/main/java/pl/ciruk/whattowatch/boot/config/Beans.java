@@ -2,8 +2,6 @@ package pl.ciruk.whattowatch.boot.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +39,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 
 @Configuration
@@ -55,26 +52,11 @@ public class Beans {
         LOGGER.info("{}", properties);
     }
 
+    // Tasks mostly wait for their turn at a rate-limited site, so a thread each costs next to nothing
     @Bean
     ExecutorService executorService() {
-        var threadPrefix = "WhatToWatch";
-        return properties.pool().useVirtual() ? createVirtualPool(threadPrefix) : createForkJoinPool(threadPrefix);
-    }
-
-    private ExecutorService createForkJoinPool(String threadPrefix) {
-        LOGGER.info("Creating fork join pool");
-        ExecutorService threadPoolExecutor = new ForkJoinPool(
-                properties.pool().size(),
-                Threads.createForkJoinThreadFactory(threadPrefix),
-                Threads.createUncaughtExceptionHandler(),
-                true);
-        return ExecutorServiceMetrics.monitor(Metrics.globalRegistry, threadPoolExecutor, threadPrefix);
-    }
-
-    private static ExecutorService createVirtualPool(String threadPrefix) {
-        LOGGER.info("Creating pool of virtual threads");
-        final var factory = Thread.ofVirtual()
-                .name(threadPrefix + "-", 1)
+        var factory = Thread.ofVirtual()
+                .name("WhatToWatch-", 1)
                 .uncaughtExceptionHandler(Threads.createUncaughtExceptionHandler())
                 .factory();
         return Executors.newThreadPerTaskExecutor(factory);

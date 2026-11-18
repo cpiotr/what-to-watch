@@ -9,16 +9,12 @@ import java.util.List;
 
 @ConfigurationProperties("w2w")
 public record W2wProperties(
-        @DefaultValue Pool pool,
         @DefaultValue Titles titles,
         @DefaultValue Suggestions suggestions,
         @DefaultValue Films films,
         @DefaultValue Cache cache,
         @DefaultValue Imdb imdb,
         @DefaultValue Ratings ratings) {
-
-    public record Pool(@DefaultValue("16") int size, @DefaultValue("false") boolean useVirtual) {
-    }
 
     // Streaming services are JustWatch's short names: nfx is Netflix, prv is Amazon Prime Video
     public record Titles(

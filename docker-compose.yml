@@ -10,11 +10,9 @@ services:
       context: .
       args:
         - W2W_VERSION=0.0.1
-    # Spring Boot binds these to the settings, e.g. W2W_POOL_SIZE to w2w.pool.size
+    # Spring Boot binds these to the settings, e.g. W2W_SUGGESTIONS_RATINGTHRESHOLD to w2w.suggestions.rating-threshold
     environment:
       - REDIS_HOST=cache
-      - W2W_POOL_SIZE=32
-      - W2W_POOL_USEVIRTUAL=true
       - W2W_SUGGESTIONS_RATINGTHRESHOLD=5.4
       - W2W_TITLES_STREAMINGSERVICES=nfx,prv,dnp
       - HTTP_REQUESTSPERSECONDBYDOMAIN_FILMWEB_PL=4
