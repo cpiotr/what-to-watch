@@ -19,13 +19,8 @@ services:
       - W2W_TITLES_STREAMINGSERVICES=nfx,prv,dnp
       - HTTP_REQUESTSPERSECONDBYDOMAIN_FILMWEB_PL=4
       - LOGGING_LEVEL_PL_CIRUK=INFO
-      - JDK_JAVA_OPTIONS=-Xms2G
-        -Xmx2G
-        -XX:+UseZGC
-        -XX:+UseNUMA
-        -XX:+UseStringDeduplication
-        -XX:InitialCodeCacheSize=256m
-        -XX:ReservedCodeCacheSize=256m
+      # About 100 MB stays live, most of it the IMDb index, so the JVM's own collector choice and code cache do
+      - JDK_JAVA_OPTIONS=-Xmx512m
         -XX:+PreserveFramePointer
         -Xlog:gc*:file=/what-to-watch/logs/gc.log:time,uptime,level,tags:filecount=5,filesize=10m
     # Runs as me rather than root, so the ratings file it replaces stays mine on a Linux host. Set W2W_UID and
