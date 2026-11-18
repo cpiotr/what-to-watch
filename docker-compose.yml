@@ -1,6 +1,12 @@
 services:
   cache:
     image: redis:6.2.24-alpine
+    # The app starts once Redis answers, rather than crawling the sites uncached at first
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     volumes:
       - redis-data:/data
     ports:
@@ -33,7 +39,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - cache
+      cache:
+        condition: service_healthy
 
 volumes:
   redis-data:
