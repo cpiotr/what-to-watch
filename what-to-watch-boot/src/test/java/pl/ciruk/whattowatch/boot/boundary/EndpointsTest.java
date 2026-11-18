@@ -24,6 +24,8 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -91,6 +93,32 @@ class EndpointsTest {
         var events = get("/resources/suggestions/1/stream").body();
 
         assertThat(events).contains("\"title\":\"First\"", "\"title\":\"Second\"", "poisonPill");
+    }
+
+    @Test
+    void shouldSearchAtMostTenTitlesOfStreamedPageAtOnce() throws Exception {
+        var titles = IntStream.rangeClosed(1, 15).mapToObj(number -> title("At once " + number)).toList();
+        when(titleProvider.streamOfTitles(TitleKind.FILM, 9)).thenAnswer(ignored -> titles.stream());
+        // An eleventh search at once lets them all go. Ten wait for the timeout instead.
+        var eleventhSearched = new CountDownLatch(11);
+        var searching = new AtomicInteger();
+        var mostAtOnce = new AtomicInteger();
+        var waitedForTimeout = new AtomicInteger();
+        when(descriptionProvider.findDescriptionBy(any())).thenAnswer(invocation -> {
+            mostAtOnce.accumulateAndGet(searching.incrementAndGet(), Math::max);
+            eleventhSearched.countDown();
+            if (!eleventhSearched.await(1, SECONDS)) {
+                waitedForTimeout.incrementAndGet();
+            }
+            searching.decrementAndGet();
+            return Optional.of(descriptionOf(invocation.getArgument(0)));
+        });
+
+        var events = get("/resources/suggestions/9/stream").body();
+
+        assertThat(mostAtOnce).hasValue(10);
+        assertThat(waitedForTimeout).hasValue(10);
+        assertThat(events).contains("\"title\":\"At once 1\"", "\"title\":\"At once 15\"", "poisonPill");
     }
 
     @Test

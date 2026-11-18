@@ -16,17 +16,20 @@ import pl.ciruk.whattowatch.core.filter.SuggestionFilter;
 import pl.ciruk.whattowatch.core.suggest.ScoredTitle;
 import pl.ciruk.whattowatch.core.suggest.SuggestionProvider;
 import pl.ciruk.whattowatch.core.title.TitleKind;
+import pl.ciruk.whattowatch.core.title.TitleProvider;
 import pl.ciruk.whattowatch.ratings.MyRatings;
 import pl.ciruk.whattowatch.utils.concurrent.CompletableFutures;
 import pl.ciruk.whattowatch.utils.metrics.Names;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
@@ -37,8 +40,12 @@ public class Suggestions {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     // A page of titles nobody searched for yet takes minutes at the sites' rate limits
     private static final long NO_TIMEOUT = 0L;
+    // Enough to keep every rate-limited site busy, and few enough that a page closed early, for example to show the
+    // other kind, soon stops taking the sites' turns
+    private static final int TITLES_IN_FLIGHT = 10;
 
     private final SuggestionProvider suggestionsProvider;
+    private final TitleProvider titleProvider;
     private final SuggestionFilter suggestionFilter;
     private final MyRatings myRatings;
     private final ExecutorService executorService;
@@ -46,10 +53,12 @@ public class Suggestions {
 
     public Suggestions(
             SuggestionProvider suggestionsProvider,
+            TitleProvider titleProvider,
             SuggestionFilter suggestionFilter,
             MyRatings myRatings,
             ExecutorService executorService) {
         this.suggestionsProvider = suggestionsProvider;
+        this.titleProvider = titleProvider;
         this.suggestionFilter = suggestionFilter;
         this.myRatings = myRatings;
         this.executorService = executorService;
@@ -79,16 +88,11 @@ public class Suggestions {
     }
 
     private void streamPage(SseEmitter emitter, TitleKind kind, int pageNumber) {
+        var stream = new PageStream(emitter);
         try {
-            responseTimer.record(() -> {
-                // Every search starts before any is awaited, so the rate-limited sites work at the same time
-                var sent = suggestionsProvider.suggest(kind, pageNumber)
-                        .map(sendIfWorthWatching(emitter))
-                        .toList();
-                sent.forEach(CompletableFuture::join);
-            });
+            responseTimer.record(() -> sendWorthWatching(stream, kind, pageNumber));
             // Only a page searched to the end says so. A failed one just stops, and the page offers to retry it.
-            send(emitter, SseEmitter.event()
+            stream.send(SseEmitter.event()
                     .name("poisonPill")
                     .id(UUID.randomUUID().toString())
                     .data("poisonPill"));
@@ -100,26 +104,36 @@ public class Suggestions {
         }
     }
 
-    private Function<CompletableFuture<ScoredTitle>, CompletableFuture<Void>> sendIfWorthWatching(SseEmitter emitter) {
-        return futureTitle -> futureTitle.thenAccept(
-                scored -> {
-                    if (suggestionFilter.isWorthWatching(scored)) {
-                        SuggestionResult result = toSuggestionResult(scored);
-                        send(emitter, SseEmitter.event()
-                                .name("title")
-                                .id(String.valueOf(result.hashCode()))
-                                .data(result, MediaType.APPLICATION_JSON));
-                    }
+    private void sendWorthWatching(PageStream stream, TitleKind kind, int pageNumber) {
+        var inFlight = new Semaphore(TITLES_IN_FLIGHT);
+        var sent = new ArrayList<CompletableFuture<Void>>();
+        // Collected first: a lazy stream of searches can start several before it hands over the first
+        var titles = titleProvider.streamOfTitles(kind, pageNumber).toList();
+        try {
+            for (var title : titles) {
+                inFlight.acquire();
+                if (stream.isClosed()) {
+                    LOGGER.info("Stopped streaming page {}, which was closed", pageNumber);
+                    break;
                 }
-        );
+                sent.add(suggestionsProvider.getOrScore(title)
+                        .thenAccept(scored -> sendIfWorthWatching(stream, scored))
+                        .whenComplete((ignored, error) -> inFlight.release()));
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while streaming page " + pageNumber, e);
+        }
+        sent.forEach(CompletableFuture::join);
     }
 
-    // The page closes the stream when it no longer needs it, for example to show the other kind
-    private static void send(SseEmitter emitter, SseEventBuilder event) {
-        try {
-            emitter.send(event);
-        } catch (IOException | IllegalStateException e) {
-            LOGGER.debug("Cannot send event, the stream is closed", e);
+    private void sendIfWorthWatching(PageStream stream, ScoredTitle scored) {
+        if (suggestionFilter.isWorthWatching(scored)) {
+            SuggestionResult result = toSuggestionResult(scored);
+            stream.send(SseEmitter.event()
+                    .name("title")
+                    .id(String.valueOf(result.hashCode()))
+                    .data(result, MediaType.APPLICATION_JSON));
         }
     }
 
@@ -148,5 +162,29 @@ public class Suggestions {
                 scored.scores(),
                 description.getGenres(),
                 myRatings.ratingOf(title));
+    }
+
+    // The page closes the stream when it no longer needs it, for example to show the other kind. Sending is how
+    // the app finds out.
+    private static final class PageStream {
+        private final SseEmitter emitter;
+        private final AtomicBoolean closed = new AtomicBoolean();
+
+        PageStream(SseEmitter emitter) {
+            this.emitter = emitter;
+        }
+
+        void send(SseEventBuilder event) {
+            try {
+                emitter.send(event);
+            } catch (IOException | IllegalStateException e) {
+                closed.set(true);
+                LOGGER.debug("Cannot send event, the stream is closed", e);
+            }
+        }
+
+        boolean isClosed() {
+            return closed.get();
+        }
     }
 }

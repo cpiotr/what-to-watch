@@ -56,7 +56,7 @@ public class SuggestionProvider {
 
     // Overlapping requests, such as the startup crawl and a user's, share one search for each title
     // A title knows its kind, so a series and a film with the same name and year are cached apart
-    private CompletableFuture<ScoredTitle> getOrScore(Title title) {
+    public CompletableFuture<ScoredTitle> getOrScore(Title title) {
         var cached = cache.getIfPresent(title);
         if (cached != null) {
             return completedFuture(cached);
