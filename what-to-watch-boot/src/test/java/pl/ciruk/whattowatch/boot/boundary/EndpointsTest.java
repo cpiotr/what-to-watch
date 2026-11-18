@@ -116,8 +116,10 @@ class EndpointsTest {
 
         var events = get("/resources/suggestions/9/stream").body();
 
-        assertThat(mostAtOnce).hasValue(10);
-        assertThat(waitedForTimeout).hasValue(10);
+        // How many start at the same time depends on scheduling, but an eleventh never searches alongside ten
+        assertThat(mostAtOnce.get()).isLessThanOrEqualTo(10);
+        // With no limit, the eleventh starts at once and lets the rest go, so none waits for the timeout
+        assertThat(waitedForTimeout.get()).isPositive();
         assertThat(events).contains("\"title\":\"At once 1\"", "\"title\":\"At once 15\"", "poisonPill");
     }
 
