@@ -19,7 +19,7 @@ services:
     # Spring Boot binds these to the settings, e.g. W2W_SUGGESTIONS_RATINGTHRESHOLD to w2w.suggestions.rating-threshold
     environment:
       - REDIS_HOST=cache
-      - W2W_SUGGESTIONS_RATINGTHRESHOLD=5.4
+      - W2W_SUGGESTIONS_RATINGTHRESHOLD=5.8
       - W2W_TITLES_STREAMINGSERVICES=nfx,prv,dnp
       - HTTP_REQUESTSPERSECONDBYDOMAIN_FILMWEB_PL=4
       - LOGGING_LEVEL_PL_CIRUK=INFO

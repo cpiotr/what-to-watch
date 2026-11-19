@@ -30,7 +30,7 @@ public record W2wProperties(
     }
 
     // My predicted rating, from 1 to 10, that a film needs to be suggested
-    public record Suggestions(@DefaultValue("5.4") double ratingThreshold) {
+    public record Suggestions(@DefaultValue("5.8") double ratingThreshold) {
     }
 
     public record Films(@DefaultValue("10000") int cacheSize) {
