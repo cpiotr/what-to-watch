@@ -31,6 +31,8 @@ final class ImdbTitleIndex {
             "tvMovie", TitleKind.FILM,
             "video", TitleKind.FILM,
             "short", TitleKind.FILM,
+            // Such as "The Punisher: One Last Kill", which streaming services list as a film
+            "tvSpecial", TitleKind.FILM,
             "tvSeries", TitleKind.SERIES,
             "tvMiniSeries", TitleKind.SERIES);
     private static final String MISSING = "\\N";

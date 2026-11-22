@@ -45,6 +45,18 @@ class ImdbDatasetScoresProviderTest {
         assertThat(scores).isEmpty();
     }
 
+    @Test
+    void shouldFindTitleAsItWasSearchedForWhenFilmwebCallsItDifferently() {
+        var description = Description.builder()
+                .title(Title.builder().title("Rambo: Pierwsza krew").originalTitle("Rambo").year(1982).build())
+                .foundFor(Title.builder().title("Rambo").originalTitle("First blood").year(1982).build())
+                .build();
+
+        var scores = provider.findScoresBy(description).toList();
+
+        assertThat(scores).extracting(Score::url).containsExactly("https://www.imdb.com/title/tt0083944");
+    }
+
     private static Description description(String localTitle, String originalTitle, int year) {
         return Description.builder()
                 .title(Title.builder().title(localTitle).originalTitle(originalTitle).year(year).build())

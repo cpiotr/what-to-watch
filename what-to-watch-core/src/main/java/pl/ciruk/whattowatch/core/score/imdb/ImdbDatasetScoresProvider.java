@@ -16,6 +16,7 @@ import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -55,7 +56,10 @@ public final class ImdbDatasetScoresProvider implements ScoresProvider {
 
     @Override
     public Stream<Score> findScoresBy(Description description) {
+        // Filmweb can call a title differently than IMDb, as "Mayday" for "Air Crash Investigation", or date it
+        // earlier, as "Columbo" from 1968 for IMDb's 1971, and then the title as it was searched for is IMDb's
         var score = index.find(description.getTitle())
+                .or(() -> Optional.ofNullable(description.getFoundFor()).flatMap(index::find))
                 .map(this::toScore)
                 .filter(found -> found.grade() > 0.0);
         if (score.isEmpty()) {

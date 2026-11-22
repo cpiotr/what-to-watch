@@ -68,6 +68,13 @@ class ImdbTitleIndexTest {
     }
 
     @Test
+    void shouldFindTelevisionSpecialAsFilm() {
+        var found = index.find(title("Punisher: Ostatnie zabójstwo", "The Punisher: One Last Kill", 2026));
+
+        assertThat(found).map(ImdbTitleIndex.ImdbTitle::id).contains("tt36042156");
+    }
+
+    @Test
     void shouldNotMatchDistantYear() {
         assertThat(index.find(title(RAMBO, "First blood", 1985))).isEmpty();
     }
