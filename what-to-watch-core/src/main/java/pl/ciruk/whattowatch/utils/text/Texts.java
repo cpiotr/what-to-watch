@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public final class Texts {
     private static final String[] ARTICLES = {"a ", "an ", "the "};
     private static final Pattern DIACRITICS = Pattern.compile("\\p{M}");
-    private static final Pattern NOT_ALPHANUMERIC_OR_SPACE = Pattern.compile("[^\\w ]");
+    private static final Pattern NOT_ALPHANUMERIC = Pattern.compile("[^\\w]");
 
     private Texts() {
         throw new AssertionError();
@@ -22,13 +22,13 @@ public final class Texts {
     }
 
     /**
-     * Lower case, without diacritics, surrounding whitespace, a leading article or anything but letters, digits and
-     * spaces. "&" counts as "and".
+     * Lower case, without diacritics, a leading article or anything but letters and digits. "&" counts as "and".
+     * Spaces go too, as sites split words differently: Metacritic has "The 40 Year Old Virgin" for "The 40 Year-Old Virgin".
      */
     public static String unify(String text) {
         // Filmweb has " The Devil All the Time", where the space would keep the article
         var folded = withoutDiacritics(text.strip().toLowerCase(Locale.ROOT)).replace("&", "and");
-        return NOT_ALPHANUMERIC_OR_SPACE
+        return NOT_ALPHANUMERIC
                 .matcher(stripArticle(folded))
                 .replaceAll("");
     }

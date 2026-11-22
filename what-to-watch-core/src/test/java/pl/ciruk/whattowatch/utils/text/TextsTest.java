@@ -28,6 +28,12 @@ class TextsTest {
     }
 
     @Test
+    void shouldIgnoreHowWordsAreSplit() {
+        assertThat(Texts.matchesAlphanumerically("The 40 Year-Old Virgin", "The 40 Year Old Virgin")).isTrue();
+        assertThat(Texts.matchesAlphanumerically("Spider-Man", "Spiderman")).isTrue();
+    }
+
+    @Test
     void shouldNotMatchDifferentTitles() {
         assertThat(Texts.matchesAlphanumerically("Frozen", "The Frozen Ground")).isFalse();
         assertThat(Texts.matchesAlphanumerically("Frozen", null)).isFalse();
