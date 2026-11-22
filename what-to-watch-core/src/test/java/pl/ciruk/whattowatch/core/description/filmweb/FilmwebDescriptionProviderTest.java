@@ -26,6 +26,7 @@ class FilmwebDescriptionProviderTest {
     private static final String THE_DIPLOMAT = "The Diplomat";
     private static final String DYPLOMATKA = "Dyplomatka";
     private static final String AIR = "Air";
+    private static final String DAREDEVIL = "Daredevil";
     private static final FilmwebTitle CASINO_ROYALE_2006 = new FilmwebTitle(107_642, CASINO_ROYALE, CASINO_ROYALE, 2006, TitleKind.FILM);
 
     private final FilmwebProxy filmwebProxy = mock(FilmwebProxy.class);
@@ -130,6 +131,24 @@ class FilmwebDescriptionProviderTest {
                 .orElseThrow();
 
         assertThat(found.getPlot()).isEqualTo("Sonny Vaccaro signs Michael Jordan.");
+    }
+
+    // Filmweb finds it by the name streaming services use, but calls it "Daredevil"
+    @Test
+    void shouldDescribeSeriesFoundByAnotherName() {
+        var series = new FilmwebTitle(702_252, DAREDEVIL, DAREDEVIL, 2015, TitleKind.SERIES);
+        when(filmwebProxy.searchBy("Marvel's Daredevil", 2015, TitleKind.SERIES)).thenAnswer(ignored -> Stream.of(series));
+        when(filmwebProxy.getDetailsPageFor(series)).thenReturn(Optional.of(page(DAREDEVIL, "", "2015 - 2018")));
+
+        var found = provider.findDescriptionBy(Title.builder()
+                        .originalTitle("Marvel's Daredevil")
+                        .year(2015)
+                        .kind(TitleKind.SERIES)
+                        .build())
+                .orElseThrow()
+                .getTitle();
+
+        assertThat(found.localTitle()).isEqualTo(DAREDEVIL);
     }
 
     @Test

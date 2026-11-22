@@ -46,8 +46,8 @@ public class FilmwebDescriptionProvider implements DescriptionProvider {
         var foundDescription = Stream.of(title.originalTitle(), title.localTitle())
                 .filter(Objects::nonNull)
                 .filter(not(String::isEmpty))
+                // Only titles that Filmweb found by the title's names are described, even when they're called differently
                 .flatMap(text -> filmsForTitle(text, title))
-                .filter(description -> description.getTitle().matches(title))
                 .findFirst();
         if (foundDescription.isEmpty()) {
             LOGGER.warn("Missing description for: {}", title);

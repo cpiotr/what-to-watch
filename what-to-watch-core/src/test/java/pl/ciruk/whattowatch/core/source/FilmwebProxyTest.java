@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.ciruk.whattowatch.utils.net.HttpConnection;
+import pl.ciruk.whattowatch.core.title.Title;
 import pl.ciruk.whattowatch.core.title.TitleKind;
 
 import java.util.Objects;
@@ -21,6 +22,8 @@ class FilmwebProxyTest {
     private static final long FILM_ID = 500_891;
     private static final String SERIES = "Wednesday";
     private static final long SERIES_ID = 10_007;
+    private static final String TOP_GEAR = "Top Gear";
+    private static final String AIR = "Air";
 
     private HttpConnection<String> connection;
     private FilmwebProxy filmwebProxy;
@@ -78,6 +81,62 @@ class FilmwebProxyTest {
     }
 
     @Test
+    void shouldFindTvProgrammeWhenNoSeriesIsFound() {
+        givenResponse("/api/v1/serials/search", """
+                {"total":0,"searchHits":[]}""");
+        givenResponse("/api/v1/tvshows/search", """
+                {"total":1,"searchHits":[{"id":770749,"type":"tvshow","matchedTitle":"Top Gear"}]}""");
+        givenResponse("/api/v1/title/770749/info", """
+                {"id":770749,"title":"Top Gear","originalTitle":"Top Gear","year":2002,"type":"tvshow"}""");
+
+        var series = filmwebProxy.searchBy(TOP_GEAR, 2002, TitleKind.SERIES).toList();
+
+        assertThat(series).containsExactly(new FilmwebTitle(770_749, TOP_GEAR, TOP_GEAR, 2002, TitleKind.SERIES, "tvshow"));
+    }
+
+    @Test
+    void shouldNotSearchTvProgrammesForFilms() {
+        givenResponse(FILMS_SEARCH, """
+                {"total":0,"searchHits":[]}""");
+
+        assertThat(filmwebProxy.searchBy(TOP_GEAR, 2002, TitleKind.FILM)).isEmpty();
+
+        verify(connection, never()).get(argThat((HttpUrl url) -> url != null && url.encodedPath().contains("tvshows")));
+    }
+
+    // Filmweb found it by the name streaming services use, "Marvel's Daredevil", which isn't its own title
+    @Test
+    void shouldKeepTitleFoundByAnotherName() {
+        givenResponse("/api/v1/serials/search", """
+                {"total":1,"searchHits":[{"id":702252,"type":"serial","matchedTitle":"Marvel's Daredevil"}]}""");
+        givenResponse("/api/v1/title/702252/info", """
+                {"id":702252,"title":"Daredevil","originalTitle":"Daredevil","year":2015,"type":"serial"}""");
+        var title = Title.builder().originalTitle("Marvel's Daredevil").year(2015).kind(TitleKind.SERIES).build();
+
+        var series = filmwebProxy.searchFor("Marvel's Daredevil", title);
+
+        assertThat(series).containsExactly(new FilmwebTitle(702_252, "Daredevil", "Daredevil", 2015, TitleKind.SERIES));
+    }
+
+    @Test
+    void shouldPreferTitlesNamedLikeSearchedOne() {
+        givenResponse(FILMS_SEARCH, """
+                {"total":2,"searchHits":[
+                  {"id":1,"type":"film","matchedTitle":"Air"},
+                  {"id":10030286,"type":"film","matchedTitle":"Air"}
+                ]}""");
+        givenResponse("/api/v1/title/1/info", """
+                {"id":1,"title":"Powietrze","originalTitle":"Vozdukh","year":2023,"type":"film"}""");
+        givenResponse("/api/v1/title/10030286/info", """
+                {"id":10030286,"title":"Air","originalTitle":"Air","year":2023,"type":"film"}""");
+        var title = Title.builder().originalTitle(AIR).year(2023).build();
+
+        var films = filmwebProxy.searchFor(AIR, title);
+
+        assertThat(films).containsExactly(new FilmwebTitle(10_030_286, AIR, AIR, 2023, TitleKind.FILM));
+    }
+
+    @Test
     void shouldSearchAroundGivenYear() {
         givenResponse(FILMS_SEARCH, """
                 {"total":0,"searchHits":[]}""");
@@ -105,9 +164,9 @@ class FilmwebProxyTest {
         givenResponse("/api/v1/title/10030286/info", """
                 {"id":10030286,"title":"Air","originalTitle":"Air","year":2023,"type":"film"}""");
 
-        var films = filmwebProxy.searchBy("Air", 2023, TitleKind.FILM).toList();
+        var films = filmwebProxy.searchBy(AIR, 2023, TitleKind.FILM).toList();
 
-        assertThat(films).containsExactly(new FilmwebTitle(10_030_286, "Air", "Air", 2023, TitleKind.FILM));
+        assertThat(films).containsExactly(new FilmwebTitle(10_030_286, AIR, AIR, 2023, TitleKind.FILM));
     }
 
     @Test
@@ -156,6 +215,22 @@ class FilmwebProxyTest {
 
         assertThat(filmwebProxy.linkTo(series).toString())
                 .isEqualTo("https://www.filmweb.pl/serial/Wednesday-2022-10007");
+    }
+
+    @Test
+    void shouldLinkToTvProgrammePage() {
+        var programme = new FilmwebTitle(770_749, TOP_GEAR, TOP_GEAR, 2002, TitleKind.SERIES, "tvshow");
+
+        assertThat(filmwebProxy.linkTo(programme).toString())
+                .isEqualTo("https://www.filmweb.pl/tvshow/Top+Gear-2002-770749");
+    }
+
+    @Test
+    void shouldLinkWithoutSlashInTitle() {
+        var series = new FilmwebTitle(850_114, "Sex/Life", "Sex/Life", 2021, TitleKind.SERIES);
+
+        assertThat(filmwebProxy.linkTo(series).toString())
+                .isEqualTo("https://www.filmweb.pl/serial/SexLife-2021-850114");
     }
 
     // The first page has no page number
