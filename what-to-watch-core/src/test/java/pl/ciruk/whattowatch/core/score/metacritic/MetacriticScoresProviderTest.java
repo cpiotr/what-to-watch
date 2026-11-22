@@ -84,6 +84,31 @@ class MetacriticScoresProviderTest {
     }
 
     @Test
+    void shouldTakeFilmNamedDifferentlyAtItsLinkFromSameYear() {
+        givenPage("/movie/se7en/", filmPage("Seven", "1995-09-22", 65, 22));
+
+        var scores = provider.findScoresBy(descriptionOf("Se7en", 1995)).toList();
+
+        assertThat(scores).extracting(Score::url).containsExactly("https://www.metacritic.com/movie/se7en/");
+    }
+
+    @Test
+    void shouldIgnoreFilmNamedDifferentlyFromAnotherYear() {
+        givenPage("/movie/se7en/", filmPage("Seven", "1996-09-22", 65, 22));
+
+        assertThat(provider.findScoresBy(descriptionOf("Se7en", 1995))).isEmpty();
+    }
+
+    @Test
+    void shouldFindFilmWithAmpersandSpelledOutInLink() {
+        givenPage("/movie/dumb-and-dumber/", filmPage("Dumb and Dumber", "1994-12-16", 41, 15));
+
+        var scores = provider.findScoresBy(descriptionOf("Dumb & Dumber", 1994)).toList();
+
+        assertThat(scores).extracting(Score::url).containsExactly("https://www.metacritic.com/movie/dumb-and-dumber/");
+    }
+
+    @Test
     void shouldIgnoreFilmFromDifferentYear() {
         givenPage("/movie/west-side-story/", filmPage("West Side Story", "1961-12-13", 86, 17));
 
@@ -105,6 +130,11 @@ class MetacriticScoresProviderTest {
         assertThat(MetacriticScoresProvider.linkFor("Amélie")).isEqualTo("amelie");
         assertThat(MetacriticScoresProvider.linkFor("The Boy, the Mole, the Fox and the Horse"))
                 .isEqualTo("the-boy-the-mole-the-fox-and-the-horse");
+        assertThat(MetacriticScoresProvider.linkFor("Star Wars: Episode I - The Phantom Menace"))
+                .isEqualTo("star-wars-episode-i---the-phantom-menace");
+        assertThat(MetacriticScoresProvider.linkFor("Hot Shots! Part Deux")).isEqualTo("hot-shots!-part-deux");
+        assertThat(MetacriticScoresProvider.linkFor("Thomas the Tank Engine & Friends"))
+                .isEqualTo("thomas-the-tank-engine-friends");
     }
 
     private void givenPage(String path, Element page) {

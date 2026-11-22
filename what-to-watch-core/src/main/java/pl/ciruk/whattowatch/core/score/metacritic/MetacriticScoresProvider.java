@@ -31,8 +31,9 @@ public class MetacriticScoresProvider implements ScoresProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String METACRITIC = "Metacritic";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final Pattern NOT_IN_LINK = Pattern.compile("[^a-z0-9 -]");
-    private static final Pattern SEPARATORS = Pattern.compile("[ -]+");
+    // Metacritic keeps exclamation marks, as in "hot-shots!-part-deux"
+    private static final Pattern NOT_IN_LINK = Pattern.compile("[^a-z0-9 !-]");
+    private static final Pattern SPACES = Pattern.compile(" +");
     // A series with a year in its link has it in its name too, such as "The Diplomat (2023)"
     private static final Pattern YEAR_IN_NAME = Pattern.compile("\\s*\\(\\d{4}\\)$");
 
@@ -50,10 +51,10 @@ public class MetacriticScoresProvider implements ScoresProvider {
         LOGGER.debug("Description: {}", description);
 
         var title = description.getTitle();
-        var link = linkFor(title.asText());
-        // Metacritic gives a later film with the same title a link that ends with its year
-        var score = findScore(link, title)
-                .or(() -> findScore(link + "-" + title.year(), title));
+        var score = linksFor(title)
+                .map(link -> findScore(link, title))
+                .flatMap(Optional::stream)
+                .findFirst();
         if (score.isEmpty()) {
             LOGGER.warn("Missing Metacritic score for: {}", title);
             missingScores.increment();
@@ -63,9 +64,20 @@ public class MetacriticScoresProvider implements ScoresProvider {
                 .peek(found -> LOGGER.debug("Score for {}: {}", description, found));
     }
 
+    // Metacritic drops "&" from some links, as in "thomas-the-tank-engine-friends", and spells it out in others, as
+    // in "dumb-and-dumber". It gives a later film with the same title a link that ends with its year.
+    private static Stream<String> linksFor(Title title) {
+        var name = title.asText();
+        return Stream.of(name, name.replace("&", "and"))
+                .distinct()
+                .map(MetacriticScoresProvider::linkFor)
+                .flatMap(link -> Stream.of(link, link + "-" + title.year()));
+    }
+
+    // Each space becomes a hyphen, so " - " becomes "---", as in "star-wars-episode-i---the-phantom-menace"
     static String linkFor(String title) {
-        var lettersAndDigits = NOT_IN_LINK.matcher(Texts.withoutDiacritics(title).toLowerCase(Locale.ROOT)).replaceAll("");
-        return SEPARATORS.matcher(lettersAndDigits.strip()).replaceAll("-");
+        var kept = NOT_IN_LINK.matcher(Texts.withoutDiacritics(title).toLowerCase(Locale.ROOT)).replaceAll("");
+        return SPACES.matcher(kept.strip()).replaceAll("-");
     }
 
     private Optional<Score> findScore(String link, Title title) {
@@ -79,8 +91,15 @@ public class MetacriticScoresProvider implements ScoresProvider {
 
         return connection.get(url)
                 .flatMap(page -> findTitleData(page, title.kind()))
-                .filter(data -> titleOf(data, title.kind()).matches(title))
+                .filter(data -> isOf(titleOf(data, title.kind()), title))
                 .flatMap(data -> scoreOf(data, url));
+    }
+
+    // Metacritic can name it differently, as "Seven" for "Se7en" or "F9: The Fast Saga" for "F9", and a page at the
+    // title's own link from the same year is the title's
+    private static boolean isOf(Title found, Title title) {
+        return found.matches(title)
+                || (title.year() != Title.MISSING_YEAR && found.year() == title.year());
     }
 
     private static String sectionOf(TitleKind kind) {
