@@ -23,6 +23,23 @@ class TextsTest {
     }
 
     @Test
+    void shouldIgnoreLettersWithoutDecomposedForm() {
+        assertThat(Texts.matchesAlphanumerically("Yahşi Batı", "Yahsi Bati")).isTrue();
+        assertThat(Texts.matchesAlphanumerically("E=mc²", "E=mc2")).isTrue();
+    }
+
+    @Test
+    void shouldTellTitlesInOtherScriptsApart() {
+        assertThat(Texts.matchesAlphanumerically("無職転生 ～異世界行ったら本気だす～", "無職転生～異世界行ったら本気だす～")).isTrue();
+        assertThat(Texts.matchesAlphanumerically("無職転生 ～異世界行ったら本気だす～", "嘉人本色")).isFalse();
+    }
+
+    @Test
+    void shouldNotMatchTitlesWithoutLettersOrDigits() {
+        assertThat(Texts.matchesAlphanumerically("?!", "...")).isFalse();
+    }
+
+    @Test
     void shouldTreatAmpersandAsAnd() {
         assertThat(Texts.matchesAlphanumerically("Dumb & Dumber", "Dumb and Dumber")).isTrue();
     }

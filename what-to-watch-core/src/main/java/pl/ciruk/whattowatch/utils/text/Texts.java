@@ -7,18 +7,20 @@ import java.util.regex.Pattern;
 public final class Texts {
     private static final String[] ARTICLES = {"a ", "an ", "the "};
     private static final Pattern DIACRITICS = Pattern.compile("\\p{M}");
-    private static final Pattern NOT_ALPHANUMERIC = Pattern.compile("[^\\w]");
+    // Letters of any script, as a title in Japanese or Korean would otherwise be left with nothing to compare
+    private static final Pattern NOT_ALPHANUMERIC = Pattern.compile("[^\\p{L}\\p{N}]");
 
     private Texts() {
         throw new AssertionError();
     }
 
+    // A title of punctuation alone, unified to nothing, matches nothing
     public static boolean matchesAlphanumerically(String first, String second) {
         if (first == null || second == null) {
             return false;
-        } else {
-            return unify(first).equals(unify(second));
         }
+        var unified = unify(first);
+        return !unified.isEmpty() && unified.equals(unify(second));
     }
 
     /**
@@ -33,10 +35,11 @@ public final class Texts {
                 .replaceAll("");
     }
 
-    // Sites drop them inconsistently: IMDb has "Katyn" for "Katyń"
+    // Sites drop them inconsistently: IMDb has "Katyn" for "Katyń" and "Yahsi Bati" for "Yahşi Batı"
     public static String withoutDiacritics(String text) {
-        // "ł" has no decomposed form
-        var decomposed = Normalizer.normalize(text.replace('ł', 'l').replace('Ł', 'L'), Normalizer.Form.NFD);
+        // "ł" and the Turkish "ı" have no decomposed form, and the compatibility form makes "E=mc²" "E=mc2"
+        var plain = text.replace('ł', 'l').replace('Ł', 'L').replace('ı', 'i');
+        var decomposed = Normalizer.normalize(plain, Normalizer.Form.NFKD);
         return DIACRITICS.matcher(decomposed).replaceAll("");
     }
 
