@@ -7,6 +7,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    # Redis writes the whole cache to disk when it stops, which takes over a second now that it holds ~300 MB.
+    # Without this Docker Compose kills it after one second, and everything cached since its last save is lost.
+    stop_grace_period: 30s
     volumes:
       - redis-data:/data
     ports:
